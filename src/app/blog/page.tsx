@@ -1,0 +1,71 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { articles } from '@/data/articles';
+import { FileText, ArrowRight, Clock, User, Sparkles } from 'lucide-react';
+
+export default function BlogIndexPage() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+      
+      <div className="border-b border-brand-border pb-6">
+        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+          Scientific Library &amp; COA Analysis
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+          Peptide Research &amp; Analytical Guides
+        </h1>
+        <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
+          Explore laboratory protocols, HPLC chromatogram reading guides, receptor pathways, and peptide stability research.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {articles.map((art) => (
+          <article
+            key={art.id}
+            className="group rounded-2xl bg-brand-card hover:bg-brand-cardHover border border-brand-border hover:border-cyan-500/40 p-5 flex flex-col justify-between transition-all shadow-xl"
+          >
+            <div className="space-y-4">
+              <div className="aspect-video rounded-xl bg-brand-darker overflow-hidden">
+                <img
+                  src={art.image}
+                  alt={art.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 text-[10px] text-brand-textMuted">
+                <span className="text-cyan-400 font-bold uppercase">{art.category}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {art.readTime}
+                </span>
+              </div>
+
+              <Link href={`/blog/${art.slug}`}>
+                <h2 className="text-base font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                  {art.title}
+                </h2>
+              </Link>
+
+              <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">
+                {art.excerpt}
+              </p>
+            </div>
+
+            <div className="pt-4 mt-4 border-t border-brand-border/60 flex items-center justify-between text-xs font-bold text-cyan-400">
+              <Link href={`/blog/${art.slug}`} className="hover:underline flex items-center gap-1">
+                <span>Read Full Publication</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </article>
+        ))}
+      </div>
+
+    </div>
+  );
+}
