@@ -3,35 +3,34 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import NewRecordModal, { type FieldDef } from '@/components/admin/NewRecordModal';
 import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
-  Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search,
+  Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
 } from 'lucide-react';
 
-/** Sidebar definition. `resource` maps to /api/admin/<resource>. */
 const SECTIONS = [
-  { id: 'home',          label: 'Dashboard',     icon: LayoutDashboard, resource: null },
-  { id: 'orders',        label: 'Orders',        icon: ShoppingBag,     resource: 'orders' },
-  { id: 'fulfillment',   label: 'Fulfillment',   icon: PackageCheck,    resource: 'fulfillment' },
-  { id: 'customers',     label: 'Customers',     icon: Users,           resource: 'customers' },
-  { id: 'inquiries',     label: 'Enquiries',     icon: MessageSquare,   resource: 'inquiries' },
-  { id: 'carts',         label: 'Abandoned carts', icon: ShoppingCart,  resource: 'carts' },
-  { id: 'reviews',       label: 'Reviews',       icon: Star,            resource: 'reviews' },
-  { id: 'products',      label: 'Products',      icon: Boxes,           resource: 'products' },
-  { id: 'subscribers',   label: 'Subscribers',   icon: Mail,            resource: 'subscribers' },
-  { id: 'leads',         label: 'Leads',         icon: Target,          resource: 'leads' },
-  { id: 'prospects',     label: 'Prospects',     icon: Building2,       resource: 'prospects' },
-  { id: 'deals',         label: 'Deals',         icon: Tag,             resource: 'deals' },
-  { id: 'affiliates',    label: 'Affiliates',    icon: Handshake,       resource: 'affiliates' },
-  { id: 'commissions',   label: 'Commissions',   icon: Receipt,         resource: 'commissions' },
-  { id: 'campaigns',     label: 'Campaigns',     icon: Megaphone,       resource: 'campaigns' },
-  { id: 'notifications', label: 'Notifications', icon: Bell,            resource: 'notifications' },
-  { id: 'team',          label: 'Team',          icon: UserCog,         resource: 'team' },
-  { id: 'activity',      label: 'Activity log',  icon: History,         resource: 'activity' },
+  { id: 'home',          label: 'Dashboard',       icon: LayoutDashboard, resource: null },
+  { id: 'orders',        label: 'Orders',          icon: ShoppingBag,     resource: 'orders' },
+  { id: 'fulfillment',   label: 'Fulfillment',     icon: PackageCheck,    resource: 'fulfillment' },
+  { id: 'products',      label: 'Products',        icon: Boxes,           resource: 'products' },
+  { id: 'customers',     label: 'Customers',       icon: Users,           resource: 'customers' },
+  { id: 'inquiries',     label: 'Enquiries',       icon: MessageSquare,   resource: 'inquiries' },
+  { id: 'carts',         label: 'Abandoned carts', icon: ShoppingCart,    resource: 'carts' },
+  { id: 'reviews',       label: 'Reviews',         icon: Star,            resource: 'reviews' },
+  { id: 'subscribers',   label: 'Subscribers',     icon: Mail,            resource: 'subscribers' },
+  { id: 'leads',         label: 'Leads',           icon: Target,          resource: 'leads' },
+  { id: 'prospects',     label: 'Prospects',       icon: Building2,       resource: 'prospects' },
+  { id: 'deals',         label: 'Deals',           icon: Tag,             resource: 'deals' },
+  { id: 'affiliates',    label: 'Affiliates',      icon: Handshake,       resource: 'affiliates' },
+  { id: 'commissions',   label: 'Commissions',     icon: Receipt,         resource: 'commissions' },
+  { id: 'campaigns',     label: 'Campaigns',       icon: Megaphone,       resource: 'campaigns' },
+  { id: 'notifications', label: 'Notifications',   icon: Bell,            resource: 'notifications' },
+  { id: 'team',          label: 'Team',            icon: UserCog,         resource: 'team' },
+  { id: 'activity',      label: 'Activity log',    icon: History,         resource: 'activity' },
 ] as const;
 
-/** Dropdown options for the status-style columns. */
 const STATUS_OPTIONS: Record<string, string[]> = {
   status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
   status_inquiries: ['new', 'open', 'answered', 'closed'],
@@ -45,14 +44,16 @@ const STATUS_OPTIONS: Record<string, string[]> = {
 interface RowsResponse {
   rows: Record<string, any>[];
   total: number;
+  title: string;
+  blurb: string;
   editable: string[];
   deletable: boolean;
+  createFields: FieldDef[];
+  columns: string[] | null;
 }
 
 const money = (n: unknown) => `$${Number(n ?? 0).toFixed(2)}`;
-
-const prettify = (key: string) =>
-  key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+const prettify = (k: string) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function AdminPage() {
   const router = useRouter();
@@ -68,21 +69,22 @@ export default function AdminPage() {
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
 
+  const [creating, setCreating] = useState(false);
+  const [createBusy, setCreateBusy] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [createFieldErrors, setCreateFieldErrors] = useState<Record<string, string>>({});
+
   const active = SECTIONS.find((s) => s.id === section)!;
 
-  /* ----------------------------------------------------------- session --- */
   useEffect(() => {
     if (!supabase) {
       setChecking(false);
       setDenied('Supabase is not configured for this deployment.');
       return;
     }
-    supabase.auth.getSession().then(({ data: sessionData }) => {
-      const access = sessionData.session?.access_token ?? null;
-      if (!access) {
-        router.replace('/admin/login');
-        return;
-      }
+    supabase.auth.getSession().then(({ data: s }) => {
+      const access = s.session?.access_token ?? null;
+      if (!access) { router.replace('/admin/login'); return; }
       setToken(access);
       setChecking(false);
     });
@@ -92,15 +94,11 @@ export default function AdminPage() {
     async (path: string, init?: RequestInit) => {
       const res = await fetch(path, {
         ...init,
-        headers: {
-          ...(init?.headers ?? {}),
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { ...(init?.headers ?? {}), 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
       if (res.status === 401 || res.status === 403) {
-        const payload = await res.json().catch(() => null);
-        setDenied(payload?.message ?? 'Access denied.');
+        const p = await res.json().catch(() => null);
+        setDenied(p?.message ?? 'Access denied.');
         throw new Error('denied');
       }
       return res;
@@ -108,57 +106,39 @@ export default function AdminPage() {
     [token]
   );
 
-  /* -------------------------------------------------------------- load --- */
   const load = useCallback(async () => {
     if (!token) return;
-    setLoading(true);
-    setError('');
-
+    setLoading(true); setError('');
     try {
       if (active.resource === null) {
         const res = await authedFetch('/api/admin/summary');
-        const payload = await res.json();
-        if (!res.ok) throw new Error(payload?.message ?? 'Could not load the dashboard.');
-        setSummary(payload.data);
+        const p = await res.json();
+        if (!res.ok) throw new Error(p?.message ?? 'Could not load the dashboard.');
+        setSummary(p.data);
       } else {
         const params = new URLSearchParams({ limit: '100' });
         if (query.trim()) params.set('q', query.trim());
         const res = await authedFetch(`/api/admin/${active.resource}?${params}`);
-        const payload = await res.json();
-        if (!res.ok) throw new Error(payload?.message ?? 'Could not load that section.');
-        setData(payload.data);
+        const p = await res.json();
+        if (!res.ok) throw new Error(p?.message ?? 'Could not load that section.');
+        setData(p.data);
       }
     } catch (err) {
-      if ((err as Error).message !== 'denied') {
-        setError((err as Error).message);
-      }
-    } finally {
-      setLoading(false);
-    }
+      if ((err as Error).message !== 'denied') setError((err as Error).message);
+    } finally { setLoading(false); }
   }, [token, active, query, authedFetch]);
 
-  useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, section]);
+  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [token, section]);
 
-  /* ------------------------------------------------------------ mutate --- */
   const patch = async (id: string, changes: Record<string, unknown>) => {
     if (!active.resource) return;
     try {
       const res = await authedFetch(`/api/admin/${active.resource}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ id, changes }),
+        method: 'PATCH', body: JSON.stringify({ id, changes }),
       });
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        setError(payload?.message ?? 'Update failed.');
-        return;
-      }
+      if (!res.ok) { const p = await res.json().catch(() => null); setError(p?.message ?? 'Update failed.'); return; }
       void load();
-    } catch {
-      /* denied already surfaced */
-    }
+    } catch { /* denied surfaced */ }
   };
 
   const remove = async (id: string) => {
@@ -166,30 +146,37 @@ export default function AdminPage() {
     if (!window.confirm('Delete this row? This cannot be undone.')) return;
     try {
       const res = await authedFetch(`/api/admin/${active.resource}?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) { const p = await res.json().catch(() => null); setError(p?.message ?? 'Delete failed.'); return; }
+      void load();
+    } catch { /* denied surfaced */ }
+  };
+
+  const create = async (values: Record<string, unknown>) => {
+    if (!active.resource) return;
+    setCreateBusy(true); setCreateError(''); setCreateFieldErrors({});
+    try {
+      const res = await authedFetch(`/api/admin/${active.resource}`, {
+        method: 'POST', body: JSON.stringify(values),
+      });
+      const p = await res.json().catch(() => null);
       if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        setError(payload?.message ?? 'Delete failed.');
+        setCreateError(p?.message ?? 'Could not save.');
+        setCreateFieldErrors(p?.fields ?? {});
         return;
       }
+      setCreating(false);
       void load();
-    } catch {
-      /* denied already surfaced */
-    }
+    } catch { /* denied surfaced */ }
+    finally { setCreateBusy(false); }
   };
 
-  const signOut = async () => {
-    await supabase?.auth.signOut();
-    router.replace('/admin/login');
-  };
+  const signOut = async () => { await supabase?.auth.signOut(); router.replace('/admin/login'); };
 
-  /* ------------------------------------------------------------- gates --- */
-  if (checking) {
-    return <div className="shell py-24 text-center text-xs text-brand-textMuted">Checking access...</div>;
-  }
+  if (checking) return <div className="p-24 text-center text-xs text-brand-textMuted">Checking access...</div>;
 
   if (denied) {
     return (
-      <div className="shell max-w-md py-24 text-center">
+      <div className="mx-auto max-w-md p-24 text-center">
         <h1 className="page-title">Access denied</h1>
         <p className="mt-3 text-xs leading-relaxed text-brand-textMuted">{denied}</p>
         <button onClick={signOut} className="btn-ghost mt-6">Sign out</button>
@@ -197,19 +184,16 @@ export default function AdminPage() {
     );
   }
 
-  /* -------------------------------------------------------------- cell --- */
-  const renderCell = (row: Record<string, any>, key: string, editable: string[]) => {
+  /* ------------------------------------------------------------- cells --- */
+  const cell = (row: Record<string, any>, key: string, editable: string[]) => {
     const value = row[key];
     const canEdit = editable.includes(key);
 
     if (canEdit && typeof value === 'boolean') {
       return (
-        <button
-          onClick={() => patch(row.id, { [key]: !value })}
+        <button onClick={() => patch(row.id, { [key]: !value })}
           className={`px-2 py-0.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] transition-colors ${
-            value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
-          }`}
-        >
+            value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'}`}>
           {value ? 'Yes' : 'No'}
         </button>
       );
@@ -218,121 +202,106 @@ export default function AdminPage() {
     const options = STATUS_OPTIONS[`${key}_${section}`];
     if (canEdit && options) {
       return (
-        <select
-          value={String(value ?? '')}
-          onChange={(e) => patch(row.id, { [key]: e.target.value })}
-          className="border border-brand-border bg-brand-dark px-2 py-1 text-[0.6875rem] text-brand-heading focus:border-brand-accent focus:outline-none"
-        >
+        <select value={String(value ?? '')} onChange={(e) => patch(row.id, { [key]: e.target.value })}
+          className="border border-brand-border bg-brand-dark px-2 py-1 text-[0.6875rem] text-brand-heading focus:border-brand-accent focus:outline-none">
           {options.map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
       );
     }
 
-    if (canEdit && (typeof value === 'string' || value === null) && !options) {
+    if (canEdit && typeof value === 'number') {
       return (
-        <button
-          onClick={() => {
-            const next = window.prompt(prettify(key), value == null ? '' : String(value));
-            if (next !== null) patch(row.id, { [key]: next || null });
+        <button onClick={() => {
+            const next = window.prompt(prettify(key), String(value));
+            if (next !== null && next.trim() !== '' && !Number.isNaN(Number(next))) patch(row.id, { [key]: Number(next) });
           }}
-          className="max-w-[16rem] truncate text-left text-brand-body underline decoration-brand-border underline-offset-2 hover:text-brand-accentGlow"
-        >
-          {value == null || value === '' ? <span className="text-brand-textMuted">set</span> : String(value)}
+          className="text-brand-body underline decoration-brand-border underline-offset-2 hover:text-brand-accentGlow">
+          {key.includes('total') || key.includes('price') || key === 'amount' ? money(value) : value}
         </button>
       );
     }
 
-    if (canEdit && typeof value === 'number') {
+    if (canEdit && (typeof value === 'string' || value === null) && !options) {
       return (
-        <button
-          onClick={() => {
-            const next = window.prompt(prettify(key), String(value));
-            if (next !== null && next.trim() !== '' && !Number.isNaN(Number(next))) {
-              patch(row.id, { [key]: Number(next) });
-            }
+        <button onClick={() => {
+            const next = window.prompt(prettify(key), value == null ? '' : String(value));
+            if (next !== null) patch(row.id, { [key]: next || null });
           }}
-          className="text-brand-body underline decoration-brand-border underline-offset-2 hover:text-brand-accentGlow"
-        >
-          {key.includes('total') || key.includes('price') || key === 'amount' ? money(value) : value}
+          className="max-w-[16rem] truncate text-left text-brand-body underline decoration-brand-border underline-offset-2 hover:text-brand-accentGlow">
+          {value == null || value === '' ? <span className="text-brand-textMuted">set</span> : String(value)}
         </button>
       );
     }
 
     if (value === null || value === undefined) return <span className="text-brand-textMuted">—</span>;
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-    if (typeof value === 'object') return <span className="text-brand-textMuted">{Array.isArray(value) ? `${value.length} items` : 'data'}</span>;
-
-    if (key.endsWith('_at') || key === 'created_at') {
-      return <span className="font-mono text-[0.6875rem]">{new Date(value).toLocaleDateString()}</span>;
-    }
+    if (typeof value === 'object') return <span className="text-brand-textMuted">data</span>;
+    if (key.endsWith('_at')) return <span className="font-mono text-[0.6875rem]">{new Date(value).toLocaleDateString()}</span>;
     if (key.includes('total') || key.includes('price') || key === 'amount') return money(value);
-    if (key === 'id') return <span className="font-mono text-[0.625rem] text-brand-textMuted">{String(value).slice(0, 8)}</span>;
-
-    return <span className="max-w-[18rem] truncate">{String(value)}</span>;
+    if (key === 'id' || key.endsWith('_id')) return <span className="font-mono text-[0.625rem] text-brand-textMuted">{String(value).slice(0, 8)}</span>;
+    return <span className="block max-w-[18rem] truncate">{String(value)}</span>;
   };
+
+  const visibleColumns = (d: RowsResponse) =>
+    d.columns?.filter((c) => c in (d.rows[0] ?? {})) ?? Object.keys(d.rows[0] ?? {}).filter((k) => k !== 'id');
 
   /* -------------------------------------------------------------- view --- */
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
-      {/* Sidebar */}
-      <aside className="border-b border-brand-border bg-brand-card lg:w-60 lg:flex-shrink-0 lg:border-b-0 lg:border-r">
+      <aside className="border-b border-brand-border bg-brand-card lg:w-56 lg:flex-shrink-0 lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between border-b border-brand-border px-4 py-4">
-          <span className="font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading">
-            Dashboard
-          </span>
+          <span className="font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading">Dashboard</span>
           <button onClick={signOut} title="Sign out" className="text-brand-textMuted hover:text-brand-accentGlow">
             <LogOut className="h-4 w-4" />
           </button>
         </div>
-
         <nav className="flex overflow-x-auto lg:block lg:overflow-visible">
           {SECTIONS.map((s) => {
-            const Icon = s.icon;
-            const on = s.id === section;
+            const Icon = s.icon; const on = s.id === section;
             return (
-              <button
-                key={s.id}
-                onClick={() => { setSection(s.id); setQuery(''); setError(''); }}
-                className={`flex flex-shrink-0 items-center gap-2.5 px-4 py-3 text-left font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] transition-colors lg:w-full ${
-                  on ? 'bg-brand-accent text-white' : 'text-brand-body hover:text-brand-accentGlow'
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                <span>{s.label}</span>
+              <button key={s.id} onClick={() => { setSection(s.id); setQuery(''); setError(''); }}
+                className={`flex flex-shrink-0 items-center gap-2.5 px-4 py-2.5 text-left font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] transition-colors lg:w-full ${
+                  on ? 'bg-brand-accent text-white' : 'text-brand-body hover:text-brand-accentGlow'}`}>
+                <Icon className="h-3.5 w-3.5 flex-shrink-0" /><span>{s.label}</span>
               </button>
             );
           })}
         </nav>
       </aside>
 
-      {/* Main */}
       <main className="min-w-0 flex-1 p-5 lg:p-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <h1 className="page-title">{active.label}</h1>
+          <div>
+            <h1 className="page-title">{active.label}</h1>
+            {data && active.resource && (
+              <p className="mt-1.5 text-[0.6875rem] text-brand-textMuted">{data.blurb}</p>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {active.resource && (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && load()}
+                <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()}
                   placeholder="Search..."
-                  className="border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none"
-                />
+                  className="border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none" />
               </div>
             )}
-            <button onClick={() => load()} className="border border-brand-borderLight p-2 text-brand-body hover:border-brand-accent hover:text-brand-accentGlow" title="Refresh">
+            <button onClick={() => load()} title="Refresh"
+              className="border border-brand-borderLight p-2 text-brand-body hover:border-brand-accent hover:text-brand-accentGlow">
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             </button>
+            {data && data.createFields.length > 0 && (
+              <button onClick={() => { setCreating(true); setCreateError(''); setCreateFieldErrors({}); }}
+                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
+                <Plus className="h-3.5 w-3.5" /> New
+              </button>
+            )}
           </div>
         </div>
 
-        {error && (
-          <div className="mb-5 border border-brand-accent/50 bg-brand-card p-4 text-xs text-brand-body">{error}</div>
-        )}
+        {error && <div className="mb-5 border border-brand-accent/50 bg-brand-card p-4 text-xs text-brand-body">{error}</div>}
 
-        {/* Dashboard home */}
+        {/* ---------------------------------------------------------- home */}
         {active.resource === null ? (
           summary ? (
             <div className="space-y-8">
@@ -357,21 +326,16 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <h2 className="mb-3 font-display text-[0.9375rem] font-extrabold uppercase tracking-[0.08em] text-brand-heading">
-                  Latest orders
-                </h2>
+                <h2 className="mb-3 font-display text-[0.9375rem] font-extrabold uppercase tracking-[0.08em] text-brand-heading">Latest orders</h2>
                 {summary.recentOrders.length === 0 ? (
-                  <p className="border border-brand-border bg-brand-card p-8 text-center text-xs text-brand-textMuted">
-                    No orders yet.
-                  </p>
+                  <p className="border border-brand-border bg-brand-card p-8 text-center text-xs text-brand-textMuted">No orders yet.</p>
                 ) : (
                   <div className="overflow-x-auto border border-brand-border">
                     <table className="w-full min-w-[36rem] text-left text-xs">
-                      <thead className="border-b border-brand-border bg-brand-card">
-                        <tr>{['Order', 'Email', 'Status', 'Total', 'Placed'].map((h) => (
-                          <th key={h} className="px-4 py-2.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{h}</th>
-                        ))}</tr>
-                      </thead>
+                      <thead className="border-b border-brand-border bg-brand-card"><tr>
+                        {['Order', 'Email', 'Status', 'Total', 'Placed'].map((h) => (
+                          <th key={h} className="px-4 py-2.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{h}</th>))}
+                      </tr></thead>
                       <tbody>
                         {summary.recentOrders.map((o: any) => (
                           <tr key={o.order_number} className="border-b border-brand-border/60 last:border-b-0">
@@ -380,51 +344,93 @@ export default function AdminPage() {
                             <td className="px-4 py-2.5"><span className="bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black uppercase text-white">{o.status}</span></td>
                             <td className="px-4 py-2.5 font-mono text-brand-body">{money(o.grand_total)}</td>
                             <td className="px-4 py-2.5 font-mono text-[0.6875rem] text-brand-textMuted">{new Date(o.created_at).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
+                          </tr>))}
                       </tbody>
                     </table>
                   </div>
                 )}
               </div>
             </div>
-          ) : (
-            <p className="text-xs text-brand-textMuted">{loading ? 'Loading...' : 'No data.'}</p>
-          )
-        ) : /* Resource tables */ data && data.rows.length > 0 ? (
+          ) : <p className="text-xs text-brand-textMuted">{loading ? 'Loading...' : 'No data.'}</p>
+
+        /* ------------------------------------------------------ products */
+        ) : section === 'products' && data && data.rows.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {data.rows.map((p) => (
+              <div key={p.id} className="flex gap-4 border border-brand-border bg-brand-card p-4">
+                <div className="h-24 w-20 flex-shrink-0 border border-brand-border bg-brand-dark p-1.5">
+                  {p.image
+                    ? <img src={p.image} alt="" className="h-full w-full object-contain" />
+                    : <div className="flex h-full w-full items-center justify-center text-[0.5625rem] text-brand-textMuted">no image</div>}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <button onClick={() => {
+                      const next = window.prompt('Product name', p.name);
+                      if (next) patch(p.id, { name: next });
+                    }}
+                    className="block w-full truncate text-left font-display text-xs font-extrabold text-brand-heading hover:text-brand-accentGlow">
+                    {p.name}
+                  </button>
+                  <div className="mt-0.5 truncate font-mono text-[0.625rem] text-brand-textMuted">{p.sku ?? '—'}</div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.6875rem]">
+                    <button onClick={() => {
+                        const next = window.prompt('Price', String(p.price));
+                        if (next && !Number.isNaN(Number(next))) patch(p.id, { price: Number(next) });
+                      }}
+                      className="font-display font-black text-brand-heading underline decoration-brand-border underline-offset-2 hover:text-brand-accentGlow">
+                      {money(p.price)}
+                    </button>
+                    <button onClick={() => {
+                        const next = window.prompt('Stock', String(p.stock_count));
+                        if (next && !Number.isNaN(Number(next))) patch(p.id, { stock_count: Number(next) });
+                      }}
+                      className={`underline decoration-brand-border underline-offset-2 hover:text-brand-accentGlow ${
+                        p.stock_count < 5 ? 'text-brand-accentGlow' : 'text-brand-body'}`}>
+                      {p.stock_count} in stock
+                    </button>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {([['is_active', 'Live'], ['is_featured', 'Featured'], ['in_stock', 'In stock']] as const).map(([key, label]) => (
+                      <button key={key} onClick={() => patch(p.id, { [key]: !p[key] })}
+                        className={`px-2 py-0.5 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] transition-colors ${
+                          p[key] ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        /* --------------------------------------------------- generic table */
+        ) : data && data.rows.length > 0 ? (
           <>
             <p className="mb-3 text-[0.6875rem] uppercase tracking-[0.12em] text-brand-textMuted">
               {data.rows.length} of {data.total}
             </p>
             <div className="overflow-x-auto border border-brand-border">
               <table className="w-full text-left text-xs">
-                <thead className="border-b border-brand-border bg-brand-card">
-                  <tr>
-                    {Object.keys(data.rows[0]).map((k) => (
-                      <th key={k} className="whitespace-nowrap px-3 py-2.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">
-                        {prettify(k)}
-                      </th>
-                    ))}
-                    {data.deletable && <th className="px-3 py-2.5" />}
-                  </tr>
-                </thead>
+                <thead className="border-b border-brand-border bg-brand-card"><tr>
+                  {visibleColumns(data).map((k) => (
+                    <th key={k} className="whitespace-nowrap px-3 py-2.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{prettify(k)}</th>))}
+                  {data.deletable && <th className="px-3 py-2.5" />}
+                </tr></thead>
                 <tbody>
                   {data.rows.map((row) => (
                     <tr key={row.id} className="border-b border-brand-border/60 last:border-b-0 hover:bg-brand-card">
-                      {Object.keys(data.rows[0]).map((k) => (
-                        <td key={k} className="whitespace-nowrap px-3 py-2.5 text-brand-body">
-                          {renderCell(row, k, data.editable)}
-                        </td>
-                      ))}
+                      {visibleColumns(data).map((k) => (
+                        <td key={k} className="whitespace-nowrap px-3 py-2.5 text-brand-body">{cell(row, k, data.editable)}</td>))}
                       {data.deletable && (
                         <td className="px-3 py-2.5 text-right">
-                          <button onClick={() => remove(row.id)} className="text-brand-textMuted hover:text-brand-accentGlow" title="Delete">
+                          <button onClick={() => remove(row.id)} title="Delete" className="text-brand-textMuted hover:text-brand-accentGlow">
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
+                        </td>)}
+                    </tr>))}
                 </tbody>
               </table>
             </div>
@@ -432,12 +438,43 @@ export default function AdminPage() {
               Underlined values are editable — click to change. Toggles and dropdowns save immediately.
             </p>
           </>
+
+        /* ------------------------------------------------------ empty state */
         ) : (
-          <p className="border border-brand-border bg-brand-card p-10 text-center text-xs text-brand-textMuted">
-            {loading ? 'Loading...' : 'Nothing here yet.'}
-          </p>
+          <div className="border border-brand-border bg-brand-card p-12 text-center">
+            <Inbox className="mx-auto h-6 w-6 text-brand-textMuted" strokeWidth={1.5} />
+            <p className="mt-4 font-display text-sm font-extrabold text-brand-heading">
+              {loading ? 'Loading...' : `No ${(data?.title ?? active.label).toLowerCase()} yet`}
+            </p>
+            {!loading && data && (
+              <>
+                <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-brand-textMuted">{data.blurb}</p>
+                {data.createFields.length > 0 ? (
+                  <button onClick={() => { setCreating(true); setCreateError(''); setCreateFieldErrors({}); }} className="btn-primary mt-6">
+                    <Plus className="h-3.5 w-3.5" /> Add the first one
+                  </button>
+                ) : (
+                  <p className="mt-4 text-[0.625rem] text-brand-textMuted">
+                    These records are created automatically — there is nothing to add by hand.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         )}
       </main>
+
+      {creating && data && (
+        <NewRecordModal
+          title={data.title}
+          fields={data.createFields}
+          busy={createBusy}
+          error={createError}
+          fieldErrors={createFieldErrors}
+          onCancel={() => setCreating(false)}
+          onSubmit={create}
+        />
+      )}
     </div>
   );
 }
