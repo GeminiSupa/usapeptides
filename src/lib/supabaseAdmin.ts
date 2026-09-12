@@ -26,7 +26,14 @@ export function getSupabaseAdmin(): SupabaseClient {
 
   cached = createClient(url, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
-    global: { headers: { 'x-application-name': 'usa-peptides' } },
+    global: {
+      headers: { 'x-application-name': 'usa-peptides' },
+      // Next.js patches global fetch and caches it inside route handlers, so
+      // a query's first result would otherwise be replayed indefinitely -
+      // an empty table stays empty even after rows are inserted. Database
+      // reads must always hit the database.
+      fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }),
+    },
   });
 
   return cached;

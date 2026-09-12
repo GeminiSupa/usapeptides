@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node scripts/seed-catalogue.mjs"
+    "seed": "node scripts/seed-catalogue.mjs",
+    "migrate": "node scripts/run-migration.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
@@ -24,6 +25,7 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "autoprefixer": "^10.4.20",
+    "pg": "^8.23.0",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3"
