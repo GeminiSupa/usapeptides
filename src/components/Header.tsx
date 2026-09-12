@@ -23,6 +23,7 @@ interface HeaderProps {
 
 const NAV = [
   { href: '/shop', label: 'Shop' },
+  { href: '/coa-database', label: 'COA Database' },
   { href: '/blog', label: 'Research' },
   { href: '/about-us', label: 'About' },
   { href: '/faq', label: 'FAQ' },

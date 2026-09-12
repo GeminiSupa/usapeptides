@@ -68,7 +68,10 @@ export default function Footer() {
           <ul className="space-y-2.5 text-xs">
             {[
               { href: '/shop', label: 'All research peptides' },
+              { href: '/coa-database', label: 'COA database' },
+              { href: '/bulk-discounts', label: 'Bulk discounts' },
               { href: '/calculator', label: 'Reconstitution calculator' },
+              { href: '/order-received', label: 'Track an order' },
               { href: '/blog', label: 'Research & test results' },
               { href: '/about-us', label: 'About our standards' },
               { href: '/faq', label: 'Frequently asked questions' },
@@ -122,10 +125,21 @@ export default function Footer() {
 
           <div className="flex flex-col items-center justify-between gap-3 text-[0.6875rem] text-brand-textMuted sm:flex-row">
             <p>&copy; {new Date().getFullYear()} USA Peptides. All rights reserved.</p>
-            <div className="flex items-center gap-5">
-              <span>Terms of supply</span>
-              <span>Privacy policy</span>
-              <span>Purity guarantee</span>
+            <div className="flex flex-wrap items-center justify-center gap-5">
+              {[
+                { href: '/privacy-policy', label: 'Privacy policy' },
+                { href: '/shipping-policy', label: 'Shipping policy' },
+                { href: '/return-refund-policy', label: 'Returns & refunds' },
+                { href: '/unsubscribe', label: 'Unsubscribe' },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="transition-colors hover:text-brand-accentGlow"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
