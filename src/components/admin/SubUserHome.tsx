@@ -70,7 +70,7 @@ export default function SubUserHome({ authedFetch, me }: Props) {
         <h2 className="font-display text-sm font-extrabold uppercase tracking-[0.1em] text-brand-heading">
           {me.fullName || me.email}
         </h2>
-        <p className="mt-1 text-[0.6875rem] text-brand-textMuted">
+        <p className="mt-1 text-[0.8125rem] text-brand-textMuted">
           {loading
             ? 'Loading...'
             : mine?.commission_rate != null
@@ -82,12 +82,12 @@ export default function SubUserHome({ authedFetch, me }: Props) {
       <div className="border border-brand-border bg-brand-card p-5">
         <h3 className="eyebrow mb-2">Your referral link</h3>
         <div className="flex flex-wrap items-center gap-2">
-          <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap border border-brand-border bg-brand-dark px-3 py-2 font-mono text-[0.6875rem] text-brand-heading">
+          <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap border border-brand-border bg-brand-dark px-3 py-2 font-mono text-[0.8125rem] text-brand-heading">
             {link}
           </code>
           <button
             onClick={() => void copy()}
-            className="inline-flex items-center gap-1.5 border border-brand-borderLight px-3 py-2 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+            className="inline-flex items-center gap-1.5 border border-brand-borderLight px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
           >
             {copied ? <Check className="h-3 w-3 text-whatsapp" /> : <Copy className="h-3 w-3" />}
             {copied ? 'Copied' : 'Copy'}
@@ -102,7 +102,7 @@ export default function SubUserHome({ authedFetch, me }: Props) {
             <h3 className="font-display text-xs font-extrabold uppercase tracking-[0.1em] text-brand-heading">
               Earnings are not being tracked yet
             </h3>
-            <p className="mt-2 text-[0.6875rem] leading-relaxed text-brand-textMuted">
+            <p className="mt-2 text-[0.8125rem] leading-relaxed text-brand-textMuted">
               Orders do not yet record which referral link brought them in, so there is no total to
               show you. Rather than print a figure of zero and have it read as “you have earned
               nothing”, this says plainly that the plumbing is not finished. Your rate and your link

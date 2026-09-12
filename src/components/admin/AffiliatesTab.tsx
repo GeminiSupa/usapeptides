@@ -147,7 +147,7 @@ export default function AffiliatesTab({ authedFetch }: Props) {
     <div>
       <div className="mb-4 border border-brand-border bg-brand-card p-3">
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-[0.6875rem] text-brand-textMuted">
+          <p className="text-[0.8125rem] text-brand-textMuted">
             <span className="font-display font-extrabold uppercase tracking-[0.1em] text-brand-heading">
               {rows.length} affiliate{rows.length === 1 ? '' : 's'}
             </span>
@@ -155,12 +155,12 @@ export default function AffiliatesTab({ authedFetch }: Props) {
           </p>
           <button
             onClick={() => { setEditing(null); setFormError(''); setFieldErrors({}); }}
-            className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+            className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
           >
             <Plus className="h-3 w-3" /> Add affiliate
           </button>
         </div>
-        <p className="mt-2 text-[0.625rem] leading-relaxed text-brand-textMuted">
+        <p className="mt-2 text-[0.75rem] leading-relaxed text-brand-textMuted">
           Outside partners. They have no dashboard login — only a referral code, and commission on
           orders that arrive through it.
         </p>
@@ -196,11 +196,11 @@ export default function AffiliatesTab({ authedFetch }: Props) {
                   <p className="truncate font-display text-xs font-extrabold text-brand-heading">
                     {a.full_name || a.email}
                   </p>
-                  {a.company && <p className="truncate text-[0.6875rem] text-brand-body">{a.company}</p>}
-                  <p className="truncate font-mono text-[0.5625rem] text-brand-textMuted">{a.email}</p>
+                  {a.company && <p className="truncate text-[0.8125rem] text-brand-body">{a.company}</p>}
+                  <p className="truncate font-mono text-[0.6875rem] text-brand-textMuted">{a.email}</p>
 
                   <div className="mt-3 flex items-center gap-2">
-                    <code className="border border-brand-border bg-brand-dark px-2 py-1 font-mono text-[0.6875rem] tracking-wider text-brand-heading">
+                    <code className="border border-brand-border bg-brand-dark px-2 py-1 font-mono text-[0.8125rem] tracking-wider text-brand-heading">
                       {a.referral_code}
                     </code>
                     <button
@@ -221,7 +221,7 @@ export default function AffiliatesTab({ authedFetch }: Props) {
                     </button>
                   </div>
 
-                  <div className="mt-3 grid grid-cols-3 gap-2 border-t border-brand-border pt-3 text-[0.625rem]">
+                  <div className="mt-3 grid grid-cols-3 gap-2 border-t border-brand-border pt-3 text-[0.75rem]">
                     <div>
                       <div className="eyebrow">Rate</div>
                       <div className="mt-0.5 font-display font-black text-brand-heading">{Number(a.commission_rate)}%</div>
@@ -240,7 +240,7 @@ export default function AffiliatesTab({ authedFetch }: Props) {
                 <div className="mt-auto flex items-center gap-1 border-t border-brand-border p-2.5">
                   <button
                     onClick={() => toggleActive(a)}
-                    className={`px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] transition-colors ${
+                    className={`px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] transition-colors ${
                       a.is_active ? 'bg-whatsapp text-whatsapp-ink' : 'border border-brand-borderLight text-brand-textMuted'
                     }`}
                   >
@@ -248,7 +248,7 @@ export default function AffiliatesTab({ authedFetch }: Props) {
                   </button>
                   <button
                     onClick={() => { setEditing(a); setFormError(''); setFieldErrors({}); }}
-                    className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+                    className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
                   >
                     <Pencil className="h-2.5 w-2.5" /> Edit
                   </button>
@@ -327,7 +327,7 @@ function AffiliateForm({
             {editing ? 'Edit affiliate' : 'Add an affiliate'}
           </h2>
           {!editing && (
-            <p className="mt-0.5 text-[0.625rem] text-brand-textMuted">
+            <p className="mt-0.5 text-[0.75rem] text-brand-textMuted">
               A referral code is generated for them automatically.
             </p>
           )}
@@ -338,14 +338,14 @@ function AffiliateForm({
             <label className="block">
               <span className="eyebrow mb-1.5 block">Name<span className="ml-1 text-brand-accent">*</span></span>
               <input value={values.full_name} onChange={(e) => set('full_name', e.target.value)} className={input} />
-              {fieldErrors.full_name && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.full_name}</span>}
+              {fieldErrors.full_name && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.full_name}</span>}
             </label>
 
             <label className="block">
               <span className="eyebrow mb-1.5 block">Email<span className="ml-1 text-brand-accent">*</span></span>
               <input type="email" disabled={editing} value={values.email}
                 onChange={(e) => set('email', e.target.value)} className={`${input} disabled:opacity-50`} />
-              {fieldErrors.email && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.email}</span>}
+              {fieldErrors.email && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.email}</span>}
             </label>
 
             <label className="block">
@@ -362,7 +362,7 @@ function AffiliateForm({
               <span className="eyebrow mb-1.5 block">Commission %</span>
               <input type="number" step="0.01" min="0" max="100" value={values.commission_rate}
                 onChange={(e) => set('commission_rate', e.target.value)} className={input} />
-              {fieldErrors.commission_rate && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.commission_rate}</span>}
+              {fieldErrors.commission_rate && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.commission_rate}</span>}
             </label>
 
             <label className="block">
@@ -379,7 +379,7 @@ function AffiliateForm({
             <label className="block sm:col-span-2">
               <span className="eyebrow mb-1.5 block">Payment details</span>
               <input value={values.payout_detail} onChange={(e) => set('payout_detail', e.target.value)} className={input} />
-              <span className="mt-1 block text-[0.625rem] text-brand-textMuted">
+              <span className="mt-1 block text-[0.75rem] text-brand-textMuted">
                 Whatever you need to pay them — an account reference, not card numbers.
               </span>
             </label>
@@ -390,7 +390,7 @@ function AffiliateForm({
             </label>
           </div>
 
-          {error && <p className="text-[0.6875rem] text-brand-accentGlow">{error}</p>}
+          {error && <p className="text-[0.8125rem] text-brand-accentGlow">{error}</p>}
 
           <div className="flex gap-2 border-t border-brand-border pt-4">
             <button type="submit" disabled={busy} className="btn-primary flex-1 disabled:opacity-60">

@@ -135,7 +135,7 @@ export default function RecordEditor({
           type="button"
           disabled={locked}
           onClick={() => set(f.name, !value)}
-          className={`px-3 py-1.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] transition-colors disabled:opacity-50 ${
+          className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors disabled:opacity-50 ${
             value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
           }`}
         >
@@ -208,7 +208,7 @@ export default function RecordEditor({
               {editing ? `Edit ${title.toLowerCase()}` : `New ${title.toLowerCase()}`}
             </h2>
             {editing && (
-              <p className="mt-0.5 text-[0.625rem] text-brand-textMuted">
+              <p className="mt-0.5 text-[0.75rem] text-brand-textMuted">
                 Only what you change is saved.
               </p>
             )}
@@ -240,12 +240,12 @@ export default function RecordEditor({
                     </span>
                     {field(f)}
                     {f.help && (
-                      <span className="mt-1 block text-[0.625rem] leading-relaxed text-brand-textMuted">
+                      <span className="mt-1 block text-[0.75rem] leading-relaxed text-brand-textMuted">
                         {f.help}
                       </span>
                     )}
                     {fieldErrors[f.name] && (
-                      <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">
+                      <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">
                         {fieldErrors[f.name]}
                       </span>
                     )}
@@ -256,7 +256,7 @@ export default function RecordEditor({
           ))}
 
           {error && (
-            <p className="mb-4 border border-brand-accent/50 bg-brand-dark p-3 text-[0.6875rem] text-brand-body">
+            <p className="mb-4 border border-brand-accent/50 bg-brand-dark p-3 text-[0.8125rem] text-brand-body">
               {error}
             </p>
           )}

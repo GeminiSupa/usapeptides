@@ -20,7 +20,7 @@ export interface ModuleDef {
   id: string;
   label: string;
   group: string;
-  /** Owners only, never grantable to staff. */
+  /** Super admins only, never grantable to staff. */
   ownerOnly?: boolean;
   /** Everyone active sees it; not worth granting individually. */
   always?: boolean;
@@ -57,7 +57,7 @@ export const MODULES: ModuleDef[] = [
   // themselves and see their own team - and nothing else. An invite lands as
   // pending and still needs an owner to approve it, so this cannot be used to
   // manufacture access.
-  { id: 'my_team',       label: 'Invite sub-users', group: 'Admin' },
+  { id: 'my_team',       label: 'Recruit sellers',  group: 'Admin' },
 
   // Managing people is the one thing that can escalate privilege, so it is not
   // grantable at all. Only an owner reaches it.
@@ -227,7 +227,7 @@ export function validateSupervisor(parent: AdminProfile | null | undefined): Ver
 
 /** The other direction: may this person be turned into a sub-user? */
 export function canBecomeSubUser(profile: AdminProfile, all: AdminProfile[]): Verdict {
-  if (profile.is_superadmin) return no('An owner cannot be a sub-user.');
+  if (profile.is_superadmin) return no('A super admin cannot be a sub-user.');
 
   const children = all.filter((c) => c.parent_user_id === profile.id);
   if (children.length > 0) {

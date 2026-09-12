@@ -163,7 +163,7 @@ export async function requireAdmin(
   const profile = normalizeProfile(row);
 
   if (profile.status === 'pending') {
-    return deny(403, 'Your account is waiting for an owner to approve it.');
+    return deny(403, 'Your account is waiting for a super admin to approve it.');
   }
   if (profile.status !== 'active') {
     return deny(403, 'This account does not have dashboard access.');
@@ -174,7 +174,7 @@ export async function requireAdmin(
   }
 
   if (options.superadmin && !profile.is_superadmin) {
-    return deny(403, 'Only an owner can do that.');
+    return deny(403, 'Only a super admin can do that.');
   }
 
   const required = options.anyAuthenticated
@@ -187,7 +187,7 @@ export async function requireAdmin(
   } else if (required.length === 0) {
     // Nothing matched, so this is an unmapped route. Owner only.
     if (!profile.is_superadmin) {
-      return deny(403, 'Only an owner can do that.');
+      return deny(403, 'Only a super admin can do that.');
     }
   } else if (!required.some((p) => canAccess(p, profile))) {
     return deny(403, 'You do not have permission for that.', { requires: required });

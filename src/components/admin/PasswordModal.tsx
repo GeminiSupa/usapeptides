@@ -45,7 +45,7 @@ export default function PasswordModal({
             <h2 className="font-display text-sm font-extrabold uppercase tracking-[0.1em] text-brand-heading">
               {title}
             </h2>
-            <p className="mt-0.5 text-[0.625rem] text-brand-textMuted">{subtitle}</p>
+            <p className="mt-0.5 text-[0.75rem] text-brand-textMuted">{subtitle}</p>
           </div>
           <button onClick={onCancel} className="text-brand-textMuted hover:text-brand-heading">
             <X className="h-4 w-4" />
@@ -56,7 +56,7 @@ export default function PasswordModal({
           onSubmit={(e) => { e.preventDefault(); onSubmit(password); }}
           className="space-y-4 p-5"
         >
-          <p className="border border-brand-border bg-brand-dark p-3 text-[0.625rem] leading-relaxed text-brand-textMuted">
+          <p className="border border-brand-border bg-brand-dark p-3 text-[0.75rem] leading-relaxed text-brand-textMuted">
             {note}
           </p>
 
@@ -71,14 +71,14 @@ export default function PasswordModal({
               placeholder={`At least ${minPassword} characters`}
               className="w-full border border-brand-border bg-brand-dark px-3 py-2 font-mono text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none"
             />
-            <span className={`mt-1 block text-[0.625rem] ${tooShort ? 'text-brand-accentGlow' : 'text-brand-textMuted'}`}>
+            <span className={`mt-1 block text-[0.75rem] ${tooShort ? 'text-brand-accentGlow' : 'text-brand-textMuted'}`}>
               {tooShort
                 ? `${minPassword - password.length} more character${minPassword - password.length === 1 ? '' : 's'} needed.`
                 : 'Copy it now — it cannot be read back later.'}
             </span>
           </label>
 
-          {error && <p className="text-[0.6875rem] text-brand-accentGlow">{error}</p>}
+          {error && <p className="text-[0.8125rem] text-brand-accentGlow">{error}</p>}
 
           <div className="flex gap-2 border-t border-brand-border pt-4">
             <button

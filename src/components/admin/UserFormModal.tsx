@@ -29,6 +29,11 @@ interface Props {
   grantable: ModuleDef[];
   supervisors: Supervisor[];
   minPassword: number;
+  /**
+   * False when the database has not had the pay migration yet. The wage fields
+   * are hidden rather than shown and silently dropped on save.
+   */
+  hasPay?: boolean;
   /** True when the person using this form is the same row. */
   isSelf: boolean;
   busy: boolean;
@@ -42,7 +47,7 @@ const input =
   'w-full border border-brand-border bg-brand-dark px-3 py-2 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none disabled:opacity-50';
 
 export default function UserFormModal({
-  mode, user, lockTier, grantable, supervisors, minPassword, isSelf,
+  mode, user, lockTier, grantable, supervisors, minPassword, hasPay = true, isSelf,
   busy, error, fieldErrors, onCancel, onSubmit,
 }: Props) {
   const editing = mode === 'edit';
@@ -59,6 +64,11 @@ export default function UserFormModal({
   const [cap, setCap] = useState(String(user?.sub_user_cap ?? 5));
   const [commission, setCommission] = useState(String(user?.commission_rate ?? 0));
   const [override, setOverride] = useState(String(user?.override_rate ?? 0));
+  const [salary, setSalary] = useState(
+    (user as any)?.base_salary == null ? '' : String((user as any).base_salary)
+  );
+  const [salaryPeriod, setSalaryPeriod] = useState((user as any)?.salary_period ?? 'monthly');
+  const [salaryCurrency, setSalaryCurrency] = useState((user as any)?.salary_currency ?? 'USD');
   const [parentId, setParentId] = useState(user?.parent_user_id ?? '');
   const [permissions, setPermissions] = useState<string[]>(user?.permissions ?? []);
 
@@ -101,6 +111,13 @@ export default function UserFormModal({
     if (isSubUser) {
       values.parent_user_id = parentId;
     } else {
+      // Blank means "no wage recorded", which is null rather than zero — zero
+      // would claim they are paid nothing.
+      if (hasPay) {
+        values.base_salary = salary === '' ? null : salary;
+        values.salary_period = salaryPeriod;
+        values.salary_currency = salaryCurrency;
+      }
       values.permissions = permissions;
       values.sub_user_cap = cap === '' ? 0 : Number(cap);
       values.is_superadmin = isOwner;
@@ -124,7 +141,7 @@ export default function UserFormModal({
             <h2 className="font-display text-sm font-extrabold uppercase tracking-[0.1em] text-brand-heading">
               {editing ? `Edit ${user?.full_name || user?.email}` : isSubUser ? 'Invite a sub-user' : 'Add a team member'}
             </h2>
-            <p className="mt-0.5 text-[0.625rem] text-brand-textMuted">
+            <p className="mt-0.5 text-[0.75rem] text-brand-textMuted">
               {editing
                 ? 'Only what you change is saved.'
                 : isSubUser
@@ -145,7 +162,7 @@ export default function UserFormModal({
               <label className="block">
                 <span className="eyebrow mb-1.5 block">Full name{!editing && <span className="ml-1 text-brand-accent">*</span>}</span>
                 <input value={fullName} onChange={(e) => setFullName(e.target.value)} className={input} />
-                {fieldErrors.full_name && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.full_name}</span>}
+                {fieldErrors.full_name && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.full_name}</span>}
               </label>
 
               <label className="block">
@@ -158,11 +175,11 @@ export default function UserFormModal({
                   className={input}
                 />
                 {editing && (
-                  <span className="mt-1 block text-[0.625rem] text-brand-textMuted">
+                  <span className="mt-1 block text-[0.75rem] text-brand-textMuted">
                     The address is what they sign in with, so it cannot be changed here.
                   </span>
                 )}
-                {fieldErrors.email && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.email}</span>}
+                {fieldErrors.email && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.email}</span>}
               </label>
 
               <label className="block">
@@ -187,7 +204,7 @@ export default function UserFormModal({
                     key={value}
                     type="button"
                     onClick={() => setTier(value)}
-                    className={`px-3 py-1.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] transition-colors ${
+                    className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
                       tier === value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
                     }`}
                   >
@@ -195,7 +212,7 @@ export default function UserFormModal({
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-[0.625rem] leading-relaxed text-brand-textMuted">
+              <p className="mt-2 text-[0.75rem] leading-relaxed text-brand-textMuted">
                 {isSubUser
                   ? 'A sub-user sees only their own earnings and referral link. They cannot reach orders, customers or anything else.'
                   : 'Staff get the sections you tick below.'}
@@ -215,12 +232,12 @@ export default function UserFormModal({
                 placeholder={`At least ${minPassword} characters`}
                 className={`${input} font-mono`}
               />
-              <p className="mt-1 text-[0.625rem] leading-relaxed text-brand-textMuted">
+              <p className="mt-1 text-[0.75rem] leading-relaxed text-brand-textMuted">
                 Shown as you type so you can copy it. It is stored only as a hash, so nobody —
                 including you — can read it back afterwards. Pass it to them directly and have
                 them change it.
               </p>
-              {fieldErrors.password && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.password}</span>}
+              {fieldErrors.password && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.password}</span>}
             </section>
           )}
 
@@ -239,26 +256,26 @@ export default function UserFormModal({
                       </option>
                     ))}
                   </select>
-                  {fieldErrors.parent_user_id && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.parent_user_id}</span>}
+                  {fieldErrors.parent_user_id && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.parent_user_id}</span>}
                 </label>
 
                 <label className="block">
-                  <span className="eyebrow mb-1.5 block">Their commission %</span>
+                  <span className="eyebrow mb-1.5 block">What they earn %</span>
                   <input type="number" step="0.01" min="0" max="100" value={commission}
                     onChange={(e) => setCommission(e.target.value)} className={input} />
-                  {fieldErrors.commission_rate && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.commission_rate}</span>}
+                  {fieldErrors.commission_rate && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.commission_rate}</span>}
                 </label>
 
                 <label className="block">
-                  <span className="eyebrow mb-1.5 block">Supervisor override %</span>
+                  <span className="eyebrow mb-1.5 block">What their recruiter earns %</span>
                   <input type="number" step="0.01" min="0" max="100" value={override}
                     onChange={(e) => setOverride(e.target.value)} className={input} />
-                  {fieldErrors.override_rate && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.override_rate}</span>}
+                  {fieldErrors.override_rate && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.override_rate}</span>}
                 </label>
               </div>
-              <p className="mt-2 text-[0.625rem] leading-relaxed text-brand-textMuted">
-                Both come out of the same order. Set them so the total is what you intend to pay —
-                8% and 2% means the order costs you 10% in commission.
+              <p className="mt-2 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                Both are paid out of the same order. Add them together to see what an order actually
+                costs you — 8% to the seller and 2% to whoever recruited them means 10% in total.
               </p>
             </section>
           ) : (
@@ -270,10 +287,10 @@ export default function UserFormModal({
                 {isSelf ? (
                   <div className="flex items-start gap-2 border border-brand-border bg-brand-dark p-3">
                     <ShieldAlert className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-brand-accentGlow" />
-                    <p className="text-[0.625rem] leading-relaxed text-brand-textMuted">
+                    <p className="text-[0.75rem] leading-relaxed text-brand-textMuted">
                       This is your own account, so your role and permissions are not editable here.
-                      It is what stops one click leaving the business with no owner. Another owner
-                      can change them.
+                      It is what stops one click leaving the business with no super admin.
+                      Another super admin can change them.
                     </p>
                   </div>
                 ) : (
@@ -281,25 +298,28 @@ export default function UserFormModal({
                     <button
                       type="button"
                       onClick={() => setIsOwner((v) => !v)}
-                      className={`px-3 py-1.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] transition-colors ${
+                      className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
                         isOwner ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
                       }`}
                     >
-                      {isOwner ? 'Owner' : 'Not an owner'}
+                      {isOwner ? 'Super admin' : 'Not a super admin'}
                     </button>
-                    <p className="mt-2 text-[0.625rem] leading-relaxed text-brand-textMuted">
-                      An owner sees everything and can add, approve and remove people. Everyone else
-                      gets only the sections ticked below.
+                    <p className="mt-2 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                      A super admin sees everything and is the only role that can add people, change
+                      what they can see, approve invites and read the audit trail. Everyone else gets
+                      only the sections ticked below.
                     </p>
                   </>
                 )}
 
-                <label className="mt-4 block max-w-[12rem]">
-                  <span className="eyebrow mb-1.5 block">Sub-user places</span>
+                <label className="mt-4 block max-w-[16rem]">
+                  <span className="eyebrow mb-1.5 block">How many people can they recruit?</span>
                   <input type="number" min="0" max="200" value={cap}
                     onChange={(e) => setCap(e.target.value)} className={input} />
-                  <span className="mt-1 block text-[0.625rem] text-brand-textMuted">
-                    How many sub-users they may have.
+                  <span className="mt-1 block text-[0.75rem] leading-relaxed text-brand-textMuted">
+                    Staff can bring in their own sellers — sub-users — who get a referral link and
+                    earn a cut of what they sell. This is the most they are allowed to bring in.
+                    Set it to 0 to stop them recruiting anyone.
                   </span>
                 </label>
               </section>
@@ -312,15 +332,15 @@ export default function UserFormModal({
                   </h3>
 
                   {isOwner ? (
-                    <p className="border border-brand-border bg-brand-dark p-3 text-[0.625rem] leading-relaxed text-brand-textMuted">
-                      Owners see every section, so there is nothing to tick. Turn off Owner above to
-                      choose individual sections.
+                    <p className="border border-brand-border bg-brand-dark p-3 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                      A super admin sees every section, so there is nothing to tick. Switch off
+                      Super admin above to choose individual sections.
                     </p>
                   ) : (
                     <div className="space-y-4">
                       {groups.map((group) => (
                         <div key={group.name}>
-                          <p className="mb-1.5 text-[0.625rem] uppercase tracking-[0.14em] text-brand-textMuted">
+                          <p className="mb-1.5 text-[0.75rem] uppercase tracking-[0.14em] text-brand-textMuted">
                             {group.name}
                           </p>
                           <div className="flex flex-wrap gap-1.5">
@@ -331,7 +351,7 @@ export default function UserFormModal({
                                   key={m.id}
                                   type="button"
                                   onClick={() => toggle(m.id)}
-                                  className={`px-2.5 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] transition-colors ${
+                                  className={`px-2.5 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] transition-colors ${
                                     on ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted hover:text-brand-body'
                                   }`}
                                 >
@@ -342,9 +362,9 @@ export default function UserFormModal({
                           </div>
                         </div>
                       ))}
-                      <p className="text-[0.625rem] leading-relaxed text-brand-textMuted">
+                      <p className="text-[0.75rem] leading-relaxed text-brand-textMuted">
                         The dashboard home page is always visible. Managing users and the audit trail
-                        are owner-only and cannot be granted.
+                        are super-admin only and cannot be granted to anybody else.
                       </p>
                     </div>
                   )}
@@ -353,19 +373,69 @@ export default function UserFormModal({
 
               {/* ------------------------------------------------ staff rates */}
               <section className="mb-6">
-                <h3 className="eyebrow mb-3 border-b border-brand-border pb-2">Commission</h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <h3 className="eyebrow mb-3 border-b border-brand-border pb-2">Pay</h3>
+
+                {!hasPay && (
+                  <p className="mb-4 border border-brand-border bg-brand-dark p-3 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                    Wage fields are hidden because the database has not had
+                    <span className="font-mono"> 0006_users_fixes.sql </span>
+                    run yet. Commission below works either way.
+                  </p>
+                )}
+
+                <div className={`grid grid-cols-1 gap-4 sm:grid-cols-3 ${hasPay ? '' : 'hidden'}`}>
                   <label className="block">
-                    <span className="eyebrow mb-1.5 block">Their commission %</span>
+                    <span className="eyebrow mb-1.5 block">Base pay</span>
+                    <input type="number" step="0.01" min="0" value={salary}
+                      onChange={(e) => setSalary(e.target.value)} placeholder="0.00" className={input} />
+                    {fieldErrors.base_salary && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.base_salary}</span>}
+                  </label>
+
+                  <label className="block">
+                    <span className="eyebrow mb-1.5 block">Paid</span>
+                    <select value={salaryPeriod} onChange={(e) => setSalaryPeriod(e.target.value)} className={input}>
+                      <option value="hourly">per hour</option>
+                      <option value="weekly">per week</option>
+                      <option value="fortnightly">per fortnight</option>
+                      <option value="monthly">per month</option>
+                      <option value="annual">per year</option>
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="eyebrow mb-1.5 block">Currency</span>
+                    <input value={salaryCurrency} maxLength={3}
+                      onChange={(e) => setSalaryCurrency(e.target.value.toUpperCase())}
+                      className={`${input} font-mono`} />
+                  </label>
+                </div>
+
+                {hasPay && (
+                  <p className="mt-2 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                    Their wage, recorded here for your reference. Nothing pays it out — this
+                    dashboard does not run payroll.
+                  </p>
+                )}
+
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="eyebrow mb-1.5 block">Commission on their own sales %</span>
                     <input type="number" step="0.01" min="0" max="100" value={commission}
                       onChange={(e) => setCommission(e.target.value)} className={input} />
-                    {fieldErrors.commission_rate && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.commission_rate}</span>}
+                    <span className="mt-1 block text-[0.75rem] leading-relaxed text-brand-textMuted">
+                      What they earn on an order they bring in themselves.
+                    </span>
+                    {fieldErrors.commission_rate && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.commission_rate}</span>}
                   </label>
                   <label className="block">
-                    <span className="eyebrow mb-1.5 block">Override on sub-users %</span>
+                    <span className="eyebrow mb-1.5 block">Cut of what their recruits sell %</span>
                     <input type="number" step="0.01" min="0" max="100" value={override}
                       onChange={(e) => setOverride(e.target.value)} className={input} />
-                    {fieldErrors.override_rate && <span className="mt-1 block text-[0.625rem] text-brand-accentGlow">{fieldErrors.override_rate}</span>}
+                    <span className="mt-1 block text-[0.75rem] leading-relaxed text-brand-textMuted">
+                      When somebody they recruited makes a sale, this is the slice that comes back to
+                      them for having brought that person in. Leave it at 0 if you do not want that.
+                    </span>
+                    {fieldErrors.override_rate && <span className="mt-1 block text-[0.75rem] text-brand-accentGlow">{fieldErrors.override_rate}</span>}
                   </label>
                 </div>
               </section>
@@ -373,7 +443,7 @@ export default function UserFormModal({
           )}
 
           {error && (
-            <p className="mb-4 border border-brand-accent/50 bg-brand-dark p-3 text-[0.6875rem] text-brand-body">
+            <p className="mb-4 border border-brand-accent/50 bg-brand-dark p-3 text-[0.8125rem] text-brand-body">
               {error}
             </p>
           )}

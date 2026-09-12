@@ -301,7 +301,7 @@ export default function AdminPage() {
     if (canEdit && typeof value === 'boolean') {
       return (
         <button onClick={() => patch(row.id, { [key]: !value })}
-          className={`px-2 py-0.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] transition-colors ${
+          className={`px-2 py-0.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
             value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'}`}>
           {value ? 'Yes' : 'No'}
         </button>
@@ -312,7 +312,7 @@ export default function AdminPage() {
     if (canEdit && options) {
       return (
         <select value={String(value ?? '')} onChange={(e) => patch(row.id, { [key]: e.target.value })}
-          className="border border-brand-border bg-brand-dark px-2 py-1 text-[0.6875rem] text-brand-heading focus:border-brand-accent focus:outline-none">
+          className="border border-brand-border bg-brand-dark px-2 py-1 text-[0.8125rem] text-brand-heading focus:border-brand-accent focus:outline-none">
           {options.map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
       );
@@ -322,11 +322,11 @@ export default function AdminPage() {
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (typeof value === 'object') return <span className="text-brand-textMuted">data</span>;
     if (key.endsWith('_at') || key.endsWith('_on')) {
-      return <span className="font-mono text-[0.6875rem]">{new Date(value).toLocaleDateString()}</span>;
+      return <span className="font-mono text-[0.8125rem]">{new Date(value).toLocaleDateString()}</span>;
     }
     if (key.includes('total') || key.includes('price') || key === 'amount') return money(value);
     if (key === 'id' || key.endsWith('_id')) {
-      return <span className="font-mono text-[0.625rem] text-brand-textMuted">{String(value).slice(0, 8)}</span>;
+      return <span className="font-mono text-[0.75rem] text-brand-textMuted">{String(value).slice(0, 8)}</span>;
     }
     return <span className="block max-w-[18rem] truncate">{String(value)}</span>;
   };
@@ -349,7 +349,7 @@ export default function AdminPage() {
               <LogOut className="h-4 w-4" />
             </button>
           </div>
-          <p className="mt-1.5 truncate text-[0.625rem] text-brand-textMuted" title={me.email}>
+          <p className="mt-1.5 truncate text-[0.75rem] text-brand-textMuted" title={me.email}>
             {me.fullName || me.email}
             {me.isOwner && <span className="ml-1 text-action">· owner</span>}
             {me.tier === 'sub_user' && <span className="ml-1">· sub-user</span>}
@@ -362,7 +362,7 @@ export default function AdminPage() {
             const on = s.id === section;
             return (
               <button key={s.id} onClick={() => { setSection(s.id); setQuery(''); setError(''); }}
-                className={`flex flex-shrink-0 items-center gap-2.5 px-4 py-2.5 text-left font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] transition-colors lg:w-full ${
+                className={`flex flex-shrink-0 items-center gap-2.5 px-4 py-2.5 text-left font-display text-[0.8125rem] font-extrabold uppercase tracking-[0.1em] transition-colors lg:w-full ${
                   on ? 'bg-brand-accent text-white' : 'text-brand-body hover:text-brand-accentGlow'}`}>
                 <Icon className="h-3.5 w-3.5 flex-shrink-0" /><span>{s.label}</span>
               </button>
@@ -376,7 +376,7 @@ export default function AdminPage() {
           <div>
             <h1 className="page-title">{active.label}</h1>
             {data && resource && (
-              <p className="mt-1.5 max-w-2xl text-[0.6875rem] leading-relaxed text-brand-textMuted">{data.blurb}</p>
+              <p className="mt-1.5 max-w-2xl text-[0.8125rem] leading-relaxed text-brand-textMuted">{data.blurb}</p>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -396,7 +396,7 @@ export default function AdminPage() {
             )}
             {canCreate && resource && active.id !== 'products' && (
               <button onClick={() => openEditor(null)}
-                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
+                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
                 <Plus className="h-3.5 w-3.5" /> New
               </button>
             )}
@@ -450,16 +450,16 @@ export default function AdminPage() {
                     <table className="w-full min-w-[36rem] text-left text-xs">
                       <thead className="border-b border-brand-border bg-brand-card"><tr>
                         {['Order', 'Email', 'Status', 'Total', 'Placed'].map((h) => (
-                          <th key={h} className="px-4 py-2.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{h}</th>))}
+                          <th key={h} className="px-4 py-2.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{h}</th>))}
                       </tr></thead>
                       <tbody>
                         {summary.recentOrders.map((o: any) => (
                           <tr key={o.order_number} className="border-b border-brand-border/60 last:border-b-0">
-                            <td className="px-4 py-2.5 font-mono text-[0.6875rem] text-brand-heading">{o.order_number}</td>
+                            <td className="px-4 py-2.5 font-mono text-[0.8125rem] text-brand-heading">{o.order_number}</td>
                             <td className="px-4 py-2.5 text-brand-body">{o.email}</td>
-                            <td className="px-4 py-2.5"><span className="bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black uppercase text-white">{o.status}</span></td>
+                            <td className="px-4 py-2.5"><span className="bg-brand-accent px-2 py-0.5 font-display text-[0.75rem] font-black uppercase text-white">{o.status}</span></td>
                             <td className="px-4 py-2.5 font-mono text-brand-body">{money(o.grand_total)}</td>
-                            <td className="px-4 py-2.5 font-mono text-[0.6875rem] text-brand-textMuted">{new Date(o.created_at).toLocaleDateString()}</td>
+                            <td className="px-4 py-2.5 font-mono text-[0.8125rem] text-brand-textMuted">{new Date(o.created_at).toLocaleDateString()}</td>
                           </tr>))}
                       </tbody>
                     </table>
@@ -495,14 +495,14 @@ export default function AdminPage() {
         /* --------------------------------------------------- generic table */
         ) : data && data.rows.length > 0 ? (
           <>
-            <p className="mb-3 text-[0.6875rem] uppercase tracking-[0.12em] text-brand-textMuted">
+            <p className="mb-3 text-[0.8125rem] uppercase tracking-[0.12em] text-brand-textMuted">
               {data.rows.length} of {data.total}
             </p>
             <div className="overflow-x-auto border border-brand-border">
               <table className="w-full text-left text-xs">
                 <thead className="border-b border-brand-border bg-brand-card"><tr>
                   {visibleColumns(data).map((k) => (
-                    <th key={k} className="whitespace-nowrap px-3 py-2.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{prettify(k)}</th>))}
+                    <th key={k} className="whitespace-nowrap px-3 py-2.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{prettify(k)}</th>))}
                   <th className="px-3 py-2.5" />
                 </tr></thead>
                 <tbody>
@@ -514,7 +514,7 @@ export default function AdminPage() {
                         <div className="flex items-center justify-end gap-1">
                           {data.editable.length > 0 && (
                             <button onClick={() => openEditor(row)} title="Edit"
-                              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
+                              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
                               <Pencil className="h-2.5 w-2.5" /> Edit
                             </button>
                           )}
@@ -529,7 +529,7 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-[0.625rem] leading-relaxed text-brand-textMuted">
+            <p className="mt-3 text-[0.75rem] leading-relaxed text-brand-textMuted">
               Toggles and dropdowns save immediately. Edit opens the full record.
             </p>
           </>
@@ -548,7 +548,7 @@ export default function AdminPage() {
                     <Plus className="h-3.5 w-3.5" /> Add the first one
                   </button>
                 ) : (
-                  <p className="mt-4 text-[0.625rem] text-brand-textMuted">
+                  <p className="mt-4 text-[0.75rem] text-brand-textMuted">
                     These records are created automatically — there is nothing to add by hand.
                   </p>
                 )}

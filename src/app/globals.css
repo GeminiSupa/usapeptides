@@ -6,9 +6,22 @@
 
 @layer base {
   html {
-    /* Reference site runs a 14px root, which drives its whole compact scale. */
+    /*
+     * Everything on this site is sized in rem, so this one number sets the
+     * whole scale. The reference site's 14px reads fine on a phone and too
+     * small on a desktop monitor, so it steps up with the viewport: the
+     * compact look survives, the text becomes readable.
+     */
     font-size: 14px;
     -webkit-font-smoothing: antialiased;
+  }
+
+  @media (min-width: 768px) {
+    html { font-size: 15px; }
+  }
+
+  @media (min-width: 1280px) {
+    html { font-size: 16px; }
   }
 
   body {

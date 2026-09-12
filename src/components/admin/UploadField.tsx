@@ -55,7 +55,7 @@ export default function UploadField({ kind, value, onChange, upload }: Props) {
               <FileText className="h-5 w-5 text-brand-accentGlow" />
             )
           ) : (
-            <span className="text-[0.5625rem] uppercase tracking-wider text-brand-textMuted">
+            <span className="text-[0.6875rem] uppercase tracking-wider text-brand-textMuted">
               none
             </span>
           )}
@@ -67,7 +67,7 @@ export default function UploadField({ kind, value, onChange, upload }: Props) {
               type="button"
               disabled={busy}
               onClick={() => input.current?.click()}
-              className="inline-flex items-center gap-1.5 border border-brand-borderLight px-2.5 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 border border-brand-borderLight px-2.5 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow disabled:opacity-60"
             >
               <Upload className="h-3 w-3" />
               {busy ? 'Uploading...' : value ? 'Replace' : kind === 'coa' ? 'Upload PDF' : 'Upload'}
@@ -79,7 +79,7 @@ export default function UploadField({ kind, value, onChange, upload }: Props) {
                   href={value}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 border border-brand-borderLight px-2.5 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+                  className="inline-flex items-center gap-1.5 border border-brand-borderLight px-2.5 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
                 >
                   <ExternalLink className="h-3 w-3" /> View
                 </a>
@@ -87,7 +87,7 @@ export default function UploadField({ kind, value, onChange, upload }: Props) {
                   type="button"
                   onClick={() => onChange('')}
                   title="Remove from this record"
-                  className="inline-flex items-center gap-1.5 border border-brand-borderLight px-2.5 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-textMuted transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+                  className="inline-flex items-center gap-1.5 border border-brand-borderLight px-2.5 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-textMuted transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
                 >
                   <X className="h-3 w-3" /> Remove
                 </button>
@@ -96,11 +96,11 @@ export default function UploadField({ kind, value, onChange, upload }: Props) {
           </div>
 
           {value && (
-            <p className="mt-1.5 truncate font-mono text-[0.5625rem] text-brand-textMuted">
+            <p className="mt-1.5 truncate font-mono text-[0.6875rem] text-brand-textMuted">
               {value.split('/').pop()}
             </p>
           )}
-          {error && <p className="mt-1.5 text-[0.625rem] text-brand-accentGlow">{error}</p>}
+          {error && <p className="mt-1.5 text-[0.75rem] text-brand-accentGlow">{error}</p>}
         </div>
       </div>
 

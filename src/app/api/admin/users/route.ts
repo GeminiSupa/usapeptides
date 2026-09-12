@@ -34,16 +34,49 @@ export const runtime = 'nodejs';
  */
 const MIN_PASSWORD = 12;
 
-const SELECT =
+/** Matches the check constraint in 0006, so the form cannot post a period the
+ *  database will reject. */
+const SALARY_PERIODS = new Set(['hourly', 'weekly', 'fortnightly', 'monthly', 'annual']);
+
+/**
+ * The columns every version of the schema from 0005 onwards has.
+ *
+ * Kept separate from the pay columns below because migrations here are applied
+ * by hand: a database that has had 0005 but not 0006 must still be able to
+ * open the Users tab, or the only screen that could tell you to run 0006 is
+ * the one that refuses to load.
+ */
+const CORE_COLUMNS =
   'id, user_id, email, full_name, job_title, phone, avatar_url, tier, status,' +
   ' is_superadmin, permissions, parent_user_id, sub_user_cap, commission_rate,' +
   ' override_rate, invited_by, approved_by, approved_at, suspended_at,' +
   ' last_seen_at, created_at';
 
+/** Arrives with 0006. Dropped from the query when the database lacks them. */
+const PAY_COLUMNS = 'base_salary, salary_period, salary_currency';
+
+const SELECT = `${CORE_COLUMNS}, ${PAY_COLUMNS}`;
+
+/**
+ * Read admin_users, falling back to the pre-0006 column set if the pay columns
+ * are not there yet. Returns which set was used so the UI can hide the pay
+ * fields rather than show boxes that silently fail to save.
+ */
+async function selectUsers(db: ReturnType<typeof getSupabaseAdmin>) {
+  const full = await db.from('admin_users').select(SELECT);
+  if (!full.error) return { rows: full.data, hasPay: true, error: null };
+
+  if (!needsMigration(full.error)) return { rows: null, hasPay: true, error: full.error };
+
+  const core = await db.from('admin_users').select(CORE_COLUMNS);
+  return { rows: core.data, hasPay: false, error: core.error };
+}
+
 /** 0005 has not been run. Say which file, not "column does not exist". */
 const SETUP_MESSAGE =
   'The Users section needs a database update that has not been run yet. Open the ' +
-  'Supabase SQL editor, run supabase/migrations/0005_users.sql, then reload.';
+  'Supabase SQL editor and run the migration files in supabase/migrations that ' +
+  'you have not applied yet, newest last, then reload.';
 
 const needsMigration = (error: { code?: string; message?: string } | null): boolean => {
   if (!error) return false;
@@ -73,15 +106,12 @@ export async function GET(req: Request) {
   if (!auth.ok) return auth.response;
 
   try {
-    const { data, error } = await getSupabaseAdmin()
-      .from('admin_users')
-      .select(SELECT)
-      .order('tier', { ascending: true })
-      .order('created_at', { ascending: true });
-
+    const { rows: data, hasPay, error } = await selectUsers(getSupabaseAdmin());
     if (error) return serverError(needsMigration(error) ? SETUP_MESSAGE : error.message);
 
-    const rows = (data ?? []) as unknown as AdminProfile[];
+    const rows = ((data ?? []) as unknown as AdminProfile[])
+      .slice()
+      .sort((a, b) => (a.tier === b.tier ? 0 : a.tier === 'sub_user' ? 1 : -1));
 
     return ok({
       users: rows,
@@ -91,6 +121,9 @@ export async function GET(req: Request) {
       grantable: GRANTABLE_MODULES,
       defaultSubUserCap: DEFAULT_SUB_USER_CAP,
       minPassword: MIN_PASSWORD,
+      // False until 0006 has been run. The form hides the wage fields rather
+      // than offering boxes whose values would be dropped on save.
+      hasPay,
       counts: {
         staff: rows.filter((r) => !isSubUser(r)).length,
         subUsers: rows.filter((r) => isSubUser(r)).length,
@@ -131,9 +164,10 @@ export async function POST(req: Request) {
 
   // Everyone, so the tier rules can be checked against the real tree rather
   // than against whatever the form believed.
-  const { data: allRows, error: listError } = await db.from('admin_users').select(SELECT);
-  if (listError) return serverError(needsMigration(listError) ? SETUP_MESSAGE : listError.message);
-  const all = (allRows ?? []) as unknown as AdminProfile[];
+  const listed = await selectUsers(db);
+  if (listed.error) return serverError(needsMigration(listed.error) ? SETUP_MESSAGE : listed.error.message);
+  const all = (listed.rows ?? []) as unknown as AdminProfile[];
+  const hasPay = listed.hasPay;
 
   if (all.some((u) => u.email.toLowerCase() === email)) {
     fields.email = 'Somebody with that address already has dashboard access.';
@@ -162,6 +196,19 @@ export async function POST(req: Request) {
     ? 0
     : parseRate(body.override_rate);
   if (overrideRate === null) fields.override_rate = 'Use a percentage between 0 and 100.';
+
+  // A blank wage is null, not zero: zero would state that they are paid
+  // nothing, which is a different claim from "not recorded".
+  const salary = body.base_salary === undefined || body.base_salary === null || body.base_salary === ''
+    ? null
+    : Number(body.base_salary);
+  if (salary !== null && (!Number.isFinite(salary) || salary < 0)) {
+    fields.base_salary = 'Use a number, or leave it blank.';
+  }
+  const salaryPeriod = SALARY_PERIODS.has(String(body.salary_period))
+    ? String(body.salary_period)
+    : 'monthly';
+  const salaryCurrency = (clip(body.salary_currency, 3) || 'USD').toUpperCase();
 
   if (Object.keys(fields).length) return badRequest('Could not add that person.', fields);
 
@@ -209,6 +256,10 @@ export async function POST(req: Request) {
         : 0,
       commission_rate: commissionRate,
       override_rate: overrideRate,
+      // Only written when the columns exist, or the insert fails outright.
+      ...(hasPay
+        ? { base_salary: salary, salary_period: salaryPeriod, salary_currency: salaryCurrency }
+        : {}),
       invited_by: auth.admin.id,
       approved_by: auth.admin.id,
       approved_at: new Date().toISOString(),
@@ -270,6 +321,13 @@ const WRITABLE: Record<string, (value: unknown) => unknown> = {
   sub_user_cap: (v) => Math.max(0, Math.min(200, Number(v) || 0)),
   commission_rate: (v) => parseRate(v),
   override_rate: (v) => parseRate(v),
+  base_salary: (v) => {
+    if (v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+  },
+  salary_period: (v) => (SALARY_PERIODS.has(String(v)) ? String(v) : 'monthly'),
+  salary_currency: (v) => (clip(v, 3) || 'USD').toUpperCase(),
 };
 
 export async function PATCH(req: Request) {
@@ -286,9 +344,9 @@ export async function PATCH(req: Request) {
 
   const db = getSupabaseAdmin();
 
-  const { data: allRows, error: listError } = await db.from('admin_users').select(SELECT);
-  if (listError) return serverError(needsMigration(listError) ? SETUP_MESSAGE : listError.message);
-  const all = (allRows ?? []) as unknown as AdminProfile[];
+  const listed = await selectUsers(db);
+  if (listed.error) return serverError(needsMigration(listed.error) ? SETUP_MESSAGE : listed.error.message);
+  const all = (listed.rows ?? []) as unknown as AdminProfile[];
 
   const target = all.find((u) => u.id === body.id);
   if (!target) return notFound('No such user.');
@@ -306,7 +364,15 @@ export async function PATCH(req: Request) {
       fields[key] = 'Use a percentage between 0 and 100.';
       continue;
     }
+    if (value === undefined) {
+      fields[key] = 'That is not a number we can use.';
+      continue;
+    }
     changes[key] = value;
+  }
+
+  if (!listed.hasPay) {
+    for (const key of ['base_salary', 'salary_period', 'salary_currency']) delete changes[key];
   }
 
   if (Object.keys(fields).length) return badRequest('Could not save.', fields);
@@ -345,7 +411,7 @@ export async function PATCH(req: Request) {
   // An owner must be staff. Enforced by a database constraint too; caught here
   // so the message names the actual problem.
   if (changes.is_superadmin === true && (changes.tier ?? target.tier) === 'sub_user') {
-    return badRequest('A sub-user cannot be an owner. Move them to staff first.');
+    return badRequest('A sub-user cannot be a super admin. Move them to staff first.');
   }
 
   // Losing the last owner is refused by a database trigger as well, because it
@@ -360,7 +426,7 @@ export async function PATCH(req: Request) {
       (u) => u.id !== target.id && u.is_superadmin && u.status === 'active'
     );
     if (otherOwners.length === 0) {
-      return badRequest('This is the only active owner. Make somebody else an owner first.');
+      return badRequest('This is the only active super admin. Make somebody else a super admin first.');
     }
   }
 
@@ -454,12 +520,12 @@ export async function DELETE(req: Request) {
   if (!id) return badRequest('An "id" is required.');
 
   if (id === auth.admin.id) {
-    return badRequest('You cannot remove your own access. Another owner has to do it.');
+    return badRequest('You cannot remove your own access. Another super admin has to do it.');
   }
 
   const db = getSupabaseAdmin();
 
-  const found = await db.from('admin_users').select(SELECT).eq('id', id).maybeSingle();
+  const found = await db.from('admin_users').select(CORE_COLUMNS).eq('id', id).maybeSingle();
   if (found.error) return serverError(needsMigration(found.error) ? SETUP_MESSAGE : found.error.message);
 
   const target = found.data as unknown as AdminProfile | null;

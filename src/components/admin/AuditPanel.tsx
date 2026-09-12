@@ -34,8 +34,8 @@ const ACTION_LABEL: Record<string, string> = {
   'user.suspend': 'suspended',
   'user.reinstate': 'reinstated',
   'user.approve': 'approved',
-  'user.promote': 'made an owner',
-  'user.demote': 'removed owner from',
+  'user.promote': 'made a super admin',
+  'user.demote': 'removed super admin from',
   'user.delete': 'removed access for',
   'user.reassign': 'reassigned',
   'user.password_set': 'set a new password for',
@@ -96,7 +96,7 @@ export default function AuditPanel({ authedFetch }: Props) {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3 border border-brand-border bg-brand-card p-3">
-        <p className="text-[0.6875rem] leading-relaxed text-brand-textMuted">
+        <p className="text-[0.8125rem] leading-relaxed text-brand-textMuted">
           <span className="font-display font-extrabold uppercase tracking-[0.1em] text-brand-heading">
             {total} recorded action{total === 1 ? '' : 's'}
           </span>
@@ -134,7 +134,7 @@ export default function AuditPanel({ authedFetch }: Props) {
             <thead className="border-b border-brand-border bg-brand-card">
               <tr>
                 {['When', 'Who', 'Did what', 'Details'].map((h) => (
-                  <th key={h} className="whitespace-nowrap px-3 py-2.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">
+                  <th key={h} className="whitespace-nowrap px-3 py-2.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">
                     {h}
                   </th>
                 ))}
@@ -143,19 +143,19 @@ export default function AuditPanel({ authedFetch }: Props) {
             <tbody>
               {entries.map((e) => (
                 <tr key={e.id} className="border-b border-brand-border/60 align-top last:border-b-0 hover:bg-brand-card">
-                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[0.625rem] text-brand-textMuted">
+                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[0.75rem] text-brand-textMuted">
                     {new Date(e.created_at).toLocaleString()}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[0.625rem] text-brand-body">
+                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[0.75rem] text-brand-body">
                     {e.actor_email ?? '—'}
                   </td>
                   <td className="px-3 py-2.5 text-brand-heading">
                     {ACTION_LABEL[e.action] ?? e.action}
                     {e.target_label && (
-                      <span className="ml-1 font-mono text-[0.625rem] text-brand-body">{e.target_label}</span>
+                      <span className="ml-1 font-mono text-[0.75rem] text-brand-body">{e.target_label}</span>
                     )}
                   </td>
-                  <td className="px-3 py-2.5 text-[0.625rem] leading-relaxed text-brand-textMuted">
+                  <td className="px-3 py-2.5 text-[0.75rem] leading-relaxed text-brand-textMuted">
                     {describe(e.detail) || '—'}
                   </td>
                 </tr>

@@ -99,7 +99,23 @@ something outside the code.
   during the verification run. The copy matches the real policy, but it was not
   asked for — clear or change it in Dashboard > Storefront in one click.
 
-## BLOCKING: run `supabase/migrations/0005_users.sql`
+## BLOCKING: run `supabase/migrations/0006_users_fixes.sql`
+
+0005 is done (security suite: **63 of 64 passing**, the one failure being my own
+cleanup script, not the code). 0006 fixes a real bug I introduced and adds pay.
+
+**The bug:** 0005 gave `admin_audit_log.actor_id` a foreign key to
+`admin_users` with ON DELETE SET NULL, *and* made the table append-only. Those
+cannot both hold — deleting a user makes Postgres try to update the log, the
+trigger refuses, and the delete fails. **Anybody who had ever done anything
+became undeletable.** 0006 drops the foreign key; the log keeps `actor_email`
+as its durable label, which is what an audit entry should have relied on.
+
+There is one leftover test row (`zz.staff.…@usapeptides.test`) that cannot be
+removed until 0006 runs. Delete it from the Users tab afterwards, or tell me and
+I will.
+
+## 0005 (done)
 
 Until it runs, the Users tab and the audit trail say so instead of failing.
 **Everything else keeps working and the existing owner keeps full access** —
@@ -139,11 +155,48 @@ anything hardcoded or weak.
 - [x] H4. **Affiliates** — external partners, crypto-random referral codes,
       bounded rates, commission approve/settle
 
-### I. Still to verify (needs 0005 run first)
-- [ ] I1. Run the 60-check security suite. It exists and is ready; it currently
-      stops at "0005 has not been run". It creates real accounts, tries to
-      escalate with each of them, and deletes every row it made
-- [ ] I2. Look at the three tabs in a browser
+### I. Verified
+- [x] I1. Security suite run against the live database: **63 passed, 1 failed**.
+      The failure was the cleanup step, which hit the audit-log bug above.
+      Confirmed refused: staff self-promotion, staff granting themselves a
+      permission, staff reading the audit trail or ungranted sections, staff
+      setting a password, the inviter approving their own invite, a pending
+      invite having any login, a sub-user reaching orders/customers/users/
+      products/summary, a sub-user inviting a third level, promoting a sub-user
+      to super admin, deleting somebody who has sub-users, an owner demoting or
+      suspending or deleting themselves, a rate over 100, a duplicate referral
+      code in another case, and every route without a token
+- [x] I2. Users tab checked in a browser at 1440px: three tabs with counts,
+      cards, statuses, and it loads on a database that has 0005 but not 0006
+
+### K. This round of feedback
+- [x] K1. "Owner" is now "Super admin" everywhere a person reads it. The column
+      stays `is_superadmin`
+- [x] K2. "Sub-user places" is now "How many people can they recruit?" with an
+      explanation of what a sub-user is
+- [x] K3. "Override on sub-users %" is now "Cut of what their recruits sell %",
+      and the sub-user form says "What they earn" / "What their recruiter earns"
+- [x] K4. Base pay added: amount, period (hour/week/fortnight/month/year) and
+      currency, shown on the card. Needs 0006. Recorded for reference only —
+      nothing runs payroll
+- [x] K5. Desktop text was too small. The root size now steps 14px -> 15px at
+      768 -> 16px at 1280, and the dashboard's smallest labels were raised a
+      step each. Confirmed 16px at 1440
+- [x] K6. The floating widget in the screenshot is the **Vercel Toolbar**, not
+      ours — nothing in the code or dependencies injects it, and it is only
+      visible to somebody signed in to the Vercel account. Removed from Vercel,
+      not from code. It is also what produced that "Interaction Timing" panel,
+      so my earlier answer calling it Chrome DevTools was wrong
+- [x] K7. `TeamPanel.tsx` deleted — superseded by the Users tab
+
+### L. Affiliates seeing their own earnings — the dependency
+- [ ] L1. Yes, they should. But nothing can be shown until orders record which
+      referral link brought them in. 0006 adds `orders.referral_code`,
+      `orders.affiliate_id` and `orders.referred_by` as that plumbing
+- [ ] L2. Capture `?ref=CODE` on the storefront and carry it into the order
+- [ ] L3. Generate commission rows when a referred order is paid
+- [ ] L4. An affiliate login and portal, so they can see their own figures and
+      link. Same screen answers the sub-user earnings gap
 
 ### J. Known incomplete in this area
 - [ ] J1. Sub-user earnings are not calculated — orders carry no referral

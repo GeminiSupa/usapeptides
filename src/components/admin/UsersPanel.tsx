@@ -39,6 +39,8 @@ interface UsersResponse {
   grantable: ModuleDef[];
   defaultSubUserCap: number;
   minPassword: number;
+  /** False until 0006 has been run; the wage fields are hidden without it. */
+  hasPay: boolean;
   counts: { staff: number; subUsers: number; owners: number; pending: number };
 }
 
@@ -49,6 +51,11 @@ interface Props {
 }
 
 const pct = (v: unknown) => `${Number(v ?? 0)}%`;
+
+/** Short forms for the pay chip, so a card does not read "per fortnight". */
+const PERIOD_SHORT: Record<string, string> = {
+  hourly: 'hr', weekly: 'wk', fortnightly: '2wk', monthly: 'mo', annual: 'yr',
+};
 
 export default function UsersPanel({ authedFetch, isOwner }: Props) {
   const [tab, setTab] = useState<Tab>('team');
@@ -186,7 +193,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
     const icons = { active: ShieldCheck, pending: Clock, suspended: ShieldOff } as const;
     const Icon = icons[u.status];
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] ${styles[u.status]}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] ${styles[u.status]}`}>
         <Icon className="h-2.5 w-2.5" />
         {u.status === 'pending' ? 'Awaiting approval' : u.status}
       </span>
@@ -207,16 +214,16 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
             <p className="flex items-center gap-1.5 truncate font-display text-xs font-extrabold text-brand-heading">
               {u.full_name || u.email}
               {u.is_superadmin && (
-                <span title="Owner"><Crown className="h-3 w-3 flex-shrink-0 text-action" /></span>
+                <span title="Super admin"><Crown className="h-3 w-3 flex-shrink-0 text-action" /></span>
               )}
-              {isYou && <span className="text-[0.5625rem] font-normal text-brand-textMuted">(you)</span>}
+              {isYou && <span className="text-[0.6875rem] font-normal text-brand-textMuted">(you)</span>}
             </p>
-            <p className="truncate text-[0.6875rem] text-brand-body">
-              {(u as any).job_title || (u.is_superadmin ? 'Owner' : kind === 'sub' ? 'Sub-user' : 'Staff')}
+            <p className="truncate text-[0.8125rem] text-brand-body">
+              {(u as any).job_title || (u.is_superadmin ? 'Super admin' : kind === 'sub' ? 'Sub-user' : 'Staff')}
             </p>
-            <p className="truncate font-mono text-[0.5625rem] text-brand-textMuted">{u.email}</p>
+            <p className="truncate font-mono text-[0.6875rem] text-brand-textMuted">{u.email}</p>
             {kind === 'sub' && (
-              <p className="mt-0.5 truncate text-[0.5625rem] text-brand-textMuted">
+              <p className="mt-0.5 truncate text-[0.6875rem] text-brand-textMuted">
                 Under {nameOf(u.parent_user_id)}
               </p>
             )}
@@ -225,13 +232,24 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
 
         <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-3">
           {statusChip(u)}
+          {(u as any).base_salary != null && (
+            <span className="px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
+              {(u as any).salary_currency ?? 'USD'} {Number((u as any).base_salary).toFixed(2)}
+              <span className="ml-1 opacity-70">/{PERIOD_SHORT[String((u as any).salary_period ?? 'monthly')] ?? 'mo'}</span>
+            </span>
+          )}
           {Number(u.commission_rate) > 0 && (
-            <span className="px-2 py-0.5 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-textMuted">
+            <span className="px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-textMuted">
               {pct(u.commission_rate)} commission
             </span>
           )}
+          {Number(u.override_rate) > 0 && kind === 'staff' && (
+            <span className="px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-textMuted">
+              +{pct(u.override_rate)} on recruits
+            </span>
+          )}
           {kind === 'staff' && !u.is_superadmin && (
-            <span className="px-2 py-0.5 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-textMuted">
+            <span className="px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-textMuted">
               {u.permissions.length} section{u.permissions.length === 1 ? '' : 's'}
             </span>
           )}
@@ -241,7 +259,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
           <div className="mt-auto flex flex-wrap items-center gap-1 border-t border-brand-border p-2.5">
             <button
               onClick={() => { setForm({ mode: 'edit', user: u }); setFormError(''); setFieldErrors({}); }}
-              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
             >
               <Pencil className="h-2.5 w-2.5" /> Edit
             </button>
@@ -249,7 +267,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
             {u.status === 'pending' ? (
               <button
                 onClick={() => { setSecret({ kind: 'approve', user: u }); setFormError(''); }}
-                className="inline-flex items-center gap-1 bg-whatsapp px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-whatsapp-ink transition-colors hover:bg-whatsapp-hover"
+                className="inline-flex items-center gap-1 bg-whatsapp px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-whatsapp-ink transition-colors hover:bg-whatsapp-hover"
               >
                 <ShieldCheck className="h-2.5 w-2.5" /> Approve
               </button>
@@ -258,14 +276,14 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
                 onClick={() => patch(u.id, { status: 'suspended' })}
                 disabled={isYou}
                 title={isYou ? 'You cannot suspend your own account' : 'Suspend'}
-                className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-textMuted transition-colors hover:border-brand-accent hover:text-brand-accentGlow disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-textMuted transition-colors hover:border-brand-accent hover:text-brand-accentGlow disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ShieldOff className="h-2.5 w-2.5" /> Suspend
               </button>
             ) : (
               <button
                 onClick={() => patch(u.id, { status: 'active' })}
-                className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+                className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
               >
                 <ShieldCheck className="h-2.5 w-2.5" /> Reinstate
               </button>
@@ -274,7 +292,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
             <button
               onClick={() => { setSecret({ kind: 'password', user: u }); setFormError(''); }}
               title="Set a new password"
-              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-textMuted transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-textMuted transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
             >
               <KeyRound className="h-2.5 w-2.5" /> Password
             </button>
@@ -305,7 +323,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
             <button
               key={t.id}
               onClick={() => { setTab(t.id); setError(''); setNotice(''); }}
-              className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] transition-colors ${
+              className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 font-display text-[0.8125rem] font-extrabold uppercase tracking-[0.1em] transition-colors ${
                 on
                   ? 'border-brand-accent text-brand-heading'
                   : 'border-transparent text-brand-textMuted hover:text-brand-body'
@@ -313,7 +331,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
             >
               <Icon className="h-3.5 w-3.5" />
               {t.label}
-              {count !== undefined && <span className="text-[0.5625rem] opacity-70">{count}</span>}
+              {count !== undefined && <span className="text-[0.6875rem] opacity-70">{count}</span>}
             </button>
           );
         })}
@@ -333,7 +351,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
         </div>
       )}
       {notice && (
-        <div className="mb-4 border border-brand-border bg-brand-card p-3 text-[0.6875rem] leading-relaxed text-whatsapp">
+        <div className="mb-4 border border-brand-border bg-brand-card p-3 text-[0.8125rem] leading-relaxed text-whatsapp">
           {notice}
         </div>
       )}
@@ -346,17 +364,17 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
       ) : tab === 'team' ? (
         <>
           <div className="mb-4 flex flex-wrap items-center gap-3 border border-brand-border bg-brand-card p-3">
-            <p className="text-[0.6875rem] leading-relaxed text-brand-textMuted">
+            <p className="text-[0.8125rem] leading-relaxed text-brand-textMuted">
               <span className="font-display font-extrabold uppercase tracking-[0.1em] text-brand-heading">
                 {data?.counts.staff ?? 0} staff
               </span>
-              {' · '}{data?.counts.owners ?? 0} owner{(data?.counts.owners ?? 0) === 1 ? '' : 's'}
+              {' · '}{data?.counts.owners ?? 0} super admin{(data?.counts.owners ?? 0) === 1 ? '' : 's'}
               {(data?.counts.pending ?? 0) > 0 && ` · ${data?.counts.pending} awaiting approval`}
             </p>
             {isOwner && (
               <button
                 onClick={() => { setForm({ mode: 'create', tier: 'staff' }); setFormError(''); setFieldErrors({}); }}
-                className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+                className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
               >
                 <Plus className="h-3 w-3" /> Add team member
               </button>
@@ -371,7 +389,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
         <>
           <div className="mb-4 border border-brand-border bg-brand-card p-3">
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-[0.6875rem] leading-relaxed text-brand-textMuted">
+              <p className="text-[0.8125rem] leading-relaxed text-brand-textMuted">
                 <span className="font-display font-extrabold uppercase tracking-[0.1em] text-brand-heading">
                   {data?.counts.subUsers ?? 0} sub-users
                 </span>
@@ -379,13 +397,13 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
               {isOwner && (
                 <button
                   onClick={() => { setForm({ mode: 'create', tier: 'sub_user' }); setFormError(''); setFieldErrors({}); }}
-                  className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+                  className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
                 >
                   <Plus className="h-3 w-3" /> Invite a sub-user
                 </button>
               )}
             </div>
-            <p className="mt-2 text-[0.625rem] leading-relaxed text-brand-textMuted">
+            <p className="mt-2 text-[0.75rem] leading-relaxed text-brand-textMuted">
               A sub-user sits beneath a staff member and earns on what they refer. They see only
               their own earnings and referral link — not orders, customers or anything else. The
               tree stops at two levels: a sub-user cannot have sub-users of their own.
@@ -417,6 +435,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
           grantable={data.grantable}
           supervisors={supervisors}
           minPassword={data.minPassword}
+          hasPay={data.hasPay !== false}
           isSelf={form.user?.id === data.you}
           busy={busy}
           error={formError}

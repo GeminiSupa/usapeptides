@@ -82,7 +82,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-brand-textMuted">
                 <ImageOff className="h-3.5 w-3.5" />
-                <span className="text-[0.5rem] uppercase tracking-wider">no photo</span>
+                <span className="text-[0.625rem] uppercase tracking-wider">no photo</span>
               </div>
             )}
           </div>
@@ -91,7 +91,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
             <p className="truncate font-display text-xs font-extrabold text-brand-heading" title={p.name}>
               {p.name}
             </p>
-            <p className="mt-0.5 truncate font-mono text-[0.5625rem] text-brand-textMuted">
+            <p className="mt-0.5 truncate font-mono text-[0.6875rem] text-brand-textMuted">
               {p.sku || 'no SKU'} · /{p.slug}
             </p>
 
@@ -100,7 +100,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
                 {money(p.sale_price ?? p.price)}
               </span>
               {p.sale_price != null && (
-                <span className="font-mono text-[0.625rem] text-brand-textMuted line-through">
+                <span className="font-mono text-[0.75rem] text-brand-textMuted line-through">
                   {money(p.price)}
                 </span>
               )}
@@ -118,7 +118,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
                     onPatch(p.id, { stock_count: next });
                   }
                 }}
-                className={`w-16 border bg-brand-dark px-2 py-1 text-[0.6875rem] focus:outline-none ${
+                className={`w-16 border bg-brand-dark px-2 py-1 text-[0.8125rem] focus:outline-none ${
                   low
                     ? 'border-brand-accent text-brand-accentGlow'
                     : 'border-brand-border text-brand-heading focus:border-brand-accent'
@@ -135,7 +135,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
               <button
                 key={key}
                 onClick={() => onPatch(p.id, { [key]: !p[key] })}
-                className={`px-2 py-0.5 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] transition-colors ${
+                className={`px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] transition-colors ${
                   p[key] ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
                 }`}
               >
@@ -146,7 +146,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
 
           <span
             title={p.coa_url ? 'Certificate uploaded' : 'No certificate yet'}
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.5625rem] font-black uppercase tracking-[0.1em] ${
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.6875rem] font-black uppercase tracking-[0.1em] ${
               p.coa_url ? 'text-whatsapp' : 'text-brand-textMuted'
             }`}
           >
@@ -156,7 +156,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
           <div className="ml-auto flex items-center gap-1">
             <button
               onClick={() => onEdit(p)}
-              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.5625rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
             >
               <Pencil className="h-2.5 w-2.5" /> Edit
             </button>
@@ -190,13 +190,13 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
           ))}
         </select>
 
-        <div className="ml-auto flex flex-wrap items-center gap-4 text-[0.625rem] text-brand-textMuted">
+        <div className="ml-auto flex flex-wrap items-center gap-4 text-[0.75rem] text-brand-textMuted">
           <span>{total} in the catalogue</span>
           {withoutImage > 0 && <span>{withoutImage} without a photo</span>}
           {withoutCoa > 0 && <span>{withoutCoa} without a certificate</span>}
           <button
             onClick={onNew}
-            className="inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+            className="inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
           >
             <Plus className="h-3 w-3" /> New product
           </button>
@@ -219,7 +219,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
                 <span className="font-display text-xs font-extrabold uppercase tracking-[0.1em] text-brand-heading">
                   {group.name}
                 </span>
-                <span className="text-[0.625rem] text-brand-textMuted">{group.items.length}</span>
+                <span className="text-[0.75rem] text-brand-textMuted">{group.items.length}</span>
               </h2>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {group.items.map(card)}
