@@ -33,3 +33,6 @@ next-env.d.ts
 
 # python generator
 build_app.py
+
+# pasted reference copy - never commit (contains real secrets)
+peptidecosta/

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500" role="img" aria-label="Selank 30MG lyophilized vial">
+  <defs>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8f97a4"/><stop offset="14%" stop-color="#e4e8ee"/>
+      <stop offset="42%" stop-color="#f7f9fb"/><stop offset="72%" stop-color="#ccd2da"/>
+      <stop offset="100%" stop-color="#7d8593"/>
+    </linearGradient>
+    <linearGradient id="crimp" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8a919c"/><stop offset="25%" stop-color="#e8ecf1"/>
+      <stop offset="60%" stop-color="#b6bdc7"/><stop offset="100%" stop-color="#79808c"/>
+    </linearGradient>
+    <linearGradient id="cake" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dfe4ea"/>
+    </linearGradient>
+  </defs>
+  <rect x="158" y="28" width="84" height="20" rx="2" fill="#d7263d"/>
+  <rect x="158" y="28" width="84" height="7" fill="#ffffff" opacity="0.22"/>
+  <rect x="146" y="44" width="108" height="32" rx="3" fill="url(#crimp)" stroke="#6f7683"/>
+  <rect x="152" y="74" width="96" height="14" fill="#aeb5c0"/>
+  <path d="M150 88 h100 a14 14 0 0 1 14 14 v332 a16 16 0 0 1 -16 16 h-96 a16 16 0 0 1 -16 -16 v-332 a14 14 0 0 1 14 -14 z" fill="url(#glass)" stroke="#6f7683"/>
+  <path d="M152 396 h96 v36 a14 14 0 0 1 -14 14 h-68 a14 14 0 0 1 -14 -14 z" fill="url(#cake)"/>
+  <rect x="134" y="150" width="132" height="196" fill="#fbfcfd" stroke="#aeb5c0"/>
+  <rect x="134" y="150" width="132" height="6" fill="#d7263d"/>
+  <text x="200" y="180" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="10" font-weight="800" fill="#d7263d" letter-spacing="2.6">USA PEPTIDES</text>
+  <line x1="150" y1="192" x2="250" y2="192" stroke="#ccd2da"/>
+  <text x="200" y="240" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="15" font-weight="800" fill="#12151b" letter-spacing="0.5">SELANK</text>
+  <text x="200" y="272" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="17" font-weight="800" fill="#d7263d">30MG</text>
+  <line x1="150" y1="310" x2="250" y2="310" stroke="#ccd2da"/>
+  <text x="200" y="328" text-anchor="middle" font-family="Manrope, Helvetica, Arial, sans-serif" font-size="8" font-weight="600" fill="#5f646e" letter-spacing="1.2">RESEARCH USE ONLY</text>
+  <rect x="163" y="104" width="10" height="300" rx="5" fill="#ffffff" opacity="0.5"/>
+  <rect x="236" y="104" width="5" height="300" rx="2.5" fill="#5f646e" opacity="0.16"/>
+</svg>

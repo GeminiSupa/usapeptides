@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CheckCircle2, ShieldCheck, Truck, FileText, ArrowRight, Home } from 'lucide-react';
 
 export default function OrderSuccessPage() {
-  const orderNumber = 'BBP-' + Math.floor(100000 + Math.random() * 900000);
+  const orderNumber = 'USP-' + Math.floor(100000 + Math.random() * 900000);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6">

@@ -17,7 +17,7 @@ export default function AffiliatesPage() {
           Affiliate &amp; Research Referral Portal
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
-          Partner with Battle Born Peptides. Earn commissions on qualified laboratory reference referrals with instant monthly payouts.
+          Partner with USA Peptides. Earn commissions on qualified laboratory reference referrals with instant monthly payouts.
         </p>
       </div>
 

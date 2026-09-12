@@ -7,7 +7,7 @@ export const articles: Article[] = [
     title: 'Peptide Reconstitution & Laboratory Storage Protocols (2026 Standard)',
     excerpt: 'Comprehensive guide to proper reconstitution volume calculation, sterile handling, and cold-chain stability for lyophilized research peptides.',
     category: 'Laboratory Protocols',
-    author: 'Battle Born Research Team',
+    author: 'USA Peptides Research Team',
     date: 'February 18, 2026',
     readTime: '6 min read',
     image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=800',
@@ -52,7 +52,7 @@ High-quality peptide synthesis requires strict verification to distinguish authe
 RP-HPLC separates peptide molecules based on their hydrophobic interactions with a C18 bonded stationary silica phase under high pressure:
 - **Chromatogram Retention Time**: Each peptide elutes at a characteristic retention time based on its amino acid hydrophobicity gradient (acetonitrile/water with 0.1% TFA).
 - **Area Under the Curve (AUC)**: Purity is quantified by integrating the main absorption peak against minor background noise peaks at UV wavelength 214 nm or 220 nm (the peptide bond absorption spectrum).
-- **Target Standard**: Battle Born Peptides guarantees a minimum threshold of **>99.0%** chromatographic purity across all research lots.
+- **Target Standard**: USA Peptides guarantees a minimum threshold of **>99.0%** chromatographic purity across all research lots.
 
 ### Electrospray Ionization Mass Spectrometry (ESI-MS)
 While HPLC confirms chromatographic homogeneity, Mass Spectrometry confirms the exact chemical identity and molecular formula weight:
@@ -66,7 +66,7 @@ While HPLC confirms chromatographic homogeneity, Mass Spectrometry confirms the 
     title: 'GHRH & GHRP Receptor Synergy in Cellular Endocrine Models',
     excerpt: 'Detailed review of somatotropic signaling pathways, GHRH receptor activation, and GHS-R1a ghrelin receptor pathway crosstalk in cell culture models.',
     category: 'Endocrine Research',
-    author: 'Battle Born Scientific Advisory',
+    author: 'USA Peptides Scientific Advisory',
     date: 'January 14, 2026',
     readTime: '7 min read',
     image: 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&q=80&w=800',

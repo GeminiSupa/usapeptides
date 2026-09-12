@@ -13,7 +13,7 @@ export default function Footer() {
         <div className="space-y-5 lg:col-span-2">
           <Link href="/" className="inline-block">
             <span className="font-display text-base font-extrabold uppercase tracking-[0.02em] text-brand-heading">
-              Battle Born <span className="text-brand-accent">Peptides</span>
+              USA <span className="text-brand-accent">Peptides</span>
             </span>
           </Link>
 
@@ -90,8 +90,8 @@ export default function Footer() {
           <div className="space-y-3.5 text-xs text-brand-textMuted">
             <p>
               <span className="block text-brand-textMuted/70">Orders &amp; enquiries</span>
-              <a href="mailto:info@battlebornresearch.com" className="text-brand-accentGlow hover:underline">
-                info@battlebornresearch.com
+              <a href="mailto:info@usapeptides.com" className="text-brand-accentGlow hover:underline">
+                info@usapeptides.com
               </a>
             </p>
             <p>
@@ -121,7 +121,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col items-center justify-between gap-3 text-[0.6875rem] text-brand-textMuted sm:flex-row">
-            <p>&copy; {new Date().getFullYear()} Battle Born Peptides. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} USA Peptides. All rights reserved.</p>
             <div className="flex items-center gap-5">
               <span>Terms of supply</span>
               <span>Privacy policy</span>

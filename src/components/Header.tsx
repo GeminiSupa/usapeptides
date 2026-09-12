@@ -69,7 +69,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
           <Link href="/" className="flex flex-shrink-0 flex-col leading-none">
             <span className="font-display text-[1.0625rem] font-extrabold uppercase tracking-[0.02em] text-brand-heading">
-              Battle Born <span className="text-brand-accent">Peptides</span>
+              USA <span className="text-brand-accent">Peptides</span>
             </span>
             <span className="mt-1.5 text-[0.625rem] uppercase tracking-[0.18em] text-brand-textMuted">
               HPLC tested &middot; Ships from the USA

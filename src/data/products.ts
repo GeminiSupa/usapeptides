@@ -12,7 +12,7 @@ export const products: Product[] = [
     salePrice: 92.00,
     inStock: true,
     stockCount: 42,
-    sku: 'BBP-GLP3-10',
+    sku: 'USP-GLP3-10',
     purity: '99.6%',
     sequence: 'Tyr-{Aib}-Glu-Gly-Thr-alpha-MeF-Thr-Ser-Asp-Val-Ser-Ser-Tyr-Leu-Glu-Gly-Gln-Ala-Ala-Lys(C20-diacid)-Glu-Phe-Ile-Ala-Trp-Leu-Val-Arg-Gly-Arg-Gly-OH',
     casNumber: '2381089-83-2',
@@ -31,7 +31,7 @@ export const products: Product[] = [
       { title: 'Purity (HPLC)', value: '99.64%' },
       { title: 'Molecular Weight', value: '4731.33 Da' },
       { title: 'Form', value: 'Sterile Lyophilized Powder' },
-      { title: 'Lot ID', value: 'LOT-BBP-GLP3-26A' },
+      { title: 'Lot ID', value: 'LOT-USP-GLP3-26A' },
       { title: 'Reconstitution Diluent', value: 'Bacteriostatic Water (1-2 mL)' }
     ],
     bulkPricing: [
@@ -41,7 +41,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 92.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-GLP3-26A',
+      lotNumber: 'LOT-USP-GLP3-26A',
       testDate: '2026-02-10',
       purity: '99.64%',
       lab: 'MZ Biolabs / Janoshik Analytical',
@@ -50,7 +50,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single dominant symmetrical peak at retention time 14.82 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2026/01/GLP-1-GIP-GLUC-10MG-850x1000.png',
+    image: '/vials/glp3-10mg.svg',
     tags: ['Retatrutide', 'GLP3', 'Triple Agonist', 'Incretin', 'Metabolic', 'HPLC-Tested'],
     isFeatured: true,
     isPopular: true
@@ -65,7 +65,7 @@ export const products: Product[] = [
     salePrice: 55.20,
     inStock: true,
     stockCount: 65,
-    sku: 'BBP-GLP3-5',
+    sku: 'USP-GLP3-5',
     purity: '99.5%',
     sequence: 'Tyr-{Aib}-Glu-Gly-Thr-alpha-MeF-Thr-Ser-Asp-Val-Ser-Ser-Tyr-Leu-Glu-Gly-Gln-Ala-Ala-Lys(C20-diacid)-Glu-Phe-Ile-Ala-Trp-Leu-Val-Arg-Gly-Arg-Gly-OH',
     casNumber: '2381089-83-2',
@@ -84,7 +84,7 @@ export const products: Product[] = [
       { title: 'Purity (HPLC)', value: '99.52%' },
       { title: 'Molecular Weight', value: '4731.33 Da' },
       { title: 'Form', value: 'Sterile Lyophilized Powder' },
-      { title: 'Lot ID', value: 'LOT-BBP-GLP3-26B' },
+      { title: 'Lot ID', value: 'LOT-USP-GLP3-26B' },
       { title: 'Reconstitution Diluent', value: 'Bacteriostatic Water (1.0 mL)' }
     ],
     bulkPricing: [
@@ -94,7 +94,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 55.20 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-GLP3-26B',
+      lotNumber: 'LOT-USP-GLP3-26B',
       testDate: '2026-02-12',
       purity: '99.52%',
       lab: 'MZ Biolabs / Janoshik Analytical',
@@ -103,7 +103,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single dominant peak at retention time 14.80 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2026/01/GLP-1-GIP-GLUC-5MG-850x1000.png',
+    image: '/vials/glp3-5mg.svg',
     tags: ['Retatrutide', 'GLP3', 'Triple Agonist', 'Incretin', '5mg']
   },
   {
@@ -116,7 +116,7 @@ export const products: Product[] = [
     salePrice: 172.00,
     inStock: true,
     stockCount: 38,
-    sku: 'BBP-TIRZ-10',
+    sku: 'USP-TIRZ-10',
     purity: '99.7%',
     sequence: 'Tyr-{Aib}-Glu-Gly-Thr-Phe-Thr-Ser-Asp-Tyr-Ser-Ile-{Aib}-Leu-Asp-Lys-Ile-Ala-Gln-Lys(C20-diacid-gamma-Glu-2xOEG)-Ala-Phe-Val-Gln-Trp-Leu-Ile-Ala-Gly-Gly-Pro-Ser-Ser-Gly-Ala-Pro-Pro-Pro-Ser-NH2',
     casNumber: '2023788-19-2',
@@ -135,7 +135,7 @@ export const products: Product[] = [
       { title: 'Purity (HPLC)', value: '99.71%' },
       { title: 'Molecular Weight', value: '4813.45 Da' },
       { title: 'Form', value: 'Sterile Lyophilized Powder' },
-      { title: 'Lot ID', value: 'LOT-BBP-TRZ-10A' },
+      { title: 'Lot ID', value: 'LOT-USP-TRZ-10A' },
       { title: 'Reconstitution Diluent', value: 'Bacteriostatic Water (1-2 mL)' }
     ],
     bulkPricing: [
@@ -145,7 +145,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 172.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-TRZ-10A',
+      lotNumber: 'LOT-USP-TRZ-10A',
       testDate: '2026-01-20',
       purity: '99.71%',
       lab: 'Janoshik Analytical Services',
@@ -154,7 +154,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Sharp single peak at retention time 16.14 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2026/01/GLP-1-GIP-10MG-850x1000.png',
+    image: '/vials/glp-1-gip-10mg.svg',
     tags: ['Tirzepatide', 'GLP-1', 'GIP', 'Dual Agonist', 'HPLC-Tested'],
     isFeatured: true
   },
@@ -168,7 +168,7 @@ export const products: Product[] = [
     salePrice: 108.00,
     inStock: true,
     stockCount: 51,
-    sku: 'BBP-TIRZ-5',
+    sku: 'USP-TIRZ-5',
     purity: '99.6%',
     casNumber: '2023788-19-2',
     molarMass: '4813.45 g/mol',
@@ -187,7 +187,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 108.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-TRZ-5B',
+      lotNumber: 'LOT-USP-TRZ-5B',
       testDate: '2026-01-22',
       purity: '99.62%',
       lab: 'MZ Biolabs',
@@ -196,7 +196,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 16.12 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2026/01/GLP-1-GIP-5MG-850x1000.png',
+    image: '/vials/glp-1-gip-5mg.svg',
     tags: ['Tirzepatide', '5mg', 'Dual Agonist']
   },
 
@@ -211,7 +211,7 @@ export const products: Product[] = [
     salePrice: 36.00,
     inStock: true,
     stockCount: 120,
-    sku: 'BBP-BPC157-5',
+    sku: 'USP-BPC157-5',
     purity: '99.8%',
     sequence: 'Gly-Glu-Pro-Pro-Pro-Gly-Lys-Pro-Ala-Asp-Asp-Ala-Gly-Leu-Val',
     casNumber: '137525-51-0',
@@ -230,7 +230,7 @@ export const products: Product[] = [
       { title: 'Purity (HPLC)', value: '99.82%' },
       { title: 'Molecular Weight', value: '1419.53 Da' },
       { title: 'Form', value: 'Sterile Lyophilized Powder' },
-      { title: 'Lot ID', value: 'LOT-BBP-BPC-26A' },
+      { title: 'Lot ID', value: 'LOT-USP-BPC-26A' },
       { title: 'Reconstitution Diluent', value: 'Bacteriostatic Water (1-2 mL)' }
     ],
     bulkPricing: [
@@ -240,7 +240,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 36.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-BPC-26A',
+      lotNumber: 'LOT-USP-BPC-26A',
       testDate: '2026-02-05',
       purity: '99.82%',
       lab: 'Janoshik Analytical Services',
@@ -249,7 +249,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single dominant peak at retention time 9.45 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/BPC-157-SQ-850x1000.png',
+    image: '/vials/bpc-157-5mg.svg',
     tags: ['BPC-157', 'ECM', 'Angiogenesis', 'Cell Migration', 'Lyophilized', 'HPLC-Tested'],
     isFeatured: true,
     isPopular: true
@@ -264,7 +264,7 @@ export const products: Product[] = [
     salePrice: 40.00,
     inStock: true,
     stockCount: 88,
-    sku: 'BBP-TB500-5',
+    sku: 'USP-TB500-5',
     purity: '99.5%',
     sequence: 'Ac-Ser-Asp-Lys-Pro-Asp-Met-Ala-Glu-Ile-Glu-Lys-Phe-Asp-Lys-Ser-Lys-Leu-Lys-Lys-Thr-Glu-Thr-Gln-Glu-Lys-Asn-Pro-Leu-Pro-Ser-Lys-Glu-Thr-Ile-Glu-Gln-Glu-Lys-Gln-Ala-Gly-Glu-Ser-OH',
     casNumber: '77591-33-4',
@@ -289,7 +289,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 40.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-TB5-26A',
+      lotNumber: 'LOT-USP-TB5-26A',
       testDate: '2026-01-18',
       purity: '99.55%',
       lab: 'MZ Biolabs',
@@ -298,7 +298,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 13.20 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/TB-500-5MG-SQ-850x1000.png',
+    image: '/vials/tb-500-5mg.svg',
     tags: ['TB-500', 'Thymosin Beta 4', 'Actin', 'Cell Motility'],
     isPopular: true
   },
@@ -312,7 +312,7 @@ export const products: Product[] = [
     salePrice: 38.40,
     inStock: true,
     stockCount: 74,
-    sku: 'BBP-GHKCU-50',
+    sku: 'USP-GHKCU-50',
     purity: '99.7%',
     sequence: 'Gly-His-Lys:Cu(II)',
     casNumber: '49557-75-7',
@@ -337,7 +337,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 38.40 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-GHK-50A',
+      lotNumber: 'LOT-USP-GHK-50A',
       testDate: '2026-02-01',
       purity: '99.73%',
       lab: 'Janoshik Analytical Services',
@@ -346,7 +346,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single dominant peak at 6.18 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/GHK-CU-50-SQ-850x1000.png',
+    image: '/vials/ghk-cu-50mg.svg',
     tags: ['GHK-Cu', 'Copper Peptide', 'Collagen', 'Extracellular Matrix']
   },
 
@@ -361,7 +361,7 @@ export const products: Product[] = [
     salePrice: 32.00,
     inStock: true,
     stockCount: 95,
-    sku: 'BBP-CJC-5',
+    sku: 'USP-CJC-5',
     purity: '99.4%',
     sequence: 'Tyr-D-Ala-Asp-Ala-Ile-Phe-Thr-Gln-Ser-Tyr-Arg-Lys-Val-Leu-Ala-Gln-Leu-Ser-Ala-Arg-Lys-Leu-Leu-Gln-Asp-Ile-Leu-Ser-Arg-NH2',
     casNumber: '863288-34-0',
@@ -379,7 +379,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 32.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-CJC-5A',
+      lotNumber: 'LOT-USP-CJC-5A',
       testDate: '2026-01-25',
       purity: '99.44%',
       lab: 'MZ Biolabs',
@@ -388,7 +388,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 11.85 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/CJC-1295-5MG-SQ-850x1000.png',
+    image: '/vials/cjc-1295-5mg.svg',
     tags: ['CJC-1295', 'GHRH', 'Secretagogue', 'Somatotropic'],
     isPopular: true
   },
@@ -402,7 +402,7 @@ export const products: Product[] = [
     salePrice: 40.00,
     inStock: true,
     stockCount: 110,
-    sku: 'BBP-IPAM-5',
+    sku: 'USP-IPAM-5',
     purity: '99.6%',
     sequence: 'Aib-His-D-2-Nal-D-Phe-Lys-NH2',
     casNumber: '170851-70-4',
@@ -420,7 +420,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 40.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-IPM-5A',
+      lotNumber: 'LOT-USP-IPM-5A',
       testDate: '2026-02-04',
       purity: '99.65%',
       lab: 'Janoshik Analytical',
@@ -429,7 +429,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 8.90 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/IPAMORELIN-5MG-SQ-850x1000.png',
+    image: '/vials/ipamorelin-5mg.svg',
     tags: ['Ipamorelin', 'GHRP', 'GHS-R1a', 'HPLC-Tested'],
     isFeatured: true
   },
@@ -443,7 +443,7 @@ export const products: Product[] = [
     salePrice: 68.00,
     inStock: true,
     stockCount: 75,
-    sku: 'BBP-CJCIPAM-10',
+    sku: 'USP-CJCIPAM-10',
     purity: '99.5%',
     storage: '-20°C lyophilized',
     appearance: 'White lyophilized sterile cake',
@@ -457,7 +457,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 68.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-BLEND-10A',
+      lotNumber: 'LOT-USP-BLEND-10A',
       testDate: '2026-02-08',
       purity: '99.51%',
       lab: 'Janoshik Analytical',
@@ -466,7 +466,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Dual distinct resolved peaks at 8.90 min and 11.85 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/3-Vials-Reta-BPC-CJC-Ipam.png',
+    image: '/vials/cjc1295-plus-ipamorelin-blend-10mg.svg',
     tags: ['Blend', 'CJC-1295', 'Ipamorelin', 'Synergy'],
     isFeatured: true,
     isPopular: true
@@ -481,7 +481,7 @@ export const products: Product[] = [
     salePrice: 104.00,
     inStock: true,
     stockCount: 40,
-    sku: 'BBP-TESA-10',
+    sku: 'USP-TESA-10',
     purity: '99.4%',
     sequence: 'Hexenoyl-Tyr-Ala-Asp-Ala-Ile-Phe-Thr-Asn-Ser-Tyr-Arg-Lys-Val-Leu-Gly-Gln-Leu-Ser-Ala-Arg-Lys-Leu-Leu-Gln-Asp-Ile-Met-Ser-Arg-Gln-Gln-Gly-Glu-Ser-Asn-Gln-Glu-Arg-Gly-Ala-Arg-Ala-Arg-Leu-NH2',
     casNumber: '218949-48-5',
@@ -499,7 +499,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 104.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-TES-10A',
+      lotNumber: 'LOT-USP-TES-10A',
       testDate: '2026-01-30',
       purity: '99.48%',
       lab: 'MZ Biolabs',
@@ -508,7 +508,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 15.30 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2026/01/Tesamorelin-10-850x1000.png',
+    image: '/vials/tesamorelin-10mg.svg',
     tags: ['Tesamorelin', 'GHRH', 'Visceral Fat Modeling', 'HPLC-Tested']
   },
 
@@ -523,7 +523,7 @@ export const products: Product[] = [
     salePrice: 44.00,
     inStock: true,
     stockCount: 68,
-    sku: 'BBP-PT141-10',
+    sku: 'USP-PT141-10',
     purity: '99.6%',
     sequence: 'Ac-Nle-cyclo[Asp-His-D-Phe-Arg-Trp-Lys]-OH',
     casNumber: '189741-19-1',
@@ -541,7 +541,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 44.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-PT-10A',
+      lotNumber: 'LOT-USP-PT-10A',
       testDate: '2026-02-02',
       purity: '99.61%',
       lab: 'Janoshik Analytical',
@@ -550,7 +550,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 10.45 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/PT-141-SQ-850x1000.png',
+    image: '/vials/pt-141-10mg.svg',
     tags: ['PT-141', 'Bremelanotide', 'Melanocortin', 'MC4R'],
     isPopular: true
   },
@@ -564,7 +564,7 @@ export const products: Product[] = [
     salePrice: 32.00,
     inStock: true,
     stockCount: 82,
-    sku: 'BBP-MT2-10',
+    sku: 'USP-MT2-10',
     purity: '99.5%',
     sequence: 'Ac-Nle-cyclo[Asp-His-D-Phe-Arg-Trp-Lys]-NH2',
     casNumber: '121062-08-6',
@@ -582,7 +582,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 32.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-MT2-10A',
+      lotNumber: 'LOT-USP-MT2-10A',
       testDate: '2026-01-15',
       purity: '99.54%',
       lab: 'MZ Biolabs',
@@ -591,7 +591,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 10.12 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/MELANOTAN-II-SQ-850x1000.png',
+    image: '/vials/melanotan-2-10mg.svg',
     tags: ['Melanotan 2', 'MT-2', 'MC1R', 'Pigmentation Research']
   },
 
@@ -606,7 +606,7 @@ export const products: Product[] = [
     salePrice: 48.00,
     inStock: true,
     stockCount: 58,
-    sku: 'BBP-TA1-5',
+    sku: 'USP-TA1-5',
     purity: '99.7%',
     sequence: 'Ac-Ser-Asp-Ala-Ala-Val-Asp-Thr-Ser-Ser-Glu-Ile-Thr-Thr-Lys-Asp-Leu-Lys-Glu-Lys-Lys-Glu-Val-Val-Glu-Glu-Ala-Glu-Asn-OH',
     casNumber: '62304-98-7',
@@ -624,7 +624,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 48.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-TA1-5A',
+      lotNumber: 'LOT-USP-TA1-5A',
       testDate: '2026-02-09',
       purity: '99.74%',
       lab: 'Janoshik Analytical',
@@ -633,7 +633,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single sharp peak at 11.10 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/THYMOSIN-A1-5MG-SQ-BIG-VIAL-850x1021.png',
+    image: '/vials/thymosin-alpha-1-5mg.svg',
     tags: ['Thymosin Alpha-1', 'TA-1', 'Cytokine', 'Immune Pathway', 'HPLC-Tested'],
     isFeatured: true
   },
@@ -649,7 +649,7 @@ export const products: Product[] = [
     salePrice: 41.60,
     inStock: true,
     stockCount: 62,
-    sku: 'BBP-SEMAX-30',
+    sku: 'USP-SEMAX-30',
     purity: '99.6%',
     sequence: 'Met-Glu-His-Phe-Pro-Gly-Pro',
     casNumber: '80714-61-0',
@@ -667,7 +667,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 41.60 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-SMX-30A',
+      lotNumber: 'LOT-USP-SMX-30A',
       testDate: '2026-01-29',
       purity: '99.66%',
       lab: 'MZ Biolabs',
@@ -676,7 +676,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 7.42 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/SEMAX-30-SQ-850x1000.png',
+    image: '/vials/semax-30mg.svg',
     tags: ['Semax', 'Neuropeptide', 'BDNF', 'CNS Signaling']
   },
   {
@@ -689,7 +689,7 @@ export const products: Product[] = [
     salePrice: 41.60,
     inStock: true,
     stockCount: 55,
-    sku: 'BBP-SELANK-30',
+    sku: 'USP-SELANK-30',
     purity: '99.5%',
     sequence: 'Thr-Lys-Pro-Arg-Pro-Gly-Pro',
     casNumber: '129954-34-3',
@@ -707,7 +707,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 41.60 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-SEL-30A',
+      lotNumber: 'LOT-USP-SEL-30A',
       testDate: '2026-02-03',
       purity: '99.58%',
       lab: 'Janoshik Analytical',
@@ -716,7 +716,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 6.85 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/SELANK-30-SQ-850x1000.png',
+    image: '/vials/selank-30mg.svg',
     tags: ['Selank', 'Tuftsin', 'GABA', 'CNS Signaling']
   },
 
@@ -731,7 +731,7 @@ export const products: Product[] = [
     salePrice: 76.00,
     inStock: true,
     stockCount: 45,
-    sku: 'BBP-SS31-50',
+    sku: 'USP-SS31-50',
     purity: '99.5%',
     sequence: 'D-Arg-Dmt-Lys-Phe-NH2',
     casNumber: '736992-21-5',
@@ -749,7 +749,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 76.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-SS31-50A',
+      lotNumber: 'LOT-USP-SS31-50A',
       testDate: '2026-01-27',
       purity: '99.52%',
       lab: 'MZ Biolabs',
@@ -758,7 +758,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 8.15 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/SS-31-SQ-850x1000.png',
+    image: '/vials/ss-31-50mg.svg',
     tags: ['SS-31', 'Elamipretide', 'Mitochondria', 'Cardiolipin']
   },
   {
@@ -771,7 +771,7 @@ export const products: Product[] = [
     salePrice: 64.00,
     inStock: true,
     stockCount: 50,
-    sku: 'BBP-EPIT-50',
+    sku: 'USP-EPIT-50',
     purity: '99.6%',
     sequence: 'Ala-Glu-Asp-Gly',
     casNumber: '307297-39-8',
@@ -789,7 +789,7 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 64.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-EPI-50A',
+      lotNumber: 'LOT-USP-EPI-50A',
       testDate: '2026-02-06',
       purity: '99.68%',
       lab: 'Janoshik Analytical',
@@ -798,7 +798,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 5.12 min'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/EPITHALON-50-SQ-850x1000.png',
+    image: '/vials/epithalon-50mg.svg',
     tags: ['Epithalon', 'Telomerase', 'Bioregulator', 'Gene Expression']
   },
 
@@ -813,7 +813,7 @@ export const products: Product[] = [
     salePrice: 8.00,
     inStock: true,
     stockCount: 300,
-    sku: 'BBP-BAC-10',
+    sku: 'USP-BAC-10',
     purity: 'Laboratory Sterile Grade',
     storage: 'Room temperature (15-25°C), protect from freezing',
     appearance: 'Clear, colorless, sterile liquid',
@@ -836,16 +836,16 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 8.00 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-BAC-10X',
+      lotNumber: 'LOT-USP-BAC-10X',
       testDate: '2026-02-01',
       purity: 'Sterile Certified',
-      lab: 'Battle Born Quality Lab',
+      lab: 'USA Peptides Quality Lab',
       method: 'Endotoxin LAL & USP Sterility Testing',
       sampleType: 'Bacteriostatic Water',
       status: 'VERIFIED',
       chromatogramPeak: 'Endotoxin < 0.25 EU/mL (Passed)'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/BAC-WATER-SQ-850x1000.png',
+    image: '/vials/reconstitution-solution-bac-water-10ml.svg',
     tags: ['BAC Water', 'Bacteriostatic', 'Reconstitution', 'Solvents'],
     isPopular: true
   },
@@ -859,7 +859,7 @@ export const products: Product[] = [
     salePrice: 14.40,
     inStock: true,
     stockCount: 220,
-    sku: 'BBP-BAC-30',
+    sku: 'USP-BAC-30',
     purity: 'Laboratory Sterile Grade',
     storage: 'Room temperature (15-25°C)',
     appearance: 'Clear, colorless, sterile liquid',
@@ -873,16 +873,16 @@ export const products: Product[] = [
       { tier: '10+ Vials', quantity: '10+', discountPercent: 20, pricePerUnit: 14.40 }
     ],
     coa: {
-      lotNumber: 'LOT-BBP-BAC-30X',
+      lotNumber: 'LOT-USP-BAC-30X',
       testDate: '2026-02-01',
       purity: 'Sterile Certified',
-      lab: 'Battle Born Quality Lab',
+      lab: 'USA Peptides Quality Lab',
       method: 'USP Sterility Testing',
       sampleType: 'Bacteriostatic Water',
       status: 'VERIFIED',
       chromatogramPeak: 'Pass'
     },
-    image: 'https://battlebornresearch.com/wp-content/uploads/2025/11/BAC-WATER-SQ-850x1000.png',
+    image: '/vials/reconstitution-solution-bac-water-30ml.svg',
     tags: ['BAC Water', '30ml', 'Solvents']
   }
 ];

@@ -26,7 +26,7 @@ export default function ContactUsPage() {
           Direct Laboratory Communication
         </div>
         <h1 className="page-title">
-          Contact Battle Born Peptides
+          Contact USA Peptides
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
           For technical HPLC inquiries, bulk institutional orders, or shipping assistance, our laboratory team responds within 24 business hours.
@@ -45,8 +45,8 @@ export default function ContactUsPage() {
                 <Mail className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="text-gray-500 text-[10px] uppercase block">Email Address</span>
-                  <a href="mailto:info@battlebornresearch.com" className="text-white hover:text-cyan-400 font-semibold">
-                    info@battlebornresearch.com
+                  <a href="mailto:info@usapeptides.com" className="text-white hover:text-cyan-400 font-semibold">
+                    info@usapeptides.com
                   </a>
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default function ContactUsPage() {
                     <label className="text-xs text-gray-400 block mb-1">Order # (Optional)</label>
                     <input
                       type="text"
-                      placeholder="e.g. BBP-123456"
+                      placeholder="e.g. USP-123456"
                       value={formData.orderNumber}
                       onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
                       className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"

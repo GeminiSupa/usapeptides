@@ -285,7 +285,7 @@ export default function CheckoutPage() {
             {paymentMethod === 'zelle' && (
               <div className="p-4 rounded-xl bg-brand-darker border border-brand-border text-xs text-gray-300 space-y-1 leading-relaxed">
                 <span className="font-bold text-white block">Zelle Payment Instructions:</span>
-                <p>Transfer order total to: <strong className="text-cyan-400 font-mono">payments@battlebornresearch.com</strong></p>
+                <p>Transfer order total to: <strong className="text-cyan-400 font-mono">payments@usapeptides.com</strong></p>
                 <p className="text-gray-400 text-[11px]">Include your order name in memo. Orders ship immediately upon receipt confirmation.</p>
               </div>
             )}

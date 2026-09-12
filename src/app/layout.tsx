@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <title>Battle Born Peptides | HPLC-Tested Research Peptides, Shipped From the USA</title>
+        <title>USA Peptides | HPLC-Tested Research Peptides, Shipped From the USA</title>
         <meta
           name="description"
           content="Lyophilized research peptides with independent HPLC test results published per product. Ships from the United States, tracked. Free shipping over $100. In-vitro research use only."
