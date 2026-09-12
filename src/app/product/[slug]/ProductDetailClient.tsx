@@ -8,47 +8,45 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import BulkPricingTable from '@/components/BulkPricingTable';
 import ProductCard from '@/components/ProductCard';
-import { 
-  ShieldCheck, 
-  Truck, 
-  FileText, 
-  Heart, 
-  Minus, 
-  Plus, 
-  ShoppingBag, 
-  Check, 
-  FlaskConical, 
-  ChevronRight, 
+import {
+  FileText,
+  Heart,
+  Minus,
+  Plus,
+  Check,
+  ChevronRight,
   Calculator,
+  ShieldCheck,
+  Truck,
   Lock,
-  Layers,
-  Activity
 } from 'lucide-react';
 
-interface ProductDetailPageProps {
-  params: {
-    slug: string;
-  };
-}
+const TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'specs', label: 'Specifications' },
+  { id: 'coa', label: 'Test report' },
+  { id: 'reconstitution', label: 'Handling' },
+] as const;
+
+type TabId = (typeof TABS)[number]['id'];
 
 export default function ProductDetailClient({ slug }: { slug: string }) {
-  const params = { slug };
   const { addToCart, setSelectedCOAProduct } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  
-  const product = products.find((p) => p.slug === params.slug);
+
+  const product = products.find((p) => p.slug === slug);
 
   if (!product) {
     notFound();
   }
 
   const [quantity, setQuantity] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<'overview' | 'specs' | 'coa' | 'reconstitution'>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [added, setAdded] = useState<boolean>(false);
 
   const isFavorited = isInWishlist(product.id);
 
-  // Calculate volume discount for the selected quantity
+  // Volume tiers mirror the bulk pricing table.
   let discountPercent = 0;
   if (quantity >= 10) discountPercent = 20;
   else if (quantity >= 5) discountPercent = 15;
@@ -68,210 +66,183 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     .slice(0, 4);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
-      
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-xs text-gray-400">
-        <Link href="/" className="hover:text-cyan-400">Home</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
-        <Link href="/shop" className="hover:text-cyan-400">Shop</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
-        <Link href={`/category/${product.categorySlug}`} className="hover:text-cyan-400 truncate">
+    <div className="shell space-y-14 py-10">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-[0.6875rem] uppercase tracking-[0.1em] text-brand-textMuted">
+        <Link href="/" className="hover:text-brand-accentGlow">Home</Link>
+        <ChevronRight className="h-3 w-3" />
+        <Link href="/shop" className="hover:text-brand-accentGlow">Shop</Link>
+        <ChevronRight className="h-3 w-3" />
+        <Link href={`/category/${product.categorySlug}`} className="truncate hover:text-brand-accentGlow">
           {product.category}
         </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
-        <span className="text-white font-medium truncate">{product.name}</span>
-      </div>
+      </nav>
 
-      {/* Main Product Showcase Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        {/* Left: Product Image & Badges */}
-        <div className="lg:col-span-6 space-y-4">
-          <div className="aspect-square rounded-3xl bg-brand-card border border-brand-border p-8 flex items-center justify-center relative overflow-hidden shadow-2xl">
-            {/* Background ambient glow */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-transparent to-blue-600/10" />
-
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
+        {/* Image */}
+        <div className="space-y-4 lg:col-span-6">
+          <div className="relative flex aspect-square items-center justify-center border border-brand-border bg-brand-card p-8">
             <img
               src={product.image}
               alt={product.name}
-              className="w-4/5 h-4/5 object-contain filter drop-shadow-[0_20px_30px_rgba(0,180,255,0.2)] relative z-10 transition-transform duration-500 hover:scale-105"
+              className="relative z-10 h-4/5 w-4/5 object-contain"
             />
 
-            {/* Top right badges */}
-            <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/90 border border-emerald-500/50 text-emerald-400 text-xs font-bold shadow-lg">
-                <ShieldCheck className="w-4 h-4" />
-                <span>{product.purity} HPLC Purity</span>
+            <div className="absolute left-4 top-4 z-20 flex flex-col items-start gap-2">
+              <span className="bg-brand-accent px-2.5 py-1 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-white">
+                {product.purity} HPLC
               </span>
-              <span className="px-3 py-1 rounded-full bg-brand-dark/90 border border-brand-border text-cyan-300 text-xs font-semibold">
-                Lot: {product.coa.lotNumber}
+              <span className="border border-brand-border bg-brand-dark px-2.5 py-1 font-mono text-[0.625rem] text-brand-body">
+                Lot {product.coa.lotNumber}
               </span>
             </div>
 
             <button
               onClick={() => toggleWishlist(product)}
-              className={`absolute top-4 right-4 p-3 rounded-2xl border transition-colors shadow-lg z-20 ${
+              aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
+              className={`absolute right-4 top-4 z-20 border p-2.5 transition-colors ${
                 isFavorited
-                  ? 'bg-rose-950/90 border-rose-500 text-rose-400'
-                  : 'bg-brand-dark/80 border-brand-border text-gray-400 hover:text-white'
+                  ? 'border-brand-accent bg-brand-accent text-white'
+                  : 'border-brand-border bg-brand-dark text-brand-textMuted hover:text-brand-heading'
               }`}
             >
-              <Heart className={`w-5 h-5 ${isFavorited ? 'fill-rose-400' : ''}`} />
+              <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
             </button>
           </div>
 
-          {/* Quick Value Points */}
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="p-3 rounded-xl bg-brand-darker border border-brand-border">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
-              <div className="text-[11px] font-bold text-white">Janoshik Audited</div>
-              <div className="text-[9px] text-gray-500">HPLC + ESI-MS</div>
-            </div>
-            <div className="p-3 rounded-xl bg-brand-darker border border-brand-border">
-              <Truck className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
-              <div className="text-[11px] font-bold text-white">Same-Day USA</div>
-              <div className="text-[9px] text-gray-500">Tracked Shipping</div>
-            </div>
-            <div className="p-3 rounded-xl bg-brand-darker border border-brand-border">
-              <Lock className="w-4 h-4 text-blue-400 mx-auto mb-1" />
-              <div className="text-[11px] font-bold text-white">Inert Sealed</div>
-              <div className="text-[9px] text-gray-500">Type I Borosilicate</div>
-            </div>
+          {/* Assurance strip */}
+          <div className="grid grid-cols-3 divide-x divide-brand-border border border-brand-border">
+            {[
+              { icon: ShieldCheck, t: 'Independently tested', s: 'HPLC + ESI-MS' },
+              { icon: Truck, t: 'Ships from the USA', s: 'Tracked delivery' },
+              { icon: Lock, t: 'Sealed under argon', s: 'Type I borosilicate' },
+            ].map(({ icon: Icon, t, s }) => (
+              <div key={t} className="px-3 py-4 text-center">
+                <Icon className="mx-auto mb-2 h-4 w-4 text-brand-accentGlow" strokeWidth={1.75} />
+                <div className="font-display text-[0.6875rem] font-extrabold text-brand-heading">{t}</div>
+                <div className="text-[0.625rem] text-brand-textMuted">{s}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Right: Product Info & Purchasing Actions */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest block">
-              {product.category}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+        {/* Purchase panel */}
+        <div className="space-y-6 lg:col-span-6">
+          <div>
+            <p className="eyebrow mb-2.5">{product.category}</p>
+            <h1 className="font-display text-[1.75rem] font-extrabold leading-tight text-brand-heading">
               {product.name}
             </h1>
-            <div className="flex items-center gap-3 text-xs text-gray-400 pt-1">
-              <span>SKU: <strong className="text-gray-200 font-mono">{product.sku}</strong></span>
-              <span>•</span>
-              <span className="text-emerald-400 font-semibold">● In Stock ({product.stockCount} vials)</span>
+            <div className="mt-3 flex items-center gap-3 text-[0.6875rem] text-brand-textMuted">
+              <span>
+                SKU <strong className="font-mono text-brand-body">{product.sku}</strong>
+              </span>
+              <span>&middot;</span>
+              <span className="text-brand-accentGlow">In stock &mdash; {product.stockCount} vials</span>
             </div>
           </div>
 
-          {/* Pricing & Volume Tier Dynamic Readout */}
-          <div className="p-5 rounded-2xl bg-brand-card border border-brand-border space-y-3">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-black text-white">
-                    ${unitPrice.toFixed(2)}
-                  </span>
+          <div className="border border-brand-border bg-brand-card">
+            <div className="space-y-4 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-display text-[2rem] font-black leading-none text-brand-heading">
+                      ${unitPrice.toFixed(2)}
+                    </span>
+                    {discountPercent > 0 && (
+                      <span className="text-xs text-brand-textMuted line-through">
+                        ${product.price.toFixed(2)}
+                      </span>
+                    )}
+                    <span className="text-[0.6875rem] text-brand-textMuted">/ vial</span>
+                  </div>
                   {discountPercent > 0 && (
-                    <span className="text-sm text-gray-500 line-through">
-                      ${product.price.toFixed(2)}
+                    <span className="mt-1 inline-block bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-white">
+                      {discountPercent}% volume discount applied
                     </span>
                   )}
-                  <span className="text-xs text-gray-400">/ vial</span>
                 </div>
-                {discountPercent > 0 && (
-                  <span className="text-xs font-bold text-emerald-400">
-                    Bulk discount ({discountPercent}% OFF) applied!
-                  </span>
-                )}
-              </div>
 
-              <button
-                onClick={() => setSelectedCOAProduct(product)}
-                className="px-3 py-1.5 rounded-lg bg-brand-dark hover:bg-brand-card border border-cyan-500/40 text-cyan-400 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>View Full COA</span>
-              </button>
-            </div>
-
-            {/* Quantity Selector & Add to Cart */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
-              <div className="sm:col-span-4 flex items-center justify-between border border-brand-border rounded-xl bg-brand-dark p-1">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-brand-card transition-colors"
+                  onClick={() => setSelectedCOAProduct(product)}
+                  className="flex flex-shrink-0 items-center gap-1.5 border border-brand-borderLight px-3 py-2 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-heading transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
                 >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="text-sm font-bold text-white font-mono">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-brand-card transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
+                  <FileText className="h-3.5 w-3.5" />
+                  <span>Test report</span>
                 </button>
               </div>
 
-              <div className="sm:col-span-8">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-12">
+                <div className="flex items-center justify-between border border-brand-border bg-brand-dark sm:col-span-4">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="p-3 text-brand-textMuted transition-colors hover:text-brand-heading"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="font-mono text-sm font-bold text-brand-heading">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="p-3 text-brand-textMuted transition-colors hover:text-brand-heading"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+
                 <button
                   onClick={handleAddToCart}
-                  className={`w-full py-3.5 px-6 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-lg ${
+                  className={`flex w-full items-center justify-center gap-2 border px-6 py-3.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors sm:col-span-8 ${
                     added
-                      ? 'bg-emerald-600 text-white shadow-emerald-600/30'
-                      : 'bg-gradient-to-r from-brand-accent to-blue-600 hover:from-blue-500 hover:to-brand-accent text-white shadow-brand-accent/25 active:scale-98 border border-cyan-400/30'
+                      ? 'border-brand-accent bg-brand-accent text-white'
+                      : 'border-brand-accent bg-brand-accent text-white hover:bg-flag-red'
                   }`}
                 >
                   {added ? (
                     <>
-                      <Check className="w-4 h-4" />
-                      <span>Added {quantity} to Research Cart!</span>
+                      <Check className="h-4 w-4" />
+                      <span>Added &mdash; {quantity} vial{quantity > 1 ? 's' : ''}</span>
                     </>
                   ) : (
-                    <>
-                      <ShoppingBag className="w-4 h-4" />
-                      <span>Add to Cart • ${(totalPrice).toFixed(2)}</span>
-                    </>
+                    <span>Add to cart &mdash; ${totalPrice.toFixed(2)}</span>
                   )}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Automatic Bulk Pricing Table */}
           <BulkPricingTable product={product} />
 
-          {/* Quick Description */}
-          <p className="text-xs text-gray-300 leading-relaxed">
-            {product.description}
-          </p>
+          <p className="text-xs leading-relaxed text-brand-body">{product.description}</p>
 
-          {/* Reconstitution Tool Link */}
-          <div className="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 flex items-center justify-between">
+          <div className="flex items-center justify-between border border-brand-border bg-brand-card px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <Calculator className="w-4 h-4 text-cyan-400" />
-              <span className="text-xs text-gray-200">Need help calculating BAC water &amp; dosage units?</span>
+              <Calculator className="h-4 w-4 text-brand-accentGlow" />
+              <span className="text-xs text-brand-body">Working out diluent volume?</span>
             </div>
             <Link
               href="/calculator"
-              className="text-xs font-bold text-cyan-400 hover:underline flex-shrink-0"
+              className="flex-shrink-0 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-accentGlow hover:text-brand-heading"
             >
-              Open Calc →
+              Open calculator
             </Link>
           </div>
         </div>
-
       </div>
 
-      {/* Tabs: Specifications, Full COA, Reconstitution Guide */}
-      <div className="pt-6 border-t border-brand-border space-y-6">
-        <div className="flex border-b border-brand-border gap-4 sm:gap-8 overflow-x-auto text-xs font-semibold">
-          {[
-            { id: 'overview', label: 'Compound Overview' },
-            { id: 'specs', label: 'Chemical Specifications' },
-            { id: 'coa', label: 'Certificate of Analysis (COA)' },
-            { id: 'reconstitution', label: 'Reconstitution & Storage' },
-          ].map((tab) => (
+      {/* Detail tabs */}
+      <div className="space-y-6 border-t border-brand-border pt-8">
+        <div className="flex gap-6 overflow-x-auto border-b border-brand-border sm:gap-8">
+          {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`pb-3 border-b-2 transition-colors flex-shrink-0 ${
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 border-b-2 pb-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors ${
                 activeTab === tab.id
-                  ? 'border-cyan-400 text-cyan-400 font-bold'
-                  : 'border-transparent text-gray-400 hover:text-white'
+                  ? 'border-brand-accent text-brand-accentGlow'
+                  : 'border-transparent text-brand-textMuted hover:text-brand-heading'
               }`}
             >
               {tab.label}
@@ -279,128 +250,127 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           ))}
         </div>
 
-        {/* Tab Content */}
-        <div className="p-6 rounded-2xl bg-brand-card border border-brand-border text-xs text-gray-300 leading-relaxed">
+        <div className="border border-brand-border bg-brand-card p-6 text-xs leading-relaxed text-brand-body">
           {activeTab === 'overview' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-white">Laboratory Overview & Description</h3>
               <p>{product.description}</p>
-              <ul className="list-disc list-inside space-y-1.5 text-gray-400 pt-2">
+              <ul className="space-y-2">
                 {product.details.map((det, i) => (
-                  <li key={i}>{det}</li>
+                  <li key={i} className="flex gap-2.5">
+                    <Check className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-brand-accentGlow" />
+                    <span className="text-brand-textMuted">{det}</span>
+                  </li>
                 ))}
               </ul>
             </div>
           )}
 
           {activeTab === 'specs' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-white">Chemical & Physical Properties</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {product.sequence && (
-                  <div className="p-3 bg-brand-darker rounded-xl border border-brand-border col-span-1 sm:col-span-2">
-                    <span className="text-[10px] text-gray-500 uppercase block">Amino Acid Sequence</span>
-                    <span className="font-mono text-cyan-300 text-xs break-all">{product.sequence}</span>
-                  </div>
-                )}
-                {product.casNumber && (
-                  <div className="p-3 bg-brand-darker rounded-xl border border-brand-border">
-                    <span className="text-[10px] text-gray-500 uppercase block">CAS Number</span>
-                    <span className="font-mono text-white text-xs">{product.casNumber}</span>
-                  </div>
-                )}
-                {product.molarMass && (
-                  <div className="p-3 bg-brand-darker rounded-xl border border-brand-border">
-                    <span className="text-[10px] text-gray-500 uppercase block">Molar Mass / Molecular Weight</span>
-                    <span className="font-mono text-white text-xs">{product.molarMass}</span>
-                  </div>
-                )}
-                {product.formula && (
-                  <div className="p-3 bg-brand-darker rounded-xl border border-brand-border">
-                    <span className="text-[10px] text-gray-500 uppercase block">Molecular Formula</span>
-                    <span className="font-mono text-white text-xs">{product.formula}</span>
-                  </div>
-                )}
-                <div className="p-3 bg-brand-darker rounded-xl border border-brand-border">
-                  <span className="text-[10px] text-gray-500 uppercase block">Storage Protocol</span>
-                  <span className="text-white text-xs">{product.storage}</span>
-                </div>
-                <div className="p-3 bg-brand-darker rounded-xl border border-brand-border">
-                  <span className="text-[10px] text-gray-500 uppercase block">Physical Appearance</span>
-                  <span className="text-white text-xs">{product.appearance}</span>
-                </div>
-              </div>
-            </div>
+            <dl className="divide-y divide-brand-border border-y border-brand-border">
+              {[
+                product.sequence && ['Amino acid sequence', product.sequence, true],
+                product.casNumber && ['CAS number', product.casNumber, false],
+                product.molarMass && ['Molar mass', product.molarMass, false],
+                product.formula && ['Molecular formula', product.formula, false],
+                ['Storage', product.storage, false],
+                ['Appearance', product.appearance, false],
+              ]
+                .filter(Boolean)
+                .map((row) => {
+                  const [label, value, wide] = row as [string, string, boolean];
+                  return (
+                    <div
+                      key={label}
+                      className={`gap-3 py-3 ${wide ? '' : 'flex items-baseline justify-between'}`}
+                    >
+                      <dt className="text-[0.625rem] uppercase tracking-[0.1em] text-brand-textMuted">
+                        {label}
+                      </dt>
+                      <dd
+                        className={`font-mono text-[0.6875rem] text-brand-heading ${
+                          wide ? 'mt-1.5 break-all' : 'text-right'
+                        }`}
+                      >
+                        {value}
+                      </dd>
+                    </div>
+                  );
+                })}
+            </dl>
           )}
 
           {activeTab === 'coa' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-white">Analytical Quality & HPLC Certificate</h3>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="font-display text-[0.8125rem] font-extrabold uppercase tracking-[0.08em] text-brand-heading">
+                  Independent analysis
+                </h3>
                 <button
                   onClick={() => setSelectedCOAProduct(product)}
-                  className="px-3 py-1 bg-brand-accent text-white rounded-lg text-xs font-bold"
+                  className="bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
                 >
-                  Open Full Inspector Modal
+                  Open full report
                 </button>
               </div>
 
-              <div className="p-4 rounded-xl bg-brand-darker border border-brand-border grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-xs">
-                <div>
-                  <span className="text-[10px] text-gray-500 block">Lot Number:</span>
-                  <span className="text-cyan-400 font-bold">{product.coa.lotNumber}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-gray-500 block">Testing Date:</span>
-                  <span className="text-white">{product.coa.testDate}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-gray-500 block">HPLC Purity:</span>
-                  <span className="text-emerald-400 font-bold">{product.coa.purity}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-gray-500 block">Auditing Lab:</span>
-                  <span className="text-white">{product.coa.lab}</span>
-                </div>
-              </div>
+              <dl className="grid grid-cols-2 gap-px border border-brand-border bg-brand-border sm:grid-cols-4">
+                {[
+                  ['Lot', product.coa.lotNumber],
+                  ['Tested', product.coa.testDate],
+                  ['Purity', product.coa.purity],
+                  ['Laboratory', product.coa.lab],
+                ].map(([k, v]) => (
+                  <div key={k} className="bg-brand-dark p-3">
+                    <dt className="text-[0.625rem] uppercase tracking-[0.1em] text-brand-textMuted">{k}</dt>
+                    <dd className="mt-1 font-mono text-[0.6875rem] font-bold text-brand-heading">{v}</dd>
+                  </div>
+                ))}
+              </dl>
 
-              <p className="text-xs text-gray-400">
-                Chromatographic peak evaluation: <span className="text-cyan-300">{product.coa.chromatogramPeak}</span>. Analysis carried out using high-pressure liquid chromatography UV-detection at 214nm wavelength paired with Electrospray Ionization Mass Spectrometry.
+              <p className="text-brand-textMuted">
+                Peak evaluation: <span className="text-brand-body">{product.coa.chromatogramPeak}</span>.
+                Analysis by reverse-phase HPLC with UV detection at 214nm, paired with electrospray
+                ionization mass spectrometry.
               </p>
             </div>
           )}
 
           {activeTab === 'reconstitution' && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-bold text-white">Reconstitution & Laboratory Handling Protocols</h3>
-              <p>
-                1. <strong>Solvent selection:</strong> Reconstitute using sterile Bacteriostatic 0.9% Benzyl Alcohol Water (BAC Water).
-              </p>
-              <p>
-                2. <strong>Dissolution:</strong> Direct the liquid stream against the inner vial wall. Gently swirl—never shake vigorously.
-              </p>
-              <p>
-                3. <strong>Storage:</strong> Store lyophilized vials in freezer at -20°C for up to 36 months. Store reconstituted liquid in refrigerator at 2°C to 8°C for up to 30 days.
-              </p>
-            </div>
+            <ol className="space-y-3">
+              {[
+                ['Solvent', 'Reconstitute with sterile bacteriostatic water (0.9% benzyl alcohol).'],
+                ['Dissolution', 'Run the stream down the inner vial wall and swirl gently. Do not shake.'],
+                ['Storage', 'Lyophilized vials keep at -20°C. Once in solution, hold at 2–8°C and use within 30 days.'],
+              ].map(([label, body], i) => (
+                <li key={label} className="flex gap-3">
+                  <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center bg-brand-accent font-display text-[0.625rem] font-black text-white">
+                    {i + 1}
+                  </span>
+                  <span>
+                    <strong className="text-brand-heading">{label}.</strong>{' '}
+                    <span className="text-brand-textMuted">{body}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
           )}
         </div>
       </div>
 
-      {/* Related Peptides */}
+      {/* Related */}
       {relatedProducts.length > 0 && (
-        <div className="space-y-6 pt-6">
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-            Related Compounds in this Pathway
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="space-y-6 border-t border-brand-border pt-10">
+          <div>
+            <p className="eyebrow mb-2.5">Same pathway</p>
+            <h2 className="section-title">Related compounds</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {relatedProducts.map((rel) => (
               <ProductCard key={rel.id} product={rel} />
             ))}
           </div>
         </div>
       )}
-
     </div>
   );
 }

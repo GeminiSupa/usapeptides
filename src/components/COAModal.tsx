@@ -27,7 +27,7 @@ export default function COAModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
       <div 
-        className="w-full max-w-3xl bg-brand-card border border-brand-border rounded-2xl shadow-2xl shadow-black overflow-hidden max-h-[90vh] flex flex-col"
+        className="w-full max-w-3xl bg-brand-card border border-brand-border rounded-2xl shadow-black overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -100,16 +100,16 @@ export default function COAModal() {
                 {/* SVG Curve */}
                 <svg viewBox="0 0 500 160" className="w-full h-36 overflow-visible">
                   {/* Grid lines */}
-                  <line x1="30" y1="20" x2="480" y2="20" stroke="#1e293b" strokeDasharray="3 3" />
-                  <line x1="30" y1="60" x2="480" y2="60" stroke="#1e293b" strokeDasharray="3 3" />
-                  <line x1="30" y1="100" x2="480" y2="100" stroke="#1e293b" strokeDasharray="3 3" />
-                  <line x1="30" y1="140" x2="480" y2="140" stroke="#334155" />
+                  <line x1="30" y1="20" x2="480" y2="20" stroke="#1d2a4d" strokeDasharray="3 3" />
+                  <line x1="30" y1="60" x2="480" y2="60" stroke="#1d2a4d" strokeDasharray="3 3" />
+                  <line x1="30" y1="100" x2="480" y2="100" stroke="#1d2a4d" strokeDasharray="3 3" />
+                  <line x1="30" y1="140" x2="480" y2="140" stroke="#2f426f" />
 
                   {/* Main Chromatogram baseline with sharp gaussian peak */}
                   <path
                     d="M 30 140 Q 120 140 180 139 Q 230 138 245 130 Q 255 10 260 10 Q 265 10 275 130 Q 290 138 350 139 L 480 140"
                     fill="none"
-                    stroke="#38bdf8"
+                    stroke="#5b8def"
                     strokeWidth="2.5"
                   />
 
@@ -120,8 +120,8 @@ export default function COAModal() {
                   />
 
                   {/* Peak label marker */}
-                  <circle cx="260" cy="10" r="3.5" fill="#38bdf8" />
-                  <text x="265" y="16" fill="#38bdf8" fontSize="10" fontWeight="bold" fontFamily="monospace">
+                  <circle cx="260" cy="10" r="3.5" fill="#5b8def" />
+                  <text x="265" y="16" fill="#5b8def" fontSize="10" fontWeight="bold" fontFamily="monospace">
                     Peak 1 (Main: {coa.purity})
                   </text>
                 </svg>
@@ -214,7 +214,7 @@ export default function COAModal() {
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               onClick={handleDownloadSimulation}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-brand-accent hover:bg-blue-600 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download PDF Certificate</span>

@@ -7,14 +7,14 @@ import { Calculator, ArrowRight, ShieldCheck, HelpCircle } from 'lucide-react';
 
 export default function CalculatorPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="shell py-10 space-y-10">
       
       {/* Header */}
       <div className="border-b border-brand-border pb-6">
-        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+        <div className="eyebrow mb-2.5">
           Laboratory Research Tools
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+        <h1 className="page-title">
           Peptide Reconstitution &amp; Dilution Calculator
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl leading-relaxed">

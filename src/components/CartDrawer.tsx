@@ -45,7 +45,7 @@ export default function CartDrawer() {
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-brand-card border-l border-brand-border flex flex-col shadow-2xl">
+        <div className="w-screen max-w-md bg-brand-card border-l border-brand-border flex flex-col">
           
           {/* Header */}
           <div className="p-4 border-b border-brand-border bg-brand-darker flex items-center justify-between">
@@ -78,9 +78,9 @@ export default function CartDrawer() {
               </span>
               <span className="text-[10px] font-mono text-gray-500">{freeShippingProgress.toFixed(0)}%</span>
             </div>
-            <div className="w-full h-1.5 bg-brand-border rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-brand-border overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-brand-accent to-emerald-400 rounded-full transition-all duration-300"
+                className="h-full bg-brand-accent transition-all duration-300"
                 style={{ width: `${freeShippingProgress}%` }}
               />
             </div>
@@ -100,7 +100,7 @@ export default function CartDrawer() {
                 <Link
                   href="/shop"
                   onClick={() => setIsCartOpen(false)}
-                  className="inline-block px-5 py-2.5 rounded-xl bg-brand-accent text-white text-xs font-bold hover:bg-blue-600 transition-colors"
+                  className="inline-block px-5 py-2.5 rounded-xl bg-brand-accent text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] hover:bg-flag-red transition-colors"
                 >
                   Browse Peptides
                 </Link>
@@ -228,7 +228,7 @@ export default function CartDrawer() {
                 <Link
                   href="/checkout"
                   onClick={() => setIsCartOpen(false)}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-brand-accent to-blue-600 hover:from-blue-500 hover:to-brand-accent text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-accent/20 border border-cyan-400/30"
+                  className="w-full py-3.5 px-4 rounded-xl bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2"
                 >
                   <span>Proceed to Checkout</span>
                   <ArrowRight className="w-4 h-4" />

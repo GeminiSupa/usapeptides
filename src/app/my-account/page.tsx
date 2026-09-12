@@ -14,19 +14,19 @@ export default function MyAccountPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="shell max-w-4xl py-10 space-y-8">
       
       <div className="border-b border-brand-border pb-6">
-        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+        <div className="eyebrow mb-2.5">
           Researcher Portal
         </div>
-        <h1 className="text-3xl font-extrabold text-white">
+        <h1 className="page-title">
           Laboratory Account &amp; Order History
         </h1>
       </div>
 
       {!isLoggedIn ? (
-        <div className="max-w-md mx-auto p-6 sm:p-8 rounded-2xl bg-brand-card border border-brand-border space-y-5 shadow-2xl">
+        <div className="max-w-md mx-auto p-6 sm:p-8 rounded-2xl bg-brand-card border border-brand-border space-y-5">
           <div className="text-center space-y-2">
             <div className="w-12 h-12 rounded-xl bg-brand-darker border border-brand-border mx-auto flex items-center justify-center text-cyan-400">
               <User className="w-6 h-6" />
@@ -43,7 +43,7 @@ export default function MyAccountPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
               />
             </div>
             <div>
@@ -53,13 +53,13 @@ export default function MyAccountPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-brand-accent hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg transition-colors"
+              className="w-full py-3 bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] rounded-xl transition-colors"
             >
               Log In to Portal
             </button>

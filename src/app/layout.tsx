@@ -22,14 +22,16 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <title>Battle Born Peptides | HPLC-Tested Research Peptides USA</title>
-        <meta 
-          name="description" 
-          content="Buy HPLC-tested research peptides shipped within the USA. Free shipping over $100 and bulk pricing available. For laboratory research use only." 
+        <title>Battle Born Peptides | HPLC-Tested Research Peptides, Shipped From the USA</title>
+        <meta
+          name="description"
+          content="Lyophilized research peptides with independent HPLC test results published per product. Ships from the United States, tracked. Free shipping over $100. In-vitro research use only."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
-      <body className="min-h-screen flex flex-col bg-[#080d1a] text-gray-200 pb-16 lg:pb-0">
+      <body className="min-h-screen flex flex-col bg-black text-brand-body pb-16 lg:pb-0">
         <WishlistProvider>
           <CartProvider>
             <Header onOpenSearch={() => setSearchOpen(true)} />
@@ -37,7 +39,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
-            
+
             {/* Global Modals & Drawers */}
             <CartDrawer />
             <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />

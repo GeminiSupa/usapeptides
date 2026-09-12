@@ -48,10 +48,10 @@ export default function CartPage() {
   const freeShippingProgress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="shell py-10 space-y-8">
       
       <div className="border-b border-brand-border pb-6">
-        <h1 className="text-3xl font-extrabold text-white">
+        <h1 className="page-title">
           Research Shopping Cart
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-1">
@@ -61,7 +61,7 @@ export default function CartPage() {
 
       {cart.length === 0 ? (
         <div className="text-center py-20 p-8 rounded-3xl bg-brand-card border border-brand-border space-y-4">
-          <div className="w-16 h-16 rounded-full bg-brand-darker mx-auto flex items-center justify-center text-gray-600 border border-brand-border">
+          <div className="w-16 h-16 bg-brand-darker mx-auto flex items-center justify-center text-gray-600 border border-brand-border">
             <ShoppingBag className="w-8 h-8" />
           </div>
           <h2 className="text-lg font-bold text-white">Your Cart is Currently Empty</h2>
@@ -70,7 +70,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/shop"
-            className="inline-block px-6 py-3 bg-brand-accent hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg transition-colors"
+            className="inline-block px-6 py-3 bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] rounded-xl transition-colors"
           >
             Explore Catalog
           </Link>
@@ -94,9 +94,9 @@ export default function CartPage() {
                 </span>
                 <span className="text-[10px] font-mono text-gray-500">{freeShippingProgress.toFixed(0)}%</span>
               </div>
-              <div className="w-full h-2 bg-brand-darker rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-brand-darker overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-brand-accent to-emerald-400 rounded-full transition-all duration-300"
+                  className="h-full bg-brand-accent transition-all duration-300"
                   style={{ width: `${freeShippingProgress}%` }}
                 />
               </div>
@@ -218,7 +218,7 @@ export default function CartPage() {
                   />
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-brand-accent hover:bg-blue-600 text-white text-xs font-bold transition-colors"
+                    className="px-5 py-2 rounded-xl bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors"
                   >
                     Apply Code
                   </button>
@@ -236,7 +236,7 @@ export default function CartPage() {
 
           {/* Right Order Summary Area */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-5 shadow-xl">
+            <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-5">
               <h3 className="text-base font-extrabold text-white pb-3 border-b border-brand-border">
                 Order Summary
               </h3>
@@ -299,9 +299,9 @@ export default function CartPage() {
                     alert('Please check the research compliance box to proceed.');
                   }
                 }}
-                className={`w-full py-4 px-6 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xl ${
+                className={`w-full py-4 px-6 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-2 ${
                   ackCompliance
-                    ? 'bg-gradient-to-r from-brand-accent to-blue-600 hover:from-blue-500 hover:to-brand-accent text-white shadow-brand-accent/30 border border-cyan-400/40'
+                    ? 'bg-brand-accent hover:bg-flag-red text-white'
                     : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
               >

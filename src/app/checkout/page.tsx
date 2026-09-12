@@ -62,7 +62,7 @@ export default function CheckoutPage() {
       <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-4">
         <h2 className="text-2xl font-bold text-white">Your cart is currently empty</h2>
         <p className="text-xs text-gray-400">Add peptides to your cart before checking out.</p>
-        <Link href="/shop" className="inline-block px-6 py-3 bg-brand-accent text-white font-bold text-xs rounded-xl">
+        <Link href="/shop" className="inline-block px-6 py-3 bg-brand-accent text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] rounded-xl">
           Return to Shop
         </Link>
       </div>
@@ -70,13 +70,13 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="shell py-10 space-y-8">
       
       <div className="border-b border-brand-border pb-6">
-        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+        <div className="eyebrow mb-2.5">
           Secure Procurement
         </div>
-        <h1 className="text-3xl font-extrabold text-white">
+        <h1 className="page-title">
           Laboratory Checkout &amp; Verification
         </h1>
       </div>
@@ -102,7 +102,7 @@ export default function CheckoutPage() {
                   required
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
               <div>
@@ -113,7 +113,7 @@ export default function CheckoutPage() {
                   required
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -125,7 +125,7 @@ export default function CheckoutPage() {
                   placeholder="e.g. BioResearch Labs LLC / University Chemistry Dept"
                   value={formData.institution}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
               <div>
@@ -136,7 +136,7 @@ export default function CheckoutPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
               <div>
@@ -147,7 +147,7 @@ export default function CheckoutPage() {
                   required
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
             </div>
@@ -169,7 +169,7 @@ export default function CheckoutPage() {
                   required
                   value={formData.address}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
               <div>
@@ -180,7 +180,7 @@ export default function CheckoutPage() {
                   required
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
               <div>
@@ -192,7 +192,7 @@ export default function CheckoutPage() {
                   placeholder="e.g. CA, NY, TX"
                   value={formData.state}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
               <div>
@@ -203,7 +203,7 @@ export default function CheckoutPage() {
                   required
                   value={formData.zip}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                 />
               </div>
             </div>
@@ -250,7 +250,7 @@ export default function CheckoutPage() {
                     required
                     value={formData.cardNumber}
                     onChange={handleChange}
-                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -263,7 +263,7 @@ export default function CheckoutPage() {
                       required
                       value={formData.cardExp}
                       onChange={handleChange}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:"
                     />
                   </div>
                   <div>
@@ -275,7 +275,7 @@ export default function CheckoutPage() {
                       required
                       value={formData.cardCvc}
                       onChange={handleChange}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:"
                     />
                   </div>
                 </div>
@@ -309,7 +309,7 @@ export default function CheckoutPage() {
 
         {/* Right Summary & Place Order */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-5 sticky top-28 shadow-xl">
+          <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-5 sticky top-28">
             <h3 className="text-base font-extrabold text-white pb-3 border-b border-brand-border">
               Review Lab Order ({cart.reduce((a, b) => a + b.quantity, 0)} Items)
             </h3>
@@ -348,7 +348,7 @@ export default function CheckoutPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-brand-accent to-blue-600 hover:from-blue-500 hover:to-brand-accent text-white font-bold text-xs shadow-xl shadow-brand-accent/25 transition-all flex items-center justify-center gap-2 border border-cyan-400/30 disabled:opacity-50"
+              className="w-full py-4 px-6 rounded-xl bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span>Processing Laboratory Order...</span>

@@ -32,7 +32,7 @@ export default function ComplianceModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
       <div 
-        className="w-full max-w-lg bg-brand-card border border-brand-border rounded-2xl shadow-2xl p-6 space-y-5 text-center sm:text-left"
+        className="w-full max-w-lg bg-brand-card border border-brand-border rounded-2xl p-6 space-y-5 text-center sm:text-left"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
@@ -82,7 +82,7 @@ export default function ComplianceModal() {
         <div className="pt-2">
           <button
             onClick={handleAccept}
-            className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-brand-accent to-blue-600 hover:from-blue-500 hover:to-brand-accent text-white font-bold text-sm shadow-lg shadow-brand-accent/25 transition-all border border-cyan-400/30"
+            className="w-full py-3.5 px-6 rounded-xl bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-all"
           >
             I Acknowledge & Agree (Enter Site)
           </button>

@@ -21,13 +21,13 @@ export default function FAQPage() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="shell max-w-4xl py-10 space-y-8">
       
       <div className="border-b border-brand-border pb-6">
-        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+        <div className="eyebrow mb-2.5">
           Support &amp; Answers
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+        <h1 className="page-title">
           Frequently Asked Questions
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2">
@@ -44,7 +44,7 @@ export default function FAQPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search FAQs..."
-            className="w-full bg-brand-card border border-brand-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400"
+            className="w-full bg-brand-card border border-brand-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:"
           />
         </div>
 

@@ -19,13 +19,13 @@ export default function ContactUsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="shell py-10 space-y-10">
       
       <div className="border-b border-brand-border pb-6">
-        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+        <div className="eyebrow mb-2.5">
           Direct Laboratory Communication
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+        <h1 className="page-title">
           Contact Battle Born Peptides
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
@@ -37,7 +37,7 @@ export default function ContactUsPage() {
         
         {/* Contact Info Sidebar */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-6 shadow-xl">
+          <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-6">
             <h3 className="font-bold text-white text-base">Laboratory Support Details</h3>
             
             <div className="space-y-4 text-xs text-gray-300">
@@ -77,7 +77,7 @@ export default function ContactUsPage() {
 
         {/* Contact Form */}
         <div className="lg:col-span-7">
-          <div className="p-6 sm:p-8 rounded-2xl bg-brand-card border border-brand-border shadow-xl">
+          <div className="p-6 sm:p-8 rounded-2xl bg-brand-card border border-brand-border">
             {submitted ? (
               <div className="text-center py-12 space-y-3">
                 <div className="w-12 h-12 rounded-full bg-emerald-950 text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/40">
@@ -106,7 +106,7 @@ export default function ContactUsPage() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                     />
                   </div>
                   <div>
@@ -116,7 +116,7 @@ export default function ContactUsPage() {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                     />
                   </div>
                 </div>
@@ -127,7 +127,7 @@ export default function ContactUsPage() {
                     <select
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                     >
                       <option value="General Inquiry">General Product Inquiry</option>
                       <option value="COA Request">COA / Purity Test Request</option>
@@ -142,7 +142,7 @@ export default function ContactUsPage() {
                       placeholder="e.g. BBP-123456"
                       value={formData.orderNumber}
                       onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
                     />
                   </div>
                 </div>
@@ -155,13 +155,13 @@ export default function ContactUsPage() {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="Provide details regarding your research compounds, testing questions, or order..."
-                    className="w-full bg-brand-dark border border-brand-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-brand-dark border border-brand-border rounded-xl p-3 text-xs text-white focus:outline-none focus:"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-6 rounded-xl bg-brand-accent hover:bg-blue-600 text-white font-bold text-xs shadow-lg transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-xl bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4" />
                   <span>Send Message to Laboratory Team</span>

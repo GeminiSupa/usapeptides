@@ -58,7 +58,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/80 backdrop-blur-md animate-fadeIn">
       <div 
-        className="w-full max-w-2xl bg-brand-card border border-brand-border rounded-2xl shadow-2xl shadow-black overflow-hidden flex flex-col max-h-[80vh]"
+        className="w-full max-w-2xl bg-brand-card border border-brand-border rounded-2xl shadow-black overflow-hidden flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
@@ -142,7 +142,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       addToCart(product, 1);
                       onClose();
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-brand-accent hover:bg-blue-600 text-white text-xs font-semibold transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-brand-accent hover:bg-flag-red text-white text-xs font-semibold transition-colors"
                   >
                     Add
                   </button>

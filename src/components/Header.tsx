@@ -3,19 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Search, 
-  ShoppingBag, 
-  Heart, 
-  Menu, 
-  X, 
-  ChevronDown, 
-  ShieldCheck, 
-  Truck, 
-  FileText, 
-  FlaskConical,
+import {
+  Search,
+  ShoppingBag,
+  Heart,
+  Menu,
+  X,
+  ChevronDown,
   User,
-  Calculator
+  Calculator,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -25,23 +21,22 @@ interface HeaderProps {
   onOpenSearch: () => void;
 }
 
+const NAV = [
+  { href: '/shop', label: 'Shop' },
+  { href: '/blog', label: 'Research' },
+  { href: '/about-us', label: 'About' },
+  { href: '/faq', label: 'FAQ' },
+  { href: '/contact-us', label: 'Contact' },
+  { href: '/my-account', label: 'Account' },
+];
+
 export default function Header({ onOpenSearch }: HeaderProps) {
   const pathname = usePathname();
   const { totalItems, setIsCartOpen, subtotal } = useCart();
   const { wishlist } = useWishlist();
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setCategoryDropdownOpen(false);
@@ -49,277 +44,206 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
   return (
     <>
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-brand-darker via-brand-dark to-brand-darker border-b border-brand-border text-xs py-2 px-4 text-brand-textMuted">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
-          <div className="flex items-center gap-4 flex-wrap justify-center">
-            <span className="flex items-center gap-1.5 text-brand-cyan">
-              <Truck className="w-3.5 h-3.5" />
-              <span>FREE US Tracked Shipping on Orders $100+</span>
-            </span>
-            <span className="hidden sm:inline text-brand-border">•</span>
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>HPLC Tested &gt;99% Purity Verified</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="text-gray-400">Laboratory In-Vitro Research Use Only</span>
-            <Link href="/contact-us" className="text-brand-accentGlow hover:underline hidden lg:inline">
-              info@battlebornresearch.com
-            </Link>
-          </div>
+      {/* Utility bar */}
+      <div className="border-b border-brand-border bg-brand-darker">
+        <div className="shell flex flex-col items-center justify-between gap-1 py-2 text-[0.6875rem] text-brand-textMuted md:flex-row">
+          <span className="tracking-wide">
+            Free tracked shipping on US orders over $100
+            <span className="mx-2 text-brand-borderLight">/</span>
+            HPLC test results published per product
+          </span>
+          <span className="tracking-wide">For in-vitro research use only</span>
         </div>
       </div>
 
-      {/* Main Header */}
-      <header className={`sticky top-0 z-40 transition-all duration-200 ${
-        isScrolled 
-          ? 'bg-brand-darker/95 backdrop-blur-md shadow-xl shadow-black/40 border-b border-brand-border' 
-          : 'bg-brand-darker border-b border-brand-border'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4">
-            
-            {/* Mobile menu toggle */}
+      <header className="sticky top-0 z-40 border-b border-brand-border bg-brand-dark/95 backdrop-blur-md">
+        {/* Row 1 - brand, search, actions */}
+        <div className="shell flex h-20 items-center gap-4">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-brand-body hover:text-brand-heading lg:hidden"
+            aria-label="Toggle navigation"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
+          <Link href="/" className="flex flex-shrink-0 flex-col leading-none">
+            <span className="font-display text-[1.0625rem] font-extrabold uppercase tracking-[0.02em] text-brand-heading">
+              Battle Born <span className="text-brand-accent">Peptides</span>
+            </span>
+            <span className="mt-1.5 text-[0.625rem] uppercase tracking-[0.18em] text-brand-textMuted">
+              HPLC tested &middot; Ships from the USA
+            </span>
+          </Link>
+
+          {/* Search with a category scope, as on the reference header */}
+          <div className="ml-auto hidden min-w-0 max-w-xl flex-1 items-stretch border border-brand-border md:flex">
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-gray-300 hover:text-white rounded-lg hover:bg-brand-card focus:outline-none"
-              aria-label="Toggle Navigation"
+              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+              className="flex flex-shrink-0 items-center gap-1.5 border-r border-brand-border bg-brand-card px-3 text-[0.6875rem] font-semibold text-brand-body hover:text-brand-heading"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <span>All categories</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            <button
+              onClick={onOpenSearch}
+              className="flex min-w-0 flex-1 items-center justify-between gap-2 bg-transparent px-3 py-2.5 text-left text-xs text-brand-textMuted hover:text-brand-body"
+            >
+              <span className="truncate">Search research peptides...</span>
+              <Search className="h-4 w-4 flex-shrink-0 text-brand-accentGlow" />
+            </button>
+          </div>
+
+          <div className="ml-auto flex items-center gap-1 md:ml-0">
+            <button
+              onClick={onOpenSearch}
+              className="p-2.5 text-brand-body hover:text-brand-heading md:hidden"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
             </button>
 
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 flex-shrink-0 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-accent to-blue-700 flex items-center justify-center shadow-lg shadow-brand-accent/20 group-hover:scale-105 transition-transform border border-cyan-400/30">
-                <FlaskConical className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-extrabold tracking-wider text-white font-sans flex items-center gap-1">
-                  BATTLE BORN <span className="text-cyan-400">PEPTIDES</span>
+            <Link
+              href="/wishlist"
+              className="relative p-2.5 text-brand-body hover:text-brand-accentGlow"
+              title="Wishlist"
+            >
+              <Heart className="h-5 w-5" />
+              {wishlist.length > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center bg-brand-accent text-[0.5625rem] font-bold text-white">
+                  {wishlist.length}
                 </span>
-                <span className="text-[10px] tracking-widest text-brand-textMuted uppercase font-medium">
-                  HPLC TESTED • USA RESEARCH
-                </span>
-              </div>
+              )}
             </Link>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-2 text-sm font-medium">
-              <Link 
-                href="/shop" 
-                className={`px-3 py-2 rounded-lg transition-colors ${
-                  pathname === '/shop' ? 'text-cyan-400 bg-brand-card' : 'text-gray-200 hover:text-white hover:bg-brand-card/60'
-                }`}
-              >
-                All Peptides
-              </Link>
+            <Link
+              href="/my-account"
+              className="hidden p-2.5 text-brand-body hover:text-brand-accentGlow sm:block"
+              title="Account"
+            >
+              <User className="h-5 w-5" />
+            </Link>
 
-              {/* Category Dropdown */}
-              <div className="relative" onMouseLeave={() => setCategoryDropdownOpen(false)}>
-                <button
-                  onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                  onMouseEnter={() => setCategoryDropdownOpen(true)}
-                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-gray-200 hover:text-white hover:bg-brand-card/60 transition-colors"
-                >
-                  <span>Categories</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${categoryDropdownOpen ? 'rotate-180 text-cyan-400' : ''}`} />
-                </button>
-
-                {categoryDropdownOpen && (
-                  <div 
-                    onMouseEnter={() => setCategoryDropdownOpen(true)}
-                    className="absolute top-full left-0 w-80 bg-brand-card border border-brand-border rounded-xl shadow-2xl shadow-black/80 py-2 z-50 animate-fadeIn backdrop-blur-xl"
-                  >
-                    <div className="px-4 py-2 border-b border-brand-border/60 text-xs font-semibold text-brand-textMuted uppercase tracking-wider">
-                      Peptide Pathways
-                    </div>
-                    <div className="max-h-96 overflow-y-auto py-1">
-                      {categories.map((cat) => (
-                        <Link
-                          key={cat.id}
-                          href={`/category/${cat.slug}`}
-                          className="flex items-center justify-between px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:bg-brand-cardHover transition-colors group"
-                        >
-                          <span className="font-medium group-hover:text-cyan-400 transition-colors">{cat.name}</span>
-                          <span className="text-[10px] bg-brand-dark/80 px-2 py-0.5 rounded text-gray-400 border border-brand-border/40">
-                            {cat.count}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <Link 
-                href="/calculator" 
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === '/calculator' ? 'text-cyan-400 bg-brand-card' : 'text-gray-200 hover:text-white hover:bg-brand-card/60'
-                }`}
-              >
-                <Calculator className="w-4 h-4 text-brand-cyan" />
-                <span>Reconstitution Calc</span>
-              </Link>
-
-              <Link 
-                href="/blog" 
-                className={`px-3 py-2 rounded-lg transition-colors ${
-                  pathname.startsWith('/blog') ? 'text-cyan-400 bg-brand-card' : 'text-gray-200 hover:text-white hover:bg-brand-card/60'
-                }`}
-              >
-                Research & COA
-              </Link>
-
-              <Link 
-                href="/about-us" 
-                className={`px-3 py-2 rounded-lg transition-colors ${
-                  pathname === '/about-us' ? 'text-cyan-400 bg-brand-card' : 'text-gray-200 hover:text-white hover:bg-brand-card/60'
-                }`}
-              >
-                About
-              </Link>
-
-              <Link 
-                href="/faq" 
-                className={`px-3 py-2 rounded-lg transition-colors ${
-                  pathname === '/faq' ? 'text-cyan-400 bg-brand-card' : 'text-gray-200 hover:text-white hover:bg-brand-card/60'
-                }`}
-              >
-                FAQ
-              </Link>
-
-              <Link 
-                href="/contact-us" 
-                className={`px-3 py-2 rounded-lg transition-colors ${
-                  pathname === '/contact-us' ? 'text-cyan-400 bg-brand-card' : 'text-gray-200 hover:text-white hover:bg-brand-card/60'
-                }`}
-              >
-                Contact
-              </Link>
-            </nav>
-
-            {/* Right Action Icons */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Search trigger button */}
-              <button
-                onClick={onOpenSearch}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-card border border-brand-border text-brand-textMuted hover:text-white hover:border-brand-accent/50 transition-all text-xs"
-                aria-label="Search peptides"
-              >
-                <Search className="w-4 h-4 text-cyan-400" />
-                <span className="hidden md:inline">Search compounds...</span>
-                <kbd className="hidden lg:inline bg-brand-dark px-1.5 py-0.5 rounded text-[10px] text-gray-400 border border-brand-border">
-                  ⌘K
-                </kbd>
-              </button>
-
-              {/* Wishlist */}
-              <Link
-                href="/wishlist"
-                className="relative p-2.5 rounded-xl bg-brand-card border border-brand-border text-gray-300 hover:text-rose-400 hover:border-rose-500/40 transition-colors"
-                title="View Wishlist"
-              >
-                <Heart className="w-4 h-4" />
-                {wishlist.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
-                    {wishlist.length}
-                  </span>
-                )}
-              </Link>
-
-              {/* Account */}
-              <Link
-                href="/my-account"
-                className="p-2.5 rounded-xl bg-brand-card border border-brand-border text-gray-300 hover:text-cyan-400 hover:border-cyan-500/40 transition-colors hidden sm:flex"
-                title="Laboratory Portal"
-              >
-                <User className="w-4 h-4" />
-              </Link>
-
-              {/* Cart Button */}
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-accent to-blue-600 hover:from-blue-500 hover:to-brand-accent text-white font-semibold text-xs shadow-lg shadow-brand-accent/25 transition-all hover:scale-105 active:scale-95 border border-cyan-300/30"
-                aria-label="View shopping cart"
-              >
-                <div className="relative">
-                  <ShoppingBag className="w-4 h-4" />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-emerald-500 text-brand-darker font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center border-2 border-brand-darker">
-                      {totalItems}
-                    </span>
-                  )}
-                </div>
-                <span className="hidden sm:inline">${subtotal.toFixed(2)}</span>
-              </button>
-            </div>
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative ml-1 flex items-center gap-2 bg-brand-accent px-3.5 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+              aria-label="View cart"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              <span className="hidden sm:inline">${subtotal.toFixed(2)}</span>
+              {totalItems > 0 && (
+                <span className="flex h-4 min-w-4 items-center justify-center bg-white px-1 text-[0.5625rem] font-black text-brand-accent">
+                  {totalItems}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-brand-card border-b border-brand-border px-4 py-6 space-y-4 animate-fadeIn">
-            <div className="space-y-1">
-              <Link
-                href="/shop"
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-brand-cardHover"
+        {/* Row 2 - primary navigation */}
+        <nav className="hidden border-t border-brand-border lg:block">
+          <div className="shell flex items-center gap-1">
+            <div className="relative" onMouseLeave={() => setCategoryDropdownOpen(false)}>
+              <button
+                onMouseEnter={() => setCategoryDropdownOpen(true)}
+                onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                className="flex items-center gap-1.5 px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-heading hover:text-brand-accentGlow"
               >
-                All Research Peptides
-              </Link>
+                <span>All Research Peptides</span>
+                <ChevronDown
+                  className={`h-3 w-3 transition-transform ${categoryDropdownOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {categoryDropdownOpen && (
+                <div
+                  onMouseEnter={() => setCategoryDropdownOpen(true)}
+                  className="animate-fadeIn absolute left-0 top-full z-50 w-[22rem] border border-brand-border bg-brand-card"
+                >
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/category/${cat.slug}`}
+                      className="flex items-center justify-between border-b border-brand-border/60 px-4 py-2.5 text-xs text-brand-body transition-colors last:border-b-0 hover:bg-brand-cardHover hover:text-brand-accentGlow"
+                    >
+                      <span>{cat.name}</span>
+                      <span className="text-[0.625rem] text-brand-textMuted">{cat.count}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {NAV.map((item) => {
+              const active = pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors ${
+                    active ? 'text-brand-accentGlow' : 'text-brand-heading hover:text-brand-accentGlow'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+
+            <Link
+              href="/calculator"
+              className="flex items-center gap-1.5 px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-heading hover:text-brand-accentGlow"
+            >
+              <Calculator className="h-3.5 w-3.5" />
+              <span>Calculator</span>
+            </Link>
+
+            <Link
+              href="/affiliates"
+              className="ml-auto px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted hover:text-brand-accentGlow"
+            >
+              Affiliate Portal
+            </Link>
+          </div>
+        </nav>
+
+        {/* Mobile drawer */}
+        {mobileMenuOpen && (
+          <div className="animate-fadeIn border-t border-brand-border bg-brand-card px-4 py-5 lg:hidden">
+            <div className="flex flex-col">
+              {NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="border-b border-brand-border/60 py-3 font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading"
+                >
+                  {item.label}
+                </Link>
+              ))}
               <Link
                 href="/calculator"
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-cyan-400 hover:bg-brand-cardHover"
+                className="border-b border-brand-border/60 py-3 font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading"
               >
-                <Calculator className="w-4 h-4" />
-                <span>Reconstitution Calculator</span>
+                Reconstitution Calculator
               </Link>
               <Link
-                href="/blog"
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-brand-cardHover"
+                href="/affiliates"
+                className="py-3 font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading"
               >
-                Research & COA Reports
-              </Link>
-              <Link
-                href="/about-us"
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-brand-cardHover"
-              >
-                About Battle Born
-              </Link>
-              <Link
-                href="/faq"
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-brand-cardHover"
-              >
-                FAQ & Shipping
-              </Link>
-              <Link
-                href="/contact-us"
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-brand-cardHover"
-              >
-                Contact & Support
-              </Link>
-              <Link
-                href="/my-account"
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-brand-cardHover"
-              >
-                Researcher Account Portal
+                Affiliate Portal
               </Link>
             </div>
 
-            <div className="pt-4 border-t border-brand-border">
-              <div className="text-xs font-semibold text-brand-textMuted uppercase tracking-wider mb-2">
-                Browse By Category
-              </div>
-              <div className="grid grid-cols-1 gap-1">
+            <div className="mt-5 border-t border-brand-border pt-4">
+              <div className="eyebrow mb-3 text-brand-textMuted">Browse by category</div>
+              <div className="flex flex-col">
                 {categories.map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/category/${cat.slug}`}
-                    className="flex items-center justify-between py-2 px-3 rounded-lg text-xs text-gray-300 hover:text-cyan-400 hover:bg-brand-dark/50"
+                    className="flex items-center justify-between py-2 text-xs text-brand-body hover:text-brand-accentGlow"
                   >
                     <span>{cat.name}</span>
-                    <span className="text-[10px] text-gray-500 font-mono">{cat.count}</span>
+                    <span className="text-[0.625rem] text-brand-textMuted">{cat.count}</span>
                   </Link>
                 ))}
               </div>

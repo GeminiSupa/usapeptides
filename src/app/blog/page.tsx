@@ -7,13 +7,13 @@ import { FileText, ArrowRight, Clock, User, Sparkles } from 'lucide-react';
 
 export default function BlogIndexPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="shell py-10 space-y-10">
       
       <div className="border-b border-brand-border pb-6">
-        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+        <div className="eyebrow mb-2.5">
           Scientific Library &amp; COA Analysis
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+        <h1 className="page-title">
           Peptide Research &amp; Analytical Guides
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
@@ -25,7 +25,7 @@ export default function BlogIndexPage() {
         {articles.map((art) => (
           <article
             key={art.id}
-            className="group rounded-2xl bg-brand-card hover:bg-brand-cardHover border border-brand-border hover:border-cyan-500/40 p-5 flex flex-col justify-between transition-all shadow-xl"
+            className="group rounded-2xl bg-brand-card hover:bg-brand-cardHover border border-brand-border hover:border-cyan-500/40 p-5 flex flex-col justify-between transition-all"
           >
             <div className="space-y-4">
               <div className="aspect-video rounded-xl bg-brand-darker overflow-hidden">

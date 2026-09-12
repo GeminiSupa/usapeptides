@@ -21,7 +21,7 @@ export default function ReconstitutionCalculator() {
   const fillPercent = Math.min(100, (syringeUnits / maxUnits) * 100);
 
   return (
-    <div className="bg-brand-card border border-brand-border rounded-2xl p-6 sm:p-8 shadow-xl">
+    <div className="bg-brand-card border border-brand-border rounded-2xl p-6 sm:p-8">
       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-brand-border">
         <div className="w-10 h-10 rounded-xl bg-brand-accent/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
           <Calculator className="w-5 h-5" />
@@ -48,7 +48,7 @@ export default function ReconstitutionCalculator() {
                   onClick={() => setVialMg(mg)}
                   className={`py-2 rounded-lg text-xs font-bold transition-all border ${
                     vialMg === mg
-                      ? 'bg-brand-accent text-white border-cyan-400 shadow-md shadow-brand-accent/30'
+                      ? 'bg-brand-accent text-white'
                       : 'bg-brand-dark/80 text-gray-400 border-brand-border hover:text-white'
                   }`}
                 >
@@ -61,7 +61,7 @@ export default function ReconstitutionCalculator() {
               value={vialMg}
               onChange={(e) => setVialMg(Math.max(0.1, parseFloat(e.target.value) || 0))}
               step="0.5"
-              className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+              className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
               placeholder="Custom mg"
             />
           </div>
@@ -78,7 +78,7 @@ export default function ReconstitutionCalculator() {
                   onClick={() => setBacMl(ml)}
                   className={`py-2 rounded-lg text-xs font-bold transition-all border ${
                     bacMl === ml
-                      ? 'bg-brand-accent text-white border-cyan-400 shadow-md shadow-brand-accent/30'
+                      ? 'bg-brand-accent text-white'
                       : 'bg-brand-dark/80 text-gray-400 border-brand-border hover:text-white'
                   }`}
                 >
@@ -91,7 +91,7 @@ export default function ReconstitutionCalculator() {
               value={bacMl}
               onChange={(e) => setBacMl(Math.max(0.1, parseFloat(e.target.value) || 0))}
               step="0.5"
-              className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+              className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
               placeholder="Custom mL"
             />
           </div>
@@ -108,7 +108,7 @@ export default function ReconstitutionCalculator() {
                   onClick={() => setTargetMcg(mcg)}
                   className={`py-2 rounded-lg text-xs font-bold transition-all border ${
                     targetMcg === mcg
-                      ? 'bg-brand-accent text-white border-cyan-400 shadow-md shadow-brand-accent/30'
+                      ? 'bg-brand-accent text-white'
                       : 'bg-brand-dark/80 text-gray-400 border-brand-border hover:text-white'
                   }`}
                 >
@@ -121,7 +121,7 @@ export default function ReconstitutionCalculator() {
               value={targetMcg}
               onChange={(e) => setTargetMcg(Math.max(1, parseFloat(e.target.value) || 0))}
               step="25"
-              className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+              className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
               placeholder="Custom mcg dose"
             />
           </div>
@@ -142,7 +142,7 @@ export default function ReconstitutionCalculator() {
                   onClick={() => setSyringeType(s.type as any)}
                   className={`py-2 px-1 rounded-lg text-xs font-medium transition-all border ${
                     syringeType === s.type
-                      ? 'bg-cyan-950/80 text-cyan-300 border-cyan-400'
+                      ? 'bg-cyan-950/80 text-cyan-300'
                       : 'bg-brand-dark/80 text-gray-400 border-brand-border hover:text-white'
                   }`}
                 >
@@ -157,7 +157,7 @@ export default function ReconstitutionCalculator() {
         <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
           
           {/* Readout Card */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-brand-darker via-brand-dark to-brand-darker border border-brand-accent/40 shadow-xl space-y-4">
+          <div className="p-5 rounded-2xl bg-brand-card border border-brand-accent/40 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs text-brand-textMuted uppercase font-bold tracking-wider">
                 Reconstituted Result
@@ -205,7 +205,7 @@ export default function ReconstitutionCalculator() {
             <div className="relative w-full h-8 bg-slate-900 border-2 border-gray-600 rounded-r-lg overflow-hidden flex items-center">
               {/* Fluid fill */}
               <div
-                className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-300"
+                className="h-full bg-brand-card transition-all duration-300"
                 style={{ width: `${Math.min(100, fillPercent)}%` }}
               />
 

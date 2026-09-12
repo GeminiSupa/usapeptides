@@ -10,21 +10,21 @@ export default function WishlistPage() {
   const { wishlist } = useWishlist();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="shell py-10 space-y-8">
       
       <div className="border-b border-brand-border pb-6">
         <div className="text-xs font-bold text-rose-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
           <Heart className="w-3.5 h-3.5 fill-rose-400" />
           <span>Saved For Later</span>
         </div>
-        <h1 className="text-3xl font-extrabold text-white">
+        <h1 className="page-title">
           Researcher Wishlist ({wishlist.length})
         </h1>
       </div>
 
       {wishlist.length === 0 ? (
         <div className="text-center py-20 p-8 rounded-3xl bg-brand-card border border-brand-border space-y-4">
-          <div className="w-16 h-16 rounded-full bg-brand-darker mx-auto flex items-center justify-center text-gray-600 border border-brand-border">
+          <div className="w-16 h-16 bg-brand-darker mx-auto flex items-center justify-center text-gray-600 border border-brand-border">
             <Heart className="w-8 h-8" />
           </div>
           <h2 className="text-lg font-bold text-white">Your Wishlist is Empty</h2>
@@ -33,7 +33,7 @@ export default function WishlistPage() {
           </p>
           <Link
             href="/shop"
-            className="inline-block px-6 py-3 bg-brand-accent hover:bg-blue-600 text-white font-bold text-xs rounded-xl transition-colors"
+            className="inline-block px-6 py-3 bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] rounded-xl transition-colors"
           >
             Explore Catalog
           </Link>

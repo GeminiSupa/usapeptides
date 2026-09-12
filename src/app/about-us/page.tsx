@@ -6,14 +6,14 @@ import { ShieldCheck, Award, FlaskConical, Truck, CheckCircle2, FileText, ArrowR
 
 export default function AboutUsPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+    <div className="shell py-10 space-y-12">
       
       {/* Header */}
       <div className="border-b border-brand-border pb-6">
-        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+        <div className="eyebrow mb-2.5">
           Laboratory Standards
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+        <h1 className="page-title">
           About Battle Born Peptides
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl leading-relaxed">
@@ -35,7 +35,7 @@ export default function AboutUsPage() {
           </p>
         </div>
 
-        <div className="p-6 rounded-3xl bg-brand-card border border-brand-border space-y-4 shadow-xl">
+        <div className="p-6 rounded-3xl bg-brand-card border border-brand-border space-y-4">
           <h3 className="font-bold text-white text-sm flex items-center gap-2">
             <Award className="w-5 h-5 text-cyan-400" />
             Our Laboratory Guarantees
@@ -85,14 +85,14 @@ export default function AboutUsPage() {
       </div>
 
       {/* CTA */}
-      <div className="p-8 rounded-3xl bg-gradient-to-r from-brand-card via-brand-dark to-brand-card border border-brand-border flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+      <div className="p-8 rounded-3xl bg-brand-card border border-brand-border flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
         <div>
           <h3 className="text-lg font-bold text-white">Have Custom Synthesis or Bulk Institutional Inquiries?</h3>
           <p className="text-xs text-gray-400 mt-1">Our team provides custom aliquot packaging and academic department invoicing.</p>
         </div>
         <Link
           href="/contact-us"
-          className="px-6 py-3 bg-brand-accent hover:bg-blue-600 text-white font-bold text-xs rounded-xl transition-colors flex-shrink-0"
+          className="px-6 py-3 bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] rounded-xl transition-colors flex-shrink-0"
         >
           Contact Laboratory Team
         </Link>

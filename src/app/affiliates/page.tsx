@@ -7,13 +7,13 @@ export default function AffiliatesPage() {
   const [submitted, setSubmitted] = useState(false);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="shell max-w-4xl py-10 space-y-10">
       
       <div className="border-b border-brand-border pb-6">
-        <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">
+        <div className="eyebrow mb-2.5">
           Partner Program
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+        <h1 className="page-title">
           Affiliate &amp; Research Referral Portal
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
@@ -53,22 +53,22 @@ export default function AffiliatesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-gray-400 block mb-1">Full Name *</label>
-                <input type="text" required className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400" />
+                <input type="text" required className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:" />
               </div>
               <div>
                 <label className="text-gray-400 block mb-1">Email Address *</label>
-                <input type="email" required className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400" />
+                <input type="email" required className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:" />
               </div>
             </div>
 
             <div>
               <label className="text-gray-400 block mb-1">Website / Platform / Channel URL *</label>
-              <input type="url" required placeholder="https://" className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400" />
+              <input type="url" required placeholder="https://" className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:" />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-brand-accent hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg transition-colors"
+              className="w-full py-3 bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] rounded-xl transition-colors"
             >
               Submit Affiliate Application
             </button>

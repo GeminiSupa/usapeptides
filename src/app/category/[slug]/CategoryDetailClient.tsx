@@ -25,7 +25,7 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
   const categoryProducts = products.filter((p) => p.categorySlug === category.slug);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="shell py-10 space-y-8">
       
       {/* Breadcrumb navigation */}
       <div className="flex items-center gap-2 text-xs text-gray-400">
@@ -37,12 +37,12 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
       </div>
 
       {/* Category Banner */}
-      <div className="p-8 rounded-3xl bg-gradient-to-r from-brand-card via-brand-dark to-brand-darker border border-brand-border shadow-xl space-y-3">
+      <div className="p-8 rounded-3xl bg-brand-card border border-brand-border space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-semibold">
           <FlaskConical className="w-3.5 h-3.5" />
           <span>Analytical Pathway Group</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+        <h1 className="page-title">
           {category.name}
         </h1>
         <p className="text-sm text-gray-300 max-w-2xl leading-relaxed">
@@ -63,7 +63,7 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
         {categoryProducts.length === 0 ? (
           <div className="text-center py-16 p-8 rounded-2xl bg-brand-card border border-brand-border">
             <p className="text-sm text-gray-400">No products currently listed under this category.</p>
-            <Link href="/shop" className="mt-4 inline-block px-4 py-2 bg-brand-accent text-white text-xs font-bold rounded-xl">
+            <Link href="/shop" className="mt-4 inline-block px-4 py-2 bg-brand-accent text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] rounded-xl">
               Back to Catalog
             </Link>
           </div>

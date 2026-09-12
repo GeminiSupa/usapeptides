@@ -9,15 +9,15 @@ export default function OrderSuccessPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6">
-      <div className="w-16 h-16 rounded-3xl bg-emerald-950 border border-emerald-500/50 text-emerald-400 flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/20">
+      <div className="w-16 h-16 rounded-3xl bg-emerald-950 border border-emerald-500/50 text-emerald-400 flex items-center justify-center mx-auto">
         <CheckCircle2 className="w-10 h-10" />
       </div>
 
       <div className="space-y-2">
-        <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">
+        <span className="eyebrow">
           Order Successfully Placed
         </span>
-        <h1 className="text-3xl font-extrabold text-white">
+        <h1 className="page-title">
           Thank You For Your Research Order!
         </h1>
         <p className="text-xs text-gray-400 max-w-md mx-auto">
@@ -48,7 +48,7 @@ export default function OrderSuccessPage() {
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
         <Link
           href="/"
-          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-accent text-white font-bold text-xs hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-accent text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] hover:bg-flag-red transition-colors flex items-center justify-center gap-2"
         >
           <Home className="w-4 h-4" />
           <span>Return Home</span>
