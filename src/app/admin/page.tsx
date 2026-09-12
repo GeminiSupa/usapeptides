@@ -1,40 +1,68 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import RecordEditor, { type FieldDef } from '@/components/admin/RecordEditor';
 import ProductsPanel from '@/components/admin/ProductsPanel';
-import TeamPanel from '@/components/admin/TeamPanel';
 import StorefrontPanel from '@/components/admin/StorefrontPanel';
+import UsersPanel from '@/components/admin/UsersPanel';
+import AuditPanel from '@/components/admin/AuditPanel';
+import SubUserHome from '@/components/admin/SubUserHome';
+import { MODULES, type ModuleDef } from '@/lib/permissions';
 import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
-  Pencil, Monitor,
+  Pencil, Monitor, ScrollText, GitBranch, Wallet, Link2,
 } from 'lucide-react';
 
-const SECTIONS = [
-  { id: 'home',          label: 'Dashboard',       icon: LayoutDashboard, resource: null },
-  { id: 'storefront',    label: 'Storefront',      icon: Monitor,         resource: null },
-  { id: 'orders',        label: 'Orders',          icon: ShoppingBag,     resource: 'orders' },
-  { id: 'fulfillment',   label: 'Fulfillment',     icon: PackageCheck,    resource: 'fulfillment' },
-  { id: 'products',      label: 'Products',        icon: Boxes,           resource: 'products' },
-  { id: 'customers',     label: 'Customers',       icon: Users,           resource: 'customers' },
-  { id: 'inquiries',     label: 'Enquiries',       icon: MessageSquare,   resource: 'inquiries' },
-  { id: 'carts',         label: 'Abandoned carts', icon: ShoppingCart,    resource: 'carts' },
-  { id: 'reviews',       label: 'Reviews',         icon: Star,            resource: 'reviews' },
-  { id: 'subscribers',   label: 'Subscribers',     icon: Mail,            resource: 'subscribers' },
-  { id: 'leads',         label: 'Leads',           icon: Target,          resource: 'leads' },
-  { id: 'prospects',     label: 'Prospects',       icon: Building2,       resource: 'prospects' },
-  { id: 'deals',         label: 'Deals',           icon: Tag,             resource: 'deals' },
-  { id: 'affiliates',    label: 'Affiliates',      icon: Handshake,       resource: 'affiliates' },
-  { id: 'commissions',   label: 'Commissions',     icon: Receipt,         resource: 'commissions' },
-  { id: 'campaigns',     label: 'Campaigns',       icon: Megaphone,       resource: 'campaigns' },
-  { id: 'notifications', label: 'Notifications',   icon: Bell,            resource: 'notifications' },
-  { id: 'team',          label: 'Team',            icon: UserCog,         resource: 'team' },
-  { id: 'activity',      label: 'Activity log',    icon: History,         resource: 'activity' },
-] as const;
+/**
+ * The dashboard shell.
+ *
+ * The sidebar is built from the module list in `@/lib/permissions` filtered by
+ * what the server says this person may open, so there is no second copy of the
+ * permission rules living in the UI. Hiding a section is a courtesy — every
+ * route checks the same rules again, so typing a URL gets you nowhere.
+ */
+
+const ICONS: Record<string, typeof LayoutDashboard> = {
+  home: LayoutDashboard,
+  storefront: Monitor,
+  orders: ShoppingBag,
+  fulfillment: PackageCheck,
+  products: Boxes,
+  deals: Tag,
+  customers: Users,
+  inquiries: MessageSquare,
+  reviews: Star,
+  carts: ShoppingCart,
+  leads: Target,
+  prospects: Building2,
+  affiliates: Handshake,
+  commissions: Receipt,
+  campaigns: Megaphone,
+  subscribers: Mail,
+  notifications: Bell,
+  activity: History,
+  my_team: GitBranch,
+  users: UserCog,
+  audit: ScrollText,
+  my_earnings: Wallet,
+  my_link: Link2,
+};
+
+/**
+ * Modules that are a permission rather than a place.
+ *
+ * `affiliates` and `my_team` unlock tabs inside Users, and `my_link` is folded
+ * into the sub-user's own screen. Listing them in the sidebar as well would
+ * give two doors to one room.
+ */
+const NOT_A_SECTION = new Set(['affiliates', 'my_team', 'my_link']);
+
+/** Sections with a purpose-built screen; everything else is the generic table. */
+const CUSTOM = new Set(['home', 'storefront', 'products', 'users', 'audit', 'my_earnings']);
 
 const STATUS_OPTIONS: Record<string, string[]> = {
   status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
@@ -57,6 +85,17 @@ interface RowsResponse {
   columns: string[] | null;
 }
 
+interface Me {
+  id: string;
+  email: string;
+  fullName: string | null;
+  tier: 'staff' | 'sub_user';
+  isOwner: boolean;
+  permissions: string[];
+  allowed: string[];
+  defaultModule: string;
+}
+
 const money = (n: unknown) => `$${Number(n ?? 0).toFixed(2)}`;
 const prettify = (k: string) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -66,6 +105,7 @@ export default function AdminPage() {
   const [token, setToken] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
   const [denied, setDenied] = useState('');
+  const [me, setMe] = useState<Me | null>(null);
 
   const [section, setSection] = useState<string>('home');
   const [summary, setSummary] = useState<any>(null);
@@ -74,13 +114,11 @@ export default function AdminPage() {
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
 
-  /** undefined = closed, null = adding, a row = editing that row. */
   const [editorRow, setEditorRow] = useState<Record<string, any> | null | undefined>(undefined);
   const [saveBusy, setSaveBusy] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveFieldErrors, setSaveFieldErrors] = useState<Record<string, string>>({});
 
-  const active = SECTIONS.find((s) => s.id === section)!;
   const editorOpen = editorRow !== undefined;
 
   useEffect(() => {
@@ -93,7 +131,6 @@ export default function AdminPage() {
       const access = s.session?.access_token ?? null;
       if (!access) { router.replace('/admin/login'); return; }
       setToken(access);
-      setChecking(false);
     });
   }, [router]);
 
@@ -105,25 +142,37 @@ export default function AdminPage() {
       });
       if (res.status === 401 || res.status === 403) {
         const p = await res.json().catch(() => null);
-        setDenied(p?.message ?? 'Access denied.');
-        throw new Error('denied');
+        // A 403 on one section must not throw the person out of the whole
+        // dashboard, so only an expired session or a missing account does.
+        if (res.status === 401 || /does not have dashboard access|waiting for an owner/i.test(p?.message ?? '')) {
+          setDenied(p?.message ?? 'Access denied.');
+        }
+        throw new Error(p?.message ?? 'denied');
       }
       return res;
     },
     [token]
   );
 
-  /**
-   * Files go up separately from the record, as multipart. Content-Type is left
-   * unset on purpose so the browser can add its own boundary - setting it by
-   * hand here is what makes a multipart upload arrive unparseable.
-   */
+  /** Who am I, and what may I open? Answered once, server-side. */
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/admin/me', { headers: { Authorization: `Bearer ${token}` } })
+      .then(async (res) => {
+        const p = await res.json().catch(() => null);
+        if (!res.ok) { setDenied(p?.message ?? 'Access denied.'); return; }
+        setMe(p.data);
+        setSection(p.data.defaultModule);
+      })
+      .catch(() => setDenied('Could not reach the dashboard.'))
+      .finally(() => setChecking(false));
+  }, [token]);
+
   const upload = useCallback(
     async (file: File, kind: 'image' | 'coa'): Promise<string> => {
       const body = new FormData();
       body.append('file', file);
       body.append('kind', kind);
-
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -136,66 +185,73 @@ export default function AdminPage() {
     [token]
   );
 
+  /** The sidebar: the module list, in order, minus what this person cannot open. */
+  const sections: ModuleDef[] = useMemo(() => {
+    if (!me) return [];
+    return MODULES.filter((m) => me.allowed.includes(m.id) && !NOT_A_SECTION.has(m.id));
+  }, [me]);
+
+  const active = sections.find((s) => s.id === section) ?? sections[0];
+  const resource = active && !CUSTOM.has(active.id) ? active.id : null;
+
   const load = useCallback(async () => {
-    if (!token) return;
+    if (!token || !active) return;
     setLoading(true); setError('');
     try {
-      if (section === 'home') {
+      if (active.id === 'home') {
         const res = await authedFetch('/api/admin/summary');
         const p = await res.json();
         if (!res.ok) throw new Error(p?.message ?? 'Could not load the dashboard.');
         setSummary(p.data);
-      } else if (active.resource) {
+      } else if (resource) {
         const params = new URLSearchParams({ limit: '200' });
         if (query.trim()) params.set('q', query.trim());
-        const res = await authedFetch(`/api/admin/${active.resource}?${params}`);
+        const res = await authedFetch(`/api/admin/${resource}?${params}`);
         const p = await res.json();
         if (!res.ok) throw new Error(p?.message ?? 'Could not load that section.');
         setData(p.data);
       }
     } catch (err) {
-      if ((err as Error).message !== 'denied') setError((err as Error).message);
+      const message = (err as Error).message;
+      if (message !== 'denied') setError(message);
     } finally { setLoading(false); }
-  }, [token, active, section, query, authedFetch]);
+  }, [token, active, resource, query, authedFetch]);
 
-  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [token, section]);
+  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [token, section, me]);
 
   const patch = async (id: string, changes: Record<string, unknown>) => {
-    if (!active.resource) return;
+    if (!resource) return;
     try {
-      const res = await authedFetch(`/api/admin/${active.resource}`, {
+      const res = await authedFetch(`/api/admin/${resource}`, {
         method: 'PATCH', body: JSON.stringify({ id, changes }),
       });
       if (!res.ok) { const p = await res.json().catch(() => null); setError(p?.message ?? 'Update failed.'); return; }
       void load();
-    } catch { /* denied surfaced */ }
+    } catch { /* surfaced */ }
   };
 
   const remove = async (id: string) => {
-    if (!active.resource) return;
+    if (!resource) return;
     if (!window.confirm('Delete this record? This cannot be undone.')) return;
     try {
-      const res = await authedFetch(`/api/admin/${active.resource}?id=${id}`, { method: 'DELETE' });
+      const res = await authedFetch(`/api/admin/${resource}?id=${id}`, { method: 'DELETE' });
       if (!res.ok) { const p = await res.json().catch(() => null); setError(p?.message ?? 'Delete failed.'); return; }
       void load();
-    } catch { /* denied surfaced */ }
+    } catch { /* surfaced */ }
   };
 
   const openEditor = (row: Record<string, any> | null) => {
-    setEditorRow(row);
-    setSaveError('');
-    setSaveFieldErrors({});
+    setEditorRow(row); setSaveError(''); setSaveFieldErrors({});
   };
 
   const save = async (values: Record<string, unknown>) => {
-    if (!active.resource) return;
-
+    if (!resource) return;
     const editing = Boolean(editorRow);
     if (editing && Object.keys(values).length === 0) { setEditorRow(undefined); return; }
 
     setSaveBusy(true); setSaveError(''); setSaveFieldErrors({});
     try {
-      const res = await authedFetch(`/api/admin/${active.resource}`, {
+      const res = await authedFetch(`/api/admin/${resource}`, {
         method: editing ? 'PATCH' : 'POST',
         body: JSON.stringify(editing ? { id: editorRow!.id, changes: values } : values),
       });
@@ -207,7 +263,7 @@ export default function AdminPage() {
       }
       setEditorRow(undefined);
       void load();
-    } catch { /* denied surfaced */ }
+    } catch { /* surfaced */ }
     finally { setSaveBusy(false); }
   };
 
@@ -220,6 +276,18 @@ export default function AdminPage() {
       <div className="mx-auto max-w-md p-24 text-center">
         <h1 className="page-title">Access denied</h1>
         <p className="mt-3 text-xs leading-relaxed text-brand-textMuted">{denied}</p>
+        <button onClick={signOut} className="btn-ghost mt-6">Sign out</button>
+      </div>
+    );
+  }
+
+  if (!me || !active) {
+    return (
+      <div className="mx-auto max-w-md p-24 text-center">
+        <h1 className="page-title">Nothing to show</h1>
+        <p className="mt-3 text-xs leading-relaxed text-brand-textMuted">
+          Your account has no sections enabled yet. Ask an owner to give you access.
+        </p>
         <button onClick={signOut} className="btn-ghost mt-6">Sign out</button>
       </div>
     );
@@ -240,7 +308,7 @@ export default function AdminPage() {
       );
     }
 
-    const options = STATUS_OPTIONS[`${key}_${section}`];
+    const options = STATUS_OPTIONS[`${key}_${active.id}`];
     if (canEdit && options) {
       return (
         <select value={String(value ?? '')} onChange={(e) => patch(row.id, { [key]: e.target.value })}
@@ -267,22 +335,31 @@ export default function AdminPage() {
     d.columns?.filter((c) => c in (d.rows[0] ?? {})) ?? Object.keys(d.rows[0] ?? {}).filter((k) => k !== 'id');
 
   const canCreate = Boolean(data && data.createFields.length > 0);
-  /* Products, team and storefront bring their own headers and add buttons. */
-  const hasCustomPanel = section === 'products' || section === 'team' || section === 'storefront';
 
   /* -------------------------------------------------------------- view --- */
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       <aside className="border-b border-brand-border bg-brand-card lg:w-56 lg:flex-shrink-0 lg:border-b-0 lg:border-r">
-        <div className="flex items-center justify-between border-b border-brand-border px-4 py-4">
-          <span className="font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading">Dashboard</span>
-          <button onClick={signOut} title="Sign out" className="text-brand-textMuted hover:text-brand-accentGlow">
-            <LogOut className="h-4 w-4" />
-          </button>
+        <div className="border-b border-brand-border px-4 py-4">
+          <div className="flex items-center justify-between">
+            <span className="font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading">
+              Dashboard
+            </span>
+            <button onClick={signOut} title="Sign out" className="text-brand-textMuted hover:text-brand-accentGlow">
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="mt-1.5 truncate text-[0.625rem] text-brand-textMuted" title={me.email}>
+            {me.fullName || me.email}
+            {me.isOwner && <span className="ml-1 text-action">· owner</span>}
+            {me.tier === 'sub_user' && <span className="ml-1">· sub-user</span>}
+          </p>
         </div>
+
         <nav className="flex overflow-x-auto lg:block lg:overflow-visible">
-          {SECTIONS.map((s) => {
-            const Icon = s.icon; const on = s.id === section;
+          {sections.map((s) => {
+            const Icon = ICONS[s.id] ?? Inbox;
+            const on = s.id === section;
             return (
               <button key={s.id} onClick={() => { setSection(s.id); setQuery(''); setError(''); }}
                 className={`flex flex-shrink-0 items-center gap-2.5 px-4 py-2.5 text-left font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] transition-colors lg:w-full ${
@@ -298,12 +375,12 @@ export default function AdminPage() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="page-title">{active.label}</h1>
-            {data && active.resource && (
+            {data && resource && (
               <p className="mt-1.5 max-w-2xl text-[0.6875rem] leading-relaxed text-brand-textMuted">{data.blurb}</p>
             )}
           </div>
           <div className="flex items-center gap-2">
-            {active.resource && (
+            {resource && (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
                 <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()}
@@ -311,13 +388,13 @@ export default function AdminPage() {
                   className="border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none" />
               </div>
             )}
-            {section !== 'storefront' && (
+            {(resource || active.id === 'home') && (
               <button onClick={() => load()} title="Refresh"
                 className="border border-brand-borderLight p-2 text-brand-body hover:border-brand-accent hover:text-brand-accentGlow">
                 <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
               </button>
             )}
-            {canCreate && !hasCustomPanel && (
+            {canCreate && resource && active.id !== 'products' && (
               <button onClick={() => openEditor(null)}
                 className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
                 <Plus className="h-3.5 w-3.5" /> New
@@ -326,14 +403,22 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {error && <div className="mb-5 border border-brand-accent/50 bg-brand-card p-4 text-xs text-brand-body">{error}</div>}
+        {error && <div className="mb-5 border border-brand-accent/50 bg-brand-card p-4 text-xs leading-relaxed text-brand-body">{error}</div>}
 
-        {/* ----------------------------------------------------- storefront */}
-        {section === 'storefront' ? (
+        {/* -------------------------------------------------------- custom */}
+        {active.id === 'users' ? (
+          <UsersPanel authedFetch={authedFetch} isOwner={me.isOwner} />
+
+        ) : active.id === 'audit' ? (
+          <AuditPanel authedFetch={authedFetch} />
+
+        ) : active.id === 'my_earnings' ? (
+          <SubUserHome authedFetch={authedFetch} me={me} />
+
+        ) : active.id === 'storefront' ? (
           <StorefrontPanel authedFetch={authedFetch} />
 
-        /* ---------------------------------------------------------- home */
-        ) : section === 'home' ? (
+        ) : active.id === 'home' ? (
           summary ? (
             <div className="space-y-8">
               <div className="grid grid-cols-2 gap-px border border-brand-border bg-brand-border md:grid-cols-3 xl:grid-cols-5">
@@ -384,8 +469,7 @@ export default function AdminPage() {
             </div>
           ) : <p className="text-xs text-brand-textMuted">{loading ? 'Loading...' : 'No data.'}</p>
 
-        /* ------------------------------------------------------ products */
-        ) : section === 'products' && data ? (
+        ) : active.id === 'products' && data ? (
           data.rows.length > 0 ? (
             <ProductsPanel
               rows={data.rows}
@@ -407,17 +491,6 @@ export default function AdminPage() {
               </button>
             </div>
           )
-
-        /* ---------------------------------------------------------- team */
-        ) : section === 'team' && data ? (
-          <TeamPanel
-            rows={data.rows}
-            onEdit={(row) => openEditor(row)}
-            onDelete={remove}
-            onNew={() => openEditor(null)}
-            authedFetch={authedFetch}
-            onChanged={() => void load()}
-          />
 
         /* --------------------------------------------------- generic table */
         ) : data && data.rows.length > 0 ? (
@@ -461,7 +534,6 @@ export default function AdminPage() {
             </p>
           </>
 
-        /* ------------------------------------------------------ empty state */
         ) : (
           <div className="border border-brand-border bg-brand-card p-12 text-center">
             <Inbox className="mx-auto h-6 w-6 text-brand-textMuted" strokeWidth={1.5} />

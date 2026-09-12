@@ -99,6 +99,63 @@ something outside the code.
   during the verification run. The copy matches the real policy, but it was not
   asked for — clear or change it in Dashboard > Storefront in one click.
 
+## BLOCKING: run `supabase/migrations/0005_users.sql`
+
+Until it runs, the Users tab and the audit trail say so instead of failing.
+**Everything else keeps working and the existing owner keeps full access** —
+verified against the live database, not assumed. See `docs/USERS-AND-SECURITY.md`.
+
+## Users umbrella + real permissions
+
+Goal stated by the owner: this project becomes the template other businesses
+get, so it must need only a handful of connections and must not contain
+anything hardcoded or weak.
+
+### G. Security foundation (must land before the UI is worth anything)
+- [x] G1. Migration `0005_users.sql` — `admin_users` becomes the one identity
+      table: `user_id`, `tier`, `status`, `is_superadmin`, `permissions[]`,
+      `parent_user_id`, `sub_user_cap`, `commission_rate`, `override_rate`,
+      profile fields. Plus `admin_audit_log`, affiliate payout columns, and the
+      two-level depth trigger
+- [x] G2. `src/lib/permissions.ts` — the module list, tab resolution, tier
+      rules. One source of truth shared by API and UI. No email ever hardcoded
+- [x] G3. `requireAdmin(req, { permission, superadmin, allowSubUser })`.
+      Default-deny; sub-users refused on every route unless it opts in;
+      pending/suspended refused for everyone
+- [x] G4. Route -> permission map, so a new route is gated by default
+- [x] G5. Audit log written for every privileged action
+- [x] G6. Escalation guards: nobody edits their own permissions, tier,
+      superadmin flag or status; the last active superadmin cannot be demoted,
+      suspended or deleted; permissions validated against the module list;
+      commission rates bounded in the database, not just the form
+- [x] G7. First superadmin bootstrapped from the existing allow-list row by the
+      migration, never from a constant in code
+
+### H. Users tab
+- [x] H1. One `Users` section with three sub-tabs
+- [x] H2. **Team** — internal staff, with per-section permissions
+- [x] H3. **Sub Users** — the second tier: staff invite, owner approves, capped
+      at two levels, own commission and override rates, suspend and reassign
+- [x] H4. **Affiliates** — external partners, crypto-random referral codes,
+      bounded rates, commission approve/settle
+
+### I. Still to verify (needs 0005 run first)
+- [ ] I1. Run the 60-check security suite. It exists and is ready; it currently
+      stops at "0005 has not been run". It creates real accounts, tries to
+      escalate with each of them, and deletes every row it made
+- [ ] I2. Look at the three tabs in a browser
+
+### J. Known incomplete in this area
+- [ ] J1. Sub-user earnings are not calculated — orders carry no referral
+      column, so there is nothing to total. Their screen says so rather than
+      printing $0.00
+- [ ] J2. Affiliate commissions are not generated automatically either; the
+      table and the approve/pay states exist, nothing writes rows yet
+- [ ] J3. `team_members` is now superseded by `admin_users` and no longer in the
+      sidebar. The table and its data are untouched — decide whether to drop it
+- [ ] J4. Staff self-service profile editing. The Users routes are owner-only,
+      so a staff member cannot change their own phone number
+
 ## Measure, do not guess
 - [ ] Dashboard INP read 240ms in Chrome's live metrics, with ~151ms input
       delay on a sidebar click. That was the **dev server**, where unminified
@@ -111,7 +168,8 @@ something outside the code.
 - [ ] Blog written in the dashboard, published to the website
 - [ ] Remaining product detail fields in the form: specs table, bulk pricing
       tiers, tags, the structured `coa` JSON
-- [ ] Per-section dashboard permissions — right now access is all-or-nothing
+- [x] Per-section dashboard permissions — done. Access is no longer
+      all-or-nothing
 - [ ] Real product photography to replace the generated placeholder SVGs
 
 ## Blocked — needs an account he has not opened
