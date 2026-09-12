@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
@@ -18,6 +19,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const pathname = usePathname();
+  // The dashboard is a separate surface - no storefront chrome around it.
+  const isAdmin = pathname?.startsWith('/admin') ?? false;
 
   return (
     <html lang="en" className="dark">
@@ -34,18 +38,22 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-black text-brand-body pb-16 lg:pb-0">
         <WishlistProvider>
           <CartProvider>
-            <Header onOpenSearch={() => setSearchOpen(true)} />
+            {!isAdmin && <Header onOpenSearch={() => setSearchOpen(true)} />}
             <main className="flex-grow">
               {children}
             </main>
-            <Footer />
+            {!isAdmin && <Footer />}
 
             {/* Global Modals & Drawers */}
-            <CartDrawer />
-            <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-            <COAModal />
-            <ComplianceModal />
-            <MobileBottomNav />
+            {!isAdmin && (
+              <>
+                <CartDrawer />
+                <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+                <COAModal />
+                <ComplianceModal />
+                <MobileBottomNav />
+              </>
+            )}
           </CartProvider>
         </WishlistProvider>
       </body>
