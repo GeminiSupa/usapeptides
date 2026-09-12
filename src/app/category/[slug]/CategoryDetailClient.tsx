@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/products';
+import { useCatalogue } from '@/hooks/useCatalogue';
 import { categories } from '@/data/categories';
 import { ArrowLeft, FlaskConical, ShieldCheck, ChevronRight } from 'lucide-react';
 
@@ -22,6 +22,7 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
     notFound();
   }
 
+  const { products } = useCatalogue();
   const categoryProducts = products.filter((p) => p.categorySlug === category.slug);
 
   return (

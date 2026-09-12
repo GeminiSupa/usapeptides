@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Search, X, ShieldCheck, ArrowRight, FlaskConical } from 'lucide-react';
-import { products } from '@/data/products';
+import { useCatalogue } from '@/hooks/useCatalogue';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 
@@ -16,6 +16,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const { addToCart } = useCart();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { products } = useCatalogue();
 
   useEffect(() => {
     if (isOpen) {

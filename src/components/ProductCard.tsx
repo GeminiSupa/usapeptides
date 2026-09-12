@@ -100,8 +100,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           onClick={handleQuickAdd}
           className={`mt-4 w-full border px-4 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors ${
             added
-              ? 'border-brand-accent bg-brand-accent text-white'
-              : 'border-brand-borderLight bg-transparent text-brand-heading hover:border-brand-accent hover:bg-brand-accent hover:text-white'
+              ? 'border-whatsapp bg-whatsapp text-whatsapp-ink'
+              : 'border-action bg-action text-white hover:border-action-hover hover:bg-action-hover'
           }`}
         >
           {added ? (

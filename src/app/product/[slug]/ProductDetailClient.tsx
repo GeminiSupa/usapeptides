@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { products } from '@/data/products';
+import { useCatalogue } from '@/hooks/useCatalogue';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import BulkPricingTable from '@/components/BulkPricingTable';
@@ -33,16 +33,30 @@ type TabId = (typeof TABS)[number]['id'];
 export default function ProductDetailClient({ slug }: { slug: string }) {
   const { addToCart, setSelectedCOAProduct } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { products, loading } = useCatalogue();
+
+  // Every hook runs before the two exits below, so the set of hooks is the
+  // same on the loading render and the loaded one.
+  const [quantity, setQuantity] = useState<number>(1);
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [added, setAdded] = useState<boolean>(false);
 
   const product = products.find((p) => p.slug === slug);
+
+  // A product added in the dashboard is not in the bundled catalogue, so
+  // "not found" has to wait until the live one has actually been fetched -
+  // otherwise a brand new product 404s for a moment before appearing.
+  if (!product && loading) {
+    return (
+      <div className="shell py-32 text-center text-xs text-brand-textMuted">
+        Loading product...
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();
   }
-
-  const [quantity, setQuantity] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
-  const [added, setAdded] = useState<boolean>(false);
 
   const isFavorited = isInWishlist(product.id);
 
@@ -196,8 +210,8 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                   onClick={handleAddToCart}
                   className={`flex w-full items-center justify-center gap-2 border px-6 py-3.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors sm:col-span-8 ${
                     added
-                      ? 'border-brand-accent bg-brand-accent text-white'
-                      : 'border-brand-accent bg-brand-accent text-white hover:bg-flag-red'
+                      ? 'border-whatsapp bg-whatsapp text-whatsapp-ink'
+                      : 'border-action bg-action text-white hover:border-action-hover hover:bg-action-hover'
                   }`}
                 >
                   {added ? (
@@ -305,12 +319,25 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 <h3 className="font-display text-[0.8125rem] font-extrabold uppercase tracking-[0.08em] text-brand-heading">
                   Independent analysis
                 </h3>
-                <button
-                  onClick={() => setSelectedCOAProduct(product)}
-                  className="bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
-                >
-                  Open full report
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  {product.coaUrl && (
+                    <a
+                      href={product.coaUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-action px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-action-hover"
+                    >
+                      <FileText className="h-3 w-3" />
+                      Download certificate
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setSelectedCOAProduct(product)}
+                    className="bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+                  >
+                    Open full report
+                  </button>
+                </div>
               </div>
 
               <dl className="grid grid-cols-2 gap-px border border-brand-border bg-brand-border sm:grid-cols-4">

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, FileText, X } from 'lucide-react';
-import { products } from '@/data/products';
+import { useCatalogue } from '@/hooks/useCatalogue';
 import { categories } from '@/data/categories';
 import { useCart } from '@/context/CartContext';
 
@@ -18,6 +18,8 @@ export default function CoaDatabasePage() {
   const { setSelectedCOAProduct } = useCart();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
+
+  const { products } = useCatalogue();
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -34,7 +36,7 @@ export default function CoaDatabasePage() {
         );
       })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [query, category]);
+  }, [products, query, category]);
 
   return (
     <div className="shell space-y-8 py-10">

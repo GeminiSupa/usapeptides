@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/products';
+import { useCatalogue } from '@/hooks/useCatalogue';
 import { categories } from '@/data/categories';
 import { 
   Filter, 
@@ -19,6 +19,8 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'name'>('featured');
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
+
+  const { products } = useCatalogue();
 
   const filteredProducts = useMemo(() => {
     return products
@@ -47,7 +49,7 @@ export default function ShopPage() {
         if (sortBy === 'name') return a.name.localeCompare(b.name);
         return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
       });
-  }, [selectedCategory, searchQuery, sortBy, inStockOnly]);
+  }, [products, selectedCategory, searchQuery, sortBy, inStockOnly]);
 
   return (
     <div className="shell py-10 space-y-8">

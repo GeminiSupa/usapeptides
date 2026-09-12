@@ -73,6 +73,45 @@
     border-color: #b22234;
   }
 
+  /**
+   * The buy button. Same geometry as .btn-primary so they are interchangeable,
+   * different fill: brand red states what the site is, this states what to do
+   * next. Used for add-to-cart, checkout and place-order, nowhere else — an
+   * action colour on six things at once points at none of them.
+   */
+  .btn-action {
+    @apply inline-flex items-center justify-center gap-2 font-display uppercase
+           bg-action text-white border border-action
+           px-7 py-3.5 transition-colors duration-150;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    border-radius: 2px;
+  }
+  .btn-action:hover {
+    background-color: #A34309;
+    border-color: #A34309;
+  }
+  .btn-action:disabled {
+    @apply cursor-not-allowed border-brand-border bg-brand-cardHover text-brand-textMuted;
+  }
+
+  /* Reserved for buttons that open a WhatsApp conversation. Dark text, not
+     white: see the contrast note on the token. */
+  .btn-whatsapp {
+    @apply inline-flex items-center justify-center gap-2 font-display uppercase
+           bg-whatsapp text-whatsapp-ink border border-whatsapp
+           px-7 py-3.5 transition-colors duration-150;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    border-radius: 2px;
+  }
+  .btn-whatsapp:hover {
+    background-color: #1DB954;
+    border-color: #1DB954;
+  }
+
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 font-display uppercase
            bg-transparent text-brand-heading border border-brand-borderLight
@@ -124,4 +163,34 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     overflow-x: visible;
   }
+}
+
+/* Announcement strip above the header, written in Dashboard > Storefront. */
+.announce {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.announce-track {
+  display: inline-flex;
+  animation-name: announce-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.announce-item {
+  padding: 0.5rem 2.5rem 0.5rem 0;
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+@keyframes announce-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.3333%); }
+}
+/* Motion here is decoration; hold it still for anyone who asked for that. */
+@media (prefers-reduced-motion: reduce) {
+  .announce-track { animation: none; }
+  .announce { text-overflow: ellipsis; }
 }

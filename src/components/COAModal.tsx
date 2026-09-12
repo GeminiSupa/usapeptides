@@ -18,11 +18,13 @@ export default function COAModal() {
 
   if (!selectedCOAProduct) return null;
 
-  const { coa, name, sku, casNumber, molarMass, sequence, formula } = selectedCOAProduct;
+  const { coa, name, sku, casNumber, molarMass, sequence, formula, coaUrl } = selectedCOAProduct;
 
-  const handleDownloadSimulation = () => {
-    alert(`Downloading Official HPLC Certificate of Analysis PDF for ${selectedCOAProduct.name} (Lot: ${coa.lotNumber})`);
-  };
+  /**
+   * The real certificate, uploaded in Dashboard > Products. Products that have
+   * not had one uploaded yet say so plainly instead of offering a button that
+   * used to pop up an alert pretending to download something.
+   */
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
@@ -212,13 +214,21 @@ export default function COAModal() {
             Authenticity sealed with digital analytical signature
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button
-              onClick={handleDownloadSimulation}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-1.5"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download PDF Certificate</span>
-            </button>
+            {coaUrl ? (
+              <a
+                href={coaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-action hover:bg-action-hover text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download PDF Certificate</span>
+              </a>
+            ) : (
+              <span className="w-full sm:w-auto px-4 py-2 text-[0.6875rem] text-brand-textMuted">
+                The signed PDF for this lot is not published yet.
+              </span>
+            )}
             <button
               onClick={() => setSelectedCOAProduct(null)}
               className="px-4 py-2 rounded-xl bg-brand-card hover:bg-brand-cardHover border border-brand-border text-gray-300 text-xs font-semibold"

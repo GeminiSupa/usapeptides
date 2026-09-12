@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-black text-brand-body pb-16 lg:pb-0">
         <WishlistProvider>
           <CartProvider>
+            {!isAdmin && <AnnouncementBanner />}
             {!isAdmin && <Header onOpenSearch={() => setSearchOpen(true)} />}
             <main className="flex-grow">
               {children}

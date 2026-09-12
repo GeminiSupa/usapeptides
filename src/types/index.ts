@@ -38,6 +38,8 @@ export interface Product {
     status: 'PASSED' | 'VERIFIED';
     chromatogramPeak: string;
   };
+  /** Uploaded certificate PDF, when the dashboard has one for this product. */
+  coaUrl?: string;
   image: string;
   tags: string[];
   isFeatured?: boolean;

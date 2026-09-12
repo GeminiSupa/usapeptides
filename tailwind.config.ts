@@ -72,6 +72,31 @@ const config: Config = {
           blue: '#3c3b6e',
           white: '#ffffff',
         },
+        /**
+         * Action colours, kept deliberately separate from the brand red.
+         *
+         * Red is the brand; these are the two fills that have actually been
+         * tested as converting, so anything a customer must click to buy or to
+         * start a conversation uses one of them. Held as tokens rather than
+         * inline hex so swapping them for a test is one edit here.
+         *
+         * `action` is #BF4F0B because it clears AA with white text (4.84:1).
+         * The brighter oranges it replaced — #F58220 at 2.59:1, #E05A0C at
+         * 3.73:1 — do not, and these buttons carry small uppercase type where
+         * that matters most.
+         *
+         * `whatsapp` is the brand green, which is far too light to carry white
+         * text (1.9:1). It takes the near-black `ink` instead, at about 12:1.
+         */
+        action: {
+          DEFAULT: '#BF4F0B',
+          hover: '#A34309',
+        },
+        whatsapp: {
+          DEFAULT: '#25D366',
+          hover: '#1DB954',
+          ink: '#06210F',
+        },
         brand: {
           dark: '#07090f',
           darker: '#040509',

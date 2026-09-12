@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { categories } from '@/data/categories';
+
 /**
  * Whitelist of tables the admin dashboard may touch, what may be done to each,
  * and the shape of the "new record" form. Anything not described here is
@@ -15,7 +17,10 @@ export type FieldType =
   | 'boolean'
   | 'select'
   | 'date'
-  | 'textarea';
+  | 'textarea'
+  /** Stored as a URL string; the form offers an upload button. */
+  | 'image'
+  | 'file';
 
 export interface FieldDef {
   name: string;
@@ -24,7 +29,17 @@ export interface FieldDef {
   options?: string[];
   required?: boolean;
   help?: string;
+  /** Groups fields into sections in the product editor. */
+  group?: string;
 }
+
+/** Category names, offered as a dropdown so nobody free-types a pathway. */
+export const CATEGORY_NAMES = categories.map((c) => c.name);
+
+/** Name -> slug, so choosing a category fills in its slug automatically. */
+export const CATEGORY_SLUGS: Record<string, string> = Object.fromEntries(
+  categories.map((c) => [c.name, c.slug])
+);
 
 export interface ResourceConfig {
   table: string;
@@ -41,6 +56,28 @@ export interface ResourceConfig {
   createFields: FieldDef[];
   /** Columns worth showing in the compact table, in order. */
   columns?: string[];
+  /**
+   * Last pass over a validated row before it is written. Fills in columns the
+   * form deliberately does not ask for, so a short form still produces a
+   * complete record.
+   */
+  derive?: (row: Record<string, unknown>) => Record<string, unknown>;
+  /**
+   * The same idea for an edit, but it may only touch columns implied by what
+   * was actually submitted. `derive` cannot be reused here: it fills in
+   * defaults from an absent field, which on a one-field edit would overwrite
+   * good data with a default.
+   */
+  deriveUpdate?: (changes: Record<string, unknown>) => Record<string, unknown>;
+}
+
+/** URL-safe slug from a product name, for when the field is left blank. */
+export function slugify(value: string): string {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
 }
 
 const STATUS = {
@@ -72,31 +109,98 @@ export const RESOURCES: Record<string, ResourceConfig> = {
   products: {
     table: 'products',
     title: 'Products',
-    blurb: 'Your catalogue. Prices and stock here are what the storefront shows.',
+    blurb: 'Your catalogue. What you set here is what the website shows.',
     select:
-      'id, slug, name, category, category_slug, price, sale_price, sku, purity, stock_count, in_stock, is_featured, is_active, image',
+      'id, slug, name, category, category_slug, price, sale_price, sku, purity, sequence,' +
+      ' cas_number, molar_mass, formula, storage, appearance, description, image, coa_url,' +
+      ' coa_lot, coa_tested_at, stock_count, in_stock, is_featured, is_popular, is_active,' +
+      ' sort_order, created_at',
     orderBy: 'name',
     searchable: ['name', 'sku', 'slug'],
     editable: [
-      'name', 'price', 'sale_price', 'stock_count', 'in_stock',
-      'is_featured', 'is_active', 'purity', 'category', 'image',
+      'name', 'slug', 'sku', 'category', 'category_slug', 'price', 'sale_price',
+      'stock_count', 'in_stock', 'is_featured', 'is_popular', 'is_active',
+      'purity', 'sequence', 'cas_number', 'molar_mass', 'formula', 'storage',
+      'appearance', 'description', 'image', 'coa_url', 'coa_lot', 'coa_tested_at',
+      'sort_order',
     ],
-    deletable: false,
+    deletable: true,
     createFields: [
-      { name: 'name', label: 'Product name', type: 'text', required: true },
-      { name: 'slug', label: 'URL slug', type: 'text', required: true, help: 'lowercase-with-dashes' },
-      { name: 'sku', label: 'SKU', type: 'text' },
-      { name: 'category', label: 'Category', type: 'text' },
-      { name: 'category_slug', label: 'Category slug', type: 'text' },
-      { name: 'price', label: 'Price', type: 'money', required: true },
-      { name: 'sale_price', label: 'Sale price', type: 'money' },
-      { name: 'stock_count', label: 'Stock', type: 'number' },
-      { name: 'purity', label: 'Purity', type: 'text' },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'image', label: 'Image path', type: 'text', help: 'e.g. /vials/bpc-157-5mg.svg' },
-      { name: 'is_featured', label: 'Featured', type: 'boolean' },
-      { name: 'is_active', label: 'Active', type: 'boolean' },
+      { group: 'Basics', name: 'name', label: 'Product name', type: 'text', required: true },
+      { group: 'Basics', name: 'category', label: 'Category', type: 'select', options: CATEGORY_NAMES, required: true,
+        help: 'Decides which category page it appears on.' },
+      { group: 'Basics', name: 'sku', label: 'SKU', type: 'text', help: 'Your own stock code. Optional.' },
+      { group: 'Basics', name: 'slug', label: 'Web address', type: 'text',
+        help: 'Leave blank and it is built from the name.' },
+      { group: 'Basics', name: 'purity', label: 'Purity', type: 'text', help: 'e.g. 99.4%' },
+
+      { group: 'Price and stock', name: 'price', label: 'Price', type: 'money', required: true },
+      { group: 'Price and stock', name: 'sale_price', label: 'Sale price', type: 'money',
+        help: 'Leave blank for no sale. Shown struck through against the price.' },
+      { group: 'Price and stock', name: 'stock_count', label: 'Units in stock', type: 'number' },
+
+      { group: 'Media', name: 'image', label: 'Product photo', type: 'image',
+        help: 'JPG, PNG or WEBP, up to 2 MB.' },
+      { group: 'Media', name: 'coa_url', label: 'Certificate of analysis', type: 'file',
+        help: 'PDF up to 2 MB. Customers download this from the product page.' },
+      { group: 'Media', name: 'coa_lot', label: 'Certificate lot number', type: 'text' },
+      { group: 'Media', name: 'coa_tested_at', label: 'Tested on', type: 'date' },
+
+      { group: 'Details', name: 'description', label: 'Description', type: 'textarea' },
+      { group: 'Details', name: 'sequence', label: 'Sequence', type: 'textarea' },
+      { group: 'Details', name: 'cas_number', label: 'CAS number', type: 'text' },
+      { group: 'Details', name: 'molar_mass', label: 'Molar mass', type: 'text' },
+      { group: 'Details', name: 'formula', label: 'Formula', type: 'text' },
+      { group: 'Details', name: 'storage', label: 'Storage', type: 'text' },
+      { group: 'Details', name: 'appearance', label: 'Appearance', type: 'text' },
+
+      { group: 'Visibility', name: 'is_active', label: 'Show on the website', type: 'boolean' },
+      { group: 'Visibility', name: 'is_featured', label: 'Feature on the home page', type: 'boolean' },
+      { group: 'Visibility', name: 'is_popular', label: 'Mark as popular', type: 'boolean' },
+      { group: 'Visibility', name: 'sort_order', label: 'Sort position', type: 'number',
+        help: 'Lower numbers come first. Leave at 0 to sort by name.' },
     ],
+    columns: ['name', 'category', 'price', 'stock_count', 'is_active'],
+    derive: (row) => {
+      const name = String(row.name ?? '');
+      const category = String(row.category ?? '');
+
+      // A blank web address is filled in from the name rather than refused:
+      // whoever adds a product should not have to know what a slug is.
+      if (!row.slug && name) row.slug = slugify(name);
+
+      // Category pages filter on the slug, so a product saved with a category
+      // name but no slug would be invisible on its own category page.
+      if (category && CATEGORY_SLUGS[category]) row.category_slug = CATEGORY_SLUGS[category];
+
+      // Stock drives the In stock badge. Typing 0 units should not leave a
+      // product advertised as available.
+      const stock = Number(row.stock_count ?? 0);
+      row.in_stock = Number.isFinite(stock) && stock > 0;
+
+      // Live unless the form said otherwise, so adding a product and pressing
+      // save actually puts it on the website.
+      if (row.is_active === undefined) row.is_active = true;
+
+      return row;
+    },
+    deriveUpdate: (changes) => {
+      // Moving a product to another category has to move its slug too, or the
+      // product page says one category and the category page never lists it.
+      const category = changes.category;
+      if (typeof category === 'string' && CATEGORY_SLUGS[category]) {
+        changes.category_slug = CATEGORY_SLUGS[category];
+      }
+
+      // Editing the stock number re-decides the In stock badge. Only when that
+      // number is part of the edit, so toggling Featured leaves stock alone.
+      if (changes.stock_count !== undefined) {
+        const stock = Number(changes.stock_count);
+        changes.in_stock = Number.isFinite(stock) && stock > 0;
+      }
+
+      return changes;
+    },
   },
 
   customers: {
@@ -347,18 +451,41 @@ export const RESOURCES: Record<string, ResourceConfig> = {
   team: {
     table: 'team_members',
     title: 'Team',
-    blurb: 'Staff records. To grant dashboard access, add the address to admin_users as well.',
-    select: 'id, email, full_name, role, is_active, created_at',
+    blurb: 'Everyone who works here. Adding someone here does not give them a login - use Grant access for that.',
+    select:
+      'id, email, full_name, job_title, role, phone, avatar_url, notes, started_on,' +
+      ' is_active, has_dashboard_access, created_at',
     orderBy: 'created_at',
-    searchable: ['email', 'full_name', 'role'],
-    editable: ['full_name', 'role', 'is_active'],
+    searchable: ['email', 'full_name', 'role', 'job_title'],
+    editable: [
+      'full_name', 'job_title', 'role', 'phone', 'avatar_url', 'notes',
+      'started_on', 'is_active',
+    ],
     deletable: true,
     createFields: [
-      { name: 'full_name', label: 'Name', type: 'text' },
-      { name: 'email', label: 'Email', type: 'email', required: true },
-      { name: 'role', label: 'Role', type: 'select', options: ['owner', 'manager', 'staff'] },
-      { name: 'is_active', label: 'Active', type: 'boolean' },
+      { group: 'Person', name: 'full_name', label: 'Full name', type: 'text', required: true },
+      { group: 'Person', name: 'email', label: 'Email', type: 'email', required: true },
+      { group: 'Person', name: 'phone', label: 'Phone', type: 'text' },
+      { group: 'Person', name: 'avatar_url', label: 'Photo', type: 'image',
+        help: 'JPG or PNG up to 2 MB. Optional.' },
+
+      { group: 'Role', name: 'job_title', label: 'Job title', type: 'text',
+        help: 'What they actually do. e.g. Lab Manager' },
+      { group: 'Role', name: 'role', label: 'Level', type: 'select',
+        options: ['owner', 'manager', 'staff'],
+        help: 'For your own records. It does not grant dashboard access.' },
+      { group: 'Role', name: 'started_on', label: 'Started on', type: 'date' },
+      { group: 'Role', name: 'is_active', label: 'Currently employed', type: 'boolean' },
+
+      { group: 'Notes', name: 'notes', label: 'Notes', type: 'textarea' },
     ],
+    columns: ['full_name', 'job_title', 'role', 'email', 'is_active', 'has_dashboard_access'],
+    derive: (row) => {
+      // Somebody added to the team is presumed to work here.
+      if (row.is_active === undefined) row.is_active = true;
+      if (!row.role) row.role = 'staff';
+      return row;
+    },
   },
 
   activity: {

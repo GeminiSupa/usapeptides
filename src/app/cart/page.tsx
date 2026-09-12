@@ -301,7 +301,7 @@ export default function CartPage() {
                 }}
                 className={`w-full py-4 px-6 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-2 ${
                   ackCompliance
-                    ? 'bg-brand-accent hover:bg-flag-red text-white'
+                    ? 'bg-action hover:bg-action-hover text-white'
                     : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
               >

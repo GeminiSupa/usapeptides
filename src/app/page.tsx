@@ -7,7 +7,7 @@ import TrustBar from '@/components/TrustBar';
 import CategoryNav from '@/components/CategoryNav';
 import ProductCard from '@/components/ProductCard';
 import ReconstitutionCalculator from '@/components/ReconstitutionCalculator';
-import { products } from '@/data/products';
+import { useCatalogue } from '@/hooks/useCatalogue';
 import { articles } from '@/data/articles';
 import { faqs } from '@/data/faqs';
 import { ArrowRight, Check } from 'lucide-react';
@@ -44,6 +44,7 @@ function SectionHead({
 }
 
 export default function HomePage() {
+  const { products } = useCatalogue();
   const featured = products.filter((p) => p.isFeatured || p.isPopular).slice(0, 8);
   const mostRequested = products.filter((p) => !featured.includes(p)).slice(0, 8);
   const homeFaqs = faqs.slice(0, 6);
