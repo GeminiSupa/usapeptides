@@ -179,9 +179,12 @@
 .announce-item {
   padding: 0.5rem 2.5rem 0.5rem 0;
   font-family: 'Archivo', system-ui, sans-serif;
-  font-size: 0.625rem;
+  /* Larger than the site's other micro-labels on purpose. Everything else at
+     0.625rem is a label you glance past; this is the one line the bar exists to
+     get read, and at that size nobody read it. */
+  font-size: 0.8125rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #ffffff;
 }

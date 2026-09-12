@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import UploadField from './UploadField';
 
@@ -81,6 +81,14 @@ export default function RecordEditor({
 
   const set = (name: string, value: unknown) =>
     setValues((prev) => ({ ...prev, [name]: value }));
+
+  // Escape closes it. Without this the only way out of a long form was to
+  // scroll to the bottom and find Cancel.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onCancel]);
 
   /** Groups in the order they first appear, so the form reads top to bottom. */
   const groups = useMemo(() => {

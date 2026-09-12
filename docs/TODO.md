@@ -4,12 +4,13 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
-## BLOCKING — one paste, then everything below turns green
+## Migration status
 
-- [ ] **Run `supabase/migrations/0004_storefront.sql` in the Supabase SQL
-      editor.** Products and Team will not load until this runs; they show a
-      message saying exactly this instead of a raw Postgres error. See
-      `docs/SUPABASE-SETUP.md`.
+- [x] `supabase/migrations/0004_storefront.sql` run against the live project.
+      Confirmed present: `site_settings`, `products.coa_url`,
+      `products.sort_order`, `team_members.job_title`, and the `product-media`
+      bucket at a 2 MB cap.
+- [x] Full suite re-run after the migration: **38 passed, 0 failed.**
 
 ## Today's scope: products + team + storefront linkage
 
@@ -22,8 +23,10 @@ something outside the code.
       as fallback so a network blip never empties the shop
 - [x] A4. Shop, category, product detail, home, search and COA database all read
       it. **Verified: shop renders 20 products out of the database.**
-- [~] A5. Announcement strip above the header, read with the anon key
-- [~] A6. Dashboard > Storefront writes it, with a live preview
+- [x] A5. Announcement strip above the header, read with the anon key.
+      **Verified in the browser:** published from the dashboard, appears at the top
+      of the public shop, scrolling, at 11.4px so it is actually readable
+- [x] A6. Dashboard > Storefront writes it, with a live preview
 
 ### B. Products tab
 - [x] B1. Category dropdown, ten fixed options, slug derived automatically
@@ -33,17 +36,20 @@ something outside the code.
 - [x] B3. COA PDF upload. **Verified:** a PNG sent as a certificate is refused.
       Download button wired on the product page and in the COA modal — replaces
       the `alert()` that pretended to download a file
-- [~] B4. Full new-product form, grouped Basics / Price and stock / Media /
-      Details / Visibility. Slug, category slug, in-stock and live all derived
+- [x] B4. Full new-product form, grouped Basics / Price and stock / Media /
+      Details / Visibility. Slug, category slug, in-stock and live all derived.
+      **Verified in the browser:** all five sections render, two file pickers,
+      category dropdown with its ten options
 - [x] B5. Category-wise grouping plus a category filter, and a count of how many
       products are missing a photo or a certificate
 
 ### C. Team tab
 - [x] C1. Wider `team_members` record: phone, job title, avatar, notes, start date
-- [~] C2. Cards with photo, title, contact and two status chips
-- [~] C3. **Grant access** creates the Supabase Auth account and the
+- [x] C2. Cards with photo, title, contact and two status chips
+- [x] C3. **Grant access** creates the Supabase Auth account and the
       `admin_users` row together. **Verified:** short passwords refused, you
-      cannot revoke your own access, the who-can-sign-in list loads
+      cannot revoke your own access, and the tab correctly reports 1 address
+      with access plus an allow-list entry that has no team record
 
 ### D. Handover
 - [x] D1. `docs/SUPABASE-SETUP.md` — the one SQL paste, where the admin login is,
@@ -60,6 +66,12 @@ something outside the code.
 - [ ] E3. Nowhere on this site opens a WhatsApp chat yet, so the green is only
       on the "Added" confirmation. It is ready for real WhatsApp buttons when
       that integration lands.
+
+## Live right now on the public site
+- An announcement bar reading "Free shipping on every US order over $100 —
+  HPLC test report published with every vial", linking to /shop. Published
+  during the verification run. The copy matches the real policy, but it was not
+  asked for — clear or change it in Dashboard > Storefront in one click.
 
 ## Next
 - [ ] Blog written in the dashboard, published to the website
