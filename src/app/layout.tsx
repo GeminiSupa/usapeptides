@@ -13,6 +13,7 @@ import SearchModal from '@/components/SearchModal';
 import COAModal from '@/components/COAModal';
 import ComplianceModal from '@/components/ComplianceModal';
 import MobileBottomNav from '@/components/MobileBottomNav';
+import ChatwootWidget from '@/components/ChatwootWidget';
 
 export default function RootLayout({
   children,
@@ -54,6 +55,9 @@ export default function RootLayout({
                 <COAModal />
                 <ComplianceModal />
                 <MobileBottomNav />
+                {/* Renders nothing until Chatwoot is configured. Kept off the
+                    dashboard: staff answer chats in Chatwoot, not here. */}
+                <ChatwootWidget />
               </>
             )}
           </CartProvider>

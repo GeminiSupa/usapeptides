@@ -67,11 +67,45 @@ something outside the code.
       on the "Added" confirmation. It is ready for real WhatsApp buttons when
       that integration lands.
 
+### F. Live chat (Chatwoot)
+- [x] F1. `chatwootEnv` + `features.liveChat` / `liveChatWebhook`, so the site
+      runs unchanged with no Chatwoot account and the widget appears the moment
+      the two public values exist
+- [x] F2. `ChatwootWidget` loads the SDK, identifies a signed-in customer, and
+      attaches the page and cart to the conversation. **Verified against
+      Chatwoot Cloud:** script injects, SDK initialises, `$chatwoot` ready
+- [x] F3. `/api/chat/identity` signs a customer's identity server-side. The
+      inbox HMAC key must never reach the browser or anyone could impersonate
+      any customer and read their chat history
+- [x] F4. `/api/webhooks/chatwoot` turns a chat into a Lead with the page and
+      cart in the notes, logs incoming messages to the activity trail, and
+      leaves an existing lead's status and sales notes alone
+- [x] F5. **29 checks passing** against the live database, all test rows removed
+- [x] F6. `docs/CHATWOOT-SETUP.md`
+- [ ] F7. Waiting on him: `NEXT_PUBLIC_CHATWOOT_BASE_URL` and
+      `NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN` from the inbox Configuration screen,
+      both as Vercel **Config** not Secret, then a redeploy
+- [ ] F8. Set the Chatwoot launcher colour to #BF4F0B in the Widget Builder, to
+      match the tested action colour on the buy buttons
+- [ ] F9. `CHATWOOT_WEBHOOK_SECRET` is already generated in `.env.local` — copy
+      it to Vercel as a Secret and paste the webhook URL into Chatwoot
+- [ ] F10. Not built: reading chats inside our dashboard (needs a Chatwoot API
+      token), and Chatwoot's WhatsApp/Messenger channels (needs the same Meta
+      credentials everything else is blocked on)
+
 ## Live right now on the public site
 - An announcement bar reading "Free shipping on every US order over $100 —
   HPLC test report published with every vial", linking to /shop. Published
   during the verification run. The copy matches the real policy, but it was not
   asked for — clear or change it in Dashboard > Storefront in one click.
+
+## Measure, do not guess
+- [ ] Dashboard INP read 240ms in Chrome's live metrics, with ~151ms input
+      delay on a sidebar click. That was the **dev server**, where unminified
+      code, React's dev build, on-demand compilation and Strict Mode's double
+      render inflate it several times over. Re-measure on the deployed site; if
+      it is still amber there, the sidebar click refetches and re-renders a
+      200-row list, and that is what to fix.
 
 ## Next
 - [ ] Blog written in the dashboard, published to the website
