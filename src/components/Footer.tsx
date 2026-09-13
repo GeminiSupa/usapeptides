@@ -14,10 +14,10 @@ export default function Footer() {
         <div className="space-y-5 lg:col-span-2">
           <Link href="/" className="inline-block" aria-label="USA Peptide Depot home">
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt="USA Peptide Depot"
               width={622}
-              height={239}
+              height={205}
               className="h-14 w-auto"
             />
           </Link>

@@ -71,10 +71,10 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
           <Link href="/" className="flex flex-shrink-0 flex-col leading-none" aria-label="USA Peptide Depot home">
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt="USA Peptide Depot"
               width={622}
-              height={239}
+              height={205}
               priority
               className="h-9 w-auto sm:h-12"
             />
