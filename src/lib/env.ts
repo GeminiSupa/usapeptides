@@ -13,8 +13,8 @@ const clean = (v: string | undefined): string => (v ?? '').trim();
 
 /** Public business identity, used in page copy, emails and order records. */
 export const BUSINESS = {
-  name: 'USA Peptides',
-  legalName: 'USA Peptides',
+  name: 'USA Peptide Depot',
+  legalName: 'USA Peptide Depot',
   domain: clean(process.env.NEXT_PUBLIC_SITE_URL) || 'https://usapeptides-six.vercel.app',
   supportEmail: clean(process.env.ORDER_NOTIFICATION_FROM) || 'info@usapeptides.com',
   country: 'US',

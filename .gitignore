@@ -6,6 +6,7 @@
 
 # testing
 /coverage
+/public/fonts-dev/
 
 # next.js
 /.next/

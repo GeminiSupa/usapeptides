@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 622 239" role="img" aria-labelledby="title description">
+  <title id="title">USA Peptide Depot</title>
+  <desc id="description">UPD monogram with the words USA Peptide Depot</desc>
+  <g fill="#fdfbf0">
+    <path d="M8 20h40v98c0 43 21 66 59 66 32 0 52-18 59-51V20h40v185h-40v-22c-16 21-39 32-69 32-56 0-89-35-89-96V20Z"/>
+    <path fill-rule="evenodd" d="M124 20h139c57 0 91 28 91 75 0 48-34 76-91 76h-65v34h-74V20Zm74 38v75h61c31 0 48-13 48-38 0-24-17-37-48-37h-61Z"/>
+    <path fill-rule="evenodd" d="M260 20h87c56 0 92 36 92 92 0 57-36 93-92 93h-95v-38h91c34 0 55-20 55-55 0-34-21-54-55-54h-47L260 20Z"/>
+    <text x="447" y="72" font-family="Cera Pro, Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="45" font-weight="300">USA</text>
+    <text x="447" y="126" font-family="Cera Pro, Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="45" font-weight="300">Peptide</text>
+    <text x="447" y="180" font-family="Cera Pro, Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="45" font-weight="300">Depot</text>
+  </g>
+</svg>

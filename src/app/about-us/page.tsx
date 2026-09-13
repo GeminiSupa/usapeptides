@@ -14,7 +14,7 @@ export default function AboutUsPage() {
           Laboratory Standards
         </div>
         <h1 className="page-title">
-          About USA Peptides
+          About USA Peptide Depot
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl leading-relaxed">
           Supplying HPLC-tested research peptides and reference materials to academic universities, private laboratories, and biotechnology institutions.
@@ -28,7 +28,7 @@ export default function AboutUsPage() {
             Uncompromising Chemical Integrity
           </h2>
           <p>
-            USA Peptides was founded to eliminate the variance and lack of transparency historically associated with research chemical procurement. We believe researchers deserve clear, reproducible purity data before running critical in-vitro assays.
+            USA Peptide Depot was founded to eliminate the variance and lack of transparency historically associated with research chemical procurement. We believe researchers deserve clear, reproducible purity data before running critical in-vitro assays.
           </p>
           <p>
             Every peptide batch we distribute is synthesized via automated solid-phase peptide synthesis (SPPS), purified with preparative RP-HPLC, lyophilized into sterile Type I borosilicate vials under inert argon atmosphere, and validated through independent third-party laboratories.

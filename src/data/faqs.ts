@@ -3,7 +3,7 @@ import { FAQItem } from '@/types';
 export const faqs: FAQItem[] = [
   {
     category: 'Ordering & Laboratory Compliance',
-    question: 'Who is eligible to purchase peptides from USA Peptides?',
+    question: 'Who is eligible to purchase peptides from USA Peptide Depot?',
     answer: 'Our compounds are strictly for laboratory in-vitro research purposes only. They are not intended for human consumption, clinical use, or veterinary applications. Purchases are restricted to research institutions, university labs, corporate R&D facilities, and qualified independent laboratory researchers.'
   },
   {

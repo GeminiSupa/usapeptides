@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <title>USA Peptides | HPLC-Tested Research Peptides, Shipped From the USA</title>
+        <title>USA Peptide Depot | HPLC-Tested Research Peptides, Shipped From the USA</title>
         <meta
           name="description"
           content="Lyophilized research peptides with independent HPLC test results published per product. Ships from the United States, tracked. Free shipping over $100. In-vitro research use only."
@@ -36,8 +36,9 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="stylesheet" href="/fonts/cera.css" />
       </head>
-      <body className="min-h-screen flex flex-col bg-black text-brand-body pb-16 lg:pb-0">
+      <body className="min-h-screen flex flex-col bg-brand-dark text-brand-body pb-16 lg:pb-0">
         <WishlistProvider>
           <CartProvider>
             {!isAdmin && <AnnouncementBanner />}

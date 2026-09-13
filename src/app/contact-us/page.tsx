@@ -26,7 +26,7 @@ export default function ContactUsPage() {
           Direct Laboratory Communication
         </div>
         <h1 className="page-title">
-          Contact USA Peptides
+          Contact USA Peptide Depot
         </h1>
         <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
           For technical HPLC inquiries, bulk institutional orders, or shipping assistance, our laboratory team responds within 24 business hours.

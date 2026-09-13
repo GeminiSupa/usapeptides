@@ -1,6 +1,6 @@
 # CLAUDE.md — read this before touching anything
 
-USA Peptides: a research-peptide storefront with an admin dashboard, on Next.js 14
+USA Peptide Depot: a research-peptide storefront with an admin dashboard, on Next.js 14
 (App Router) + Supabase, deployed on Vercel. It is also meant to become a
 **template other businesses reuse**, so nothing business-specific may be
 hardcoded.
@@ -23,7 +23,7 @@ something.
    contains 37 live production credentials. Never read its `.env*` files, never
    import from it, never copy its keys, never connect this project to its data.
    The owner's words: *there must be no data connection between peptidecosta and
-   USA Peptides.* Read its source only to learn how a feature was built. Do not
+   USA Peptide Depot.* Read its source only to learn how a feature was built. Do not
    delete the folder without asking.
 
 3. **This is NOT a static export.** Never add `output: 'export'` to
@@ -51,7 +51,7 @@ something.
    `peptidecosta/`, publishing content on the live site. "Push it" means push,
    not rewrite.
 
-9. **The brand is "USA Peptides".** Never use the name "Battle Born" or copy text
+9. **The brand is "USA Peptide Depot".** Never use the name "Battle Born" or copy text
    or images from its site. It is only the UI reference (see below).
 
 ---

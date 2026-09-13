@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
         <div className="mb-8 text-center">
           <Lock className="mx-auto h-6 w-6 text-brand-accentGlow" strokeWidth={1.75} />
           <h1 className="page-title mt-4">Dashboard</h1>
-          <p className="mt-2 text-xs text-brand-textMuted">USA Peptides staff access</p>
+          <p className="mt-2 text-xs text-brand-textMuted">USA Peptide Depot staff access</p>
         </div>
 
         {!isSupabaseConfigured ? (

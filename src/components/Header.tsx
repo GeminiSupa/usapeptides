@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -59,7 +60,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
       <header className="sticky top-0 z-40 border-b border-brand-border bg-brand-dark/95 backdrop-blur-md">
         {/* Row 1 - brand, search, actions */}
-        <div className="shell flex h-20 items-center gap-4">
+        <div className="shell flex h-20 items-center gap-1 sm:gap-4">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-brand-body hover:text-brand-heading lg:hidden"
@@ -68,11 +69,16 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
-          <Link href="/" className="flex flex-shrink-0 flex-col leading-none">
-            <span className="font-display text-[1.0625rem] font-extrabold uppercase tracking-[0.02em] text-brand-heading">
-              USA <span className="text-brand-accent">Peptides</span>
-            </span>
-            <span className="mt-1.5 text-[0.625rem] uppercase tracking-[0.18em] text-brand-textMuted">
+          <Link href="/" className="flex flex-shrink-0 flex-col leading-none" aria-label="USA Peptide Depot home">
+            <Image
+              src="/logo.svg"
+              alt="USA Peptide Depot"
+              width={622}
+              height={239}
+              priority
+              className="h-9 w-auto sm:h-12"
+            />
+            <span className="mt-1.5 hidden text-[0.625rem] uppercase tracking-[0.18em] text-brand-textMuted sm:block">
               HPLC tested &middot; Ships from the USA
             </span>
           </Link>

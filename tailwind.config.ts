@@ -1,18 +1,14 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Red / white / blue theme.
+ * USA Peptide Depot theme.
  *
- * Layout, type scale and section rhythm follow the reference site; the palette
- * is American — a deep navy shell, white headings, Old Glory Red as the single
- * action colour, with a steel blue for links and secondary accents.
- *
- * The legacy `brand.*` tokens are kept so existing markup keeps compiling, and
- * the stock `cyan`/`blue`/`emerald`/`gray` ramps are overridden so utilities
- * already scattered through the pages resolve into this palette.
+ * The brand kit supplies forest #1F4233, cream #FDFBF0 and navy #233049.
+ * Existing semantic token names remain stable so the storefront and dashboard
+ * inherit the new identity without scattering business-specific colour values.
  */
 
-// Old Glory Red (#b22234) brightened for legibility on navy.
+// Semantic error red remains red; it is no longer used as a brand colour.
 const red = {
   50:  '#fff1f3',
   100: '#ffdde1',
@@ -27,35 +23,49 @@ const red = {
   950: '#22060a',
 };
 
-// Old Glory Blue (#3c3b6e) pushed toward a cleaner steel blue.
+// Navy ramp anchored on the brand-kit navy (#233049).
 const blue = {
-  50:  '#eff4ff',
-  100: '#dbe6ff',
-  200: '#bcd0ff',
-  300: '#8fb4ff',
-  400: '#5b8def',
-  500: '#3b6fd4',
-  600: '#2b55ad',
-  700: '#213f80',
-  800: '#182c58',
-  900: '#101d3a',
-  950: '#0a1226',
+  50:  '#f1f4f8',
+  100: '#dfe5ef',
+  200: '#c3cddd',
+  300: '#9bacc5',
+  400: '#7289aa',
+  500: '#536c93',
+  600: '#3f5578',
+  700: '#324561',
+  800: '#293a52',
+  900: '#233049',
+  950: '#151d2d',
 };
 
-// Neutral greys for surfaces, hairlines and body copy - no blue cast, so the
-// red accent is the only colour that carries meaning.
+// Cream-led neutrals anchored on the brand-kit cream (#FDFBF0).
 const neutral = {
-  50:  '#ffffff',
-  100: '#f2f3f5',
-  200: '#d9dbe0',
-  300: '#b9bcc4',
-  400: '#7e838e',
-  500: '#5f646e',
-  600: '#42464f',
-  700: '#232833',
-  800: '#141820',
-  900: '#0d1017',
-  950: '#07090f',
+  50:  '#fdfbf0',
+  100: '#f8f5e8',
+  200: '#ece8d8',
+  300: '#d6d1c2',
+  400: '#a9a99f',
+  500: '#7c817b',
+  600: '#5e6661',
+  700: '#414b46',
+  800: '#2a3530',
+  900: '#17211d',
+  950: '#0c1310',
+};
+
+// Forest ramp anchored on the brand-kit forest (#1F4233).
+const forest = {
+  50:  '#f3f7f4',
+  100: '#ddeae2',
+  200: '#bcd4c5',
+  300: '#90b79f',
+  400: '#5f9476',
+  500: '#3e745b',
+  600: '#2f5c48',
+  700: '#274b3b',
+  800: '#1f4233',
+  900: '#183428',
+  950: '#0d1f18',
 };
 
 const config: Config = {
@@ -68,9 +78,10 @@ const config: Config = {
     extend: {
       colors: {
         flag: {
-          red: '#b22234',
-          blue: '#3c3b6e',
-          white: '#ffffff',
+          // Legacy aliases retained for existing class names.
+          red: forest[600],
+          blue: blue[900],
+          white: neutral[50],
         },
         /**
          * Action colours, kept deliberately separate from the brand red.
@@ -98,20 +109,20 @@ const config: Config = {
           ink: '#06210F',
         },
         brand: {
-          dark: '#07090f',
-          darker: '#040509',
-          card: '#0d1017',
-          cardHover: '#141820',
-          border: '#232833',
-          borderLight: '#343a47',
-          accent: red[500],
-          accentGlow: red[400],
-          cyan: blue[400],
+          dark: forest[900],
+          darker: blue[950],
+          card: blue[900],
+          cardHover: blue[800],
+          border: '#405169',
+          borderLight: '#66748a',
+          accent: forest[500],
+          accentGlow: neutral[50],
+          cyan: blue[300],
           emerald: neutral[100],
-          gold: red[400],
+          gold: neutral[200],
           textMuted: neutral[400],
-          heading: neutral[100],
-          body: neutral[300],
+          heading: neutral[50],
+          body: neutral[200],
         },
         // Repoint the ramps the existing pages already reference.
         red,
@@ -123,9 +134,9 @@ const config: Config = {
         sky: blue,
         indigo: blue,
         // Confirmation states read blue rather than green — no green in this palette.
-        emerald: blue,
-        teal: blue,
-        green: blue,
+        emerald: forest,
+        teal: forest,
+        green: forest,
         purple: neutral,
         violet: neutral,
         fuchsia: neutral,
@@ -135,13 +146,13 @@ const config: Config = {
         stone: neutral,
       },
       fontFamily: {
-        sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
-        display: ['Archivo', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
+        sans: ['Cera Pro', 'Manrope', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
+        display: ['Cera Pro', 'Archivo', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       fontSize: {
         // Reference site runs a 14px base with a compact scale.
-        'hero': ['clamp(2.25rem, 6vw, 4.5rem)', { lineHeight: '1.02', letterSpacing: '-0.015em', fontWeight: '800' }],
+        'hero': ['clamp(1.875rem, 6vw, 4.5rem)', { lineHeight: '1.02', letterSpacing: '-0.015em', fontWeight: '800' }],
         'section': ['clamp(1.375rem, 2.4vw, 1.625rem)', { lineHeight: '1.18', letterSpacing: '-0.008em', fontWeight: '800' }],
         'eyebrow': ['0.6875rem', { lineHeight: '1', letterSpacing: '0.16em', fontWeight: '700' }],
       },

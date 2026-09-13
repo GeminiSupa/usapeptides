@@ -71,7 +71,7 @@
     @apply max-w-shell mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Solid red primary action, square-ish, uppercase. */
+  /* Brand-green primary action, square-ish, uppercase. */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 font-display uppercase
            bg-brand-accent text-white border border-brand-accent
@@ -82,8 +82,8 @@
     border-radius: 2px;
   }
   .btn-primary:hover {
-    background-color: #b22234;
-    border-color: #b22234;
+    background-color: #2f5c48;
+    border-color: #2f5c48;
   }
 
   /**
@@ -145,11 +145,11 @@
 
 }
 
-/* Scrollbars tuned to the navy shell. */
+/* Scrollbars tuned to the forest and navy shell. */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #07090f; }
-::-webkit-scrollbar-thumb { background: #232833; }
-::-webkit-scrollbar-thumb:hover { background: #343a47; }
+::-webkit-scrollbar-track { background: #151d2d; }
+::-webkit-scrollbar-thumb { background: #405169; }
+::-webkit-scrollbar-thumb:hover { background: #66748a; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }

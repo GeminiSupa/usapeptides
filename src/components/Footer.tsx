@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { categories } from '@/data/categories';
@@ -11,10 +12,14 @@ export default function Footer() {
       <div className="shell grid grid-cols-1 gap-10 py-16 md:grid-cols-2 lg:grid-cols-5">
         {/* Brand + newsletter */}
         <div className="space-y-5 lg:col-span-2">
-          <Link href="/" className="inline-block">
-            <span className="font-display text-base font-extrabold uppercase tracking-[0.02em] text-brand-heading">
-              USA <span className="text-brand-accent">Peptides</span>
-            </span>
+          <Link href="/" className="inline-block" aria-label="USA Peptide Depot home">
+            <Image
+              src="/logo.svg"
+              alt="USA Peptide Depot"
+              width={622}
+              height={239}
+              className="h-14 w-auto"
+            />
           </Link>
 
           <p className="max-w-sm text-xs leading-relaxed text-brand-textMuted">
@@ -124,7 +129,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col items-center justify-between gap-3 text-[0.6875rem] text-brand-textMuted sm:flex-row">
-            <p>&copy; {new Date().getFullYear()} USA Peptides. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} USA Peptide Depot. All rights reserved.</p>
             <div className="flex flex-wrap items-center justify-center gap-5">
               {[
                 { href: '/privacy-policy', label: 'Privacy policy' },
