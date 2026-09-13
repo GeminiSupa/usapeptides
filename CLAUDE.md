@@ -51,8 +51,16 @@ something.
    `peptidecosta/`, publishing content on the live site. "Push it" means push,
    not rewrite.
 
-9. **The brand is "USA Peptides".** It was a clone of "Battle Born" and was
-   rebranded. That name must never reappear.
+9. **The brand is "USA Peptides".** Never use the name "Battle Born" or copy text
+   or images from its site. It is only the UI reference (see below).
+
+---
+
+## Reference projects
+
+- **UI:** we are recreating the look of **https://battlebornresearch.com**.
+- **Features:** copied from the **`peptidecosta/`** project folder. Same features,
+  in our design, on our own Supabase, with no data connection (rule 2).
 
 ---
 
