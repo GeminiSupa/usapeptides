@@ -12,16 +12,20 @@ import { Upload, FileText, X, ExternalLink } from 'lucide-react';
  * the rest of the form.
  */
 
+export type UploadKind = 'image' | 'coa' | 'avatar';
+
 interface Props {
-  kind: 'image' | 'coa';
+  kind: UploadKind;
   value: string;
   onChange: (url: string) => void;
-  upload: (file: File, kind: 'image' | 'coa') => Promise<string>;
+  upload: (file: File, kind: UploadKind) => Promise<string>;
 }
 
-const ACCEPT = {
+const ACCEPT: Record<UploadKind, string> = {
   image: 'image/jpeg,image/png,image/webp,image/avif,image/gif,image/svg+xml',
   coa: 'application/pdf',
+  // No SVG: a profile photo is shown to other staff, and an SVG can carry script.
+  avatar: 'image/jpeg,image/png,image/webp,image/avif',
 };
 
 export default function UploadField({ kind, value, onChange, upload }: Props) {
@@ -49,8 +53,8 @@ export default function UploadField({ kind, value, onChange, upload }: Props) {
       <div className="flex items-start gap-3">
         <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center border border-brand-border bg-brand-dark">
           {value ? (
-            kind === 'image' ? (
-              <img src={value} alt="" className="h-full w-full object-contain p-1" />
+            kind !== 'coa' ? (
+              <img src={value} alt="" className={`h-full w-full ${kind === 'avatar' ? 'object-cover' : 'object-contain p-1'}`} />
             ) : (
               <FileText className="h-5 w-5 text-brand-accentGlow" />
             )

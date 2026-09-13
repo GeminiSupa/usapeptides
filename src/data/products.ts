@@ -50,7 +50,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single dominant symmetrical peak at retention time 14.82 min'
     },
-    image: '/vials/glp3-10mg.svg',
+    image: '/products/vial-costarica-hero.jpg',
     tags: ['Retatrutide', 'GLP3', 'Triple Agonist', 'Incretin', 'Metabolic', 'HPLC-Tested'],
     isFeatured: true,
     isPopular: true
@@ -103,7 +103,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single dominant peak at retention time 14.80 min'
     },
-    image: '/vials/glp3-5mg.svg',
+    image: '/products/hero-peptide-vial.jpg',
     tags: ['Retatrutide', 'GLP3', 'Triple Agonist', 'Incretin', '5mg']
   },
   {
@@ -154,7 +154,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Sharp single peak at retention time 16.14 min'
     },
-    image: '/vials/glp-1-gip-10mg.svg',
+    image: '/products/hero-peptide-vial.jpg',
     tags: ['Tirzepatide', 'GLP-1', 'GIP', 'Dual Agonist', 'HPLC-Tested'],
     isFeatured: true
   },
@@ -196,7 +196,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 16.12 min'
     },
-    image: '/vials/glp-1-gip-5mg.svg',
+    image: '/products/modern-3d-vial-hero.jpg',
     tags: ['Tirzepatide', '5mg', 'Dual Agonist']
   },
 
@@ -249,7 +249,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single dominant peak at retention time 9.45 min'
     },
-    image: '/vials/bpc-157-5mg.svg',
+    image: '/products/modern-3d-vial-hero.jpg',
     tags: ['BPC-157', 'ECM', 'Angiogenesis', 'Cell Migration', 'Lyophilized', 'HPLC-Tested'],
     isFeatured: true,
     isPopular: true
@@ -298,7 +298,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 13.20 min'
     },
-    image: '/vials/tb-500-5mg.svg',
+    image: '/products/hero-peptide-vial.jpg',
     tags: ['TB-500', 'Thymosin Beta 4', 'Actin', 'Cell Motility'],
     isPopular: true
   },
@@ -346,7 +346,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single dominant peak at 6.18 min'
     },
-    image: '/vials/ghk-cu-50mg.svg',
+    image: '/products/vial-costarica-hero.jpg',
     tags: ['GHK-Cu', 'Copper Peptide', 'Collagen', 'Extracellular Matrix']
   },
 
@@ -388,7 +388,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 11.85 min'
     },
-    image: '/vials/cjc-1295-5mg.svg',
+    image: '/products/vial-costarica-hero.jpg',
     tags: ['CJC-1295', 'GHRH', 'Secretagogue', 'Somatotropic'],
     isPopular: true
   },
@@ -429,7 +429,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 8.90 min'
     },
-    image: '/vials/ipamorelin-5mg.svg',
+    image: '/products/modern-3d-vial-hero.jpg',
     tags: ['Ipamorelin', 'GHRP', 'GHS-R1a', 'HPLC-Tested'],
     isFeatured: true
   },
@@ -466,7 +466,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Dual distinct resolved peaks at 8.90 min and 11.85 min'
     },
-    image: '/vials/cjc1295-plus-ipamorelin-blend-10mg.svg',
+    image: '/products/hero-peptide-vial.jpg',
     tags: ['Blend', 'CJC-1295', 'Ipamorelin', 'Synergy'],
     isFeatured: true,
     isPopular: true
@@ -508,7 +508,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 15.30 min'
     },
-    image: '/vials/tesamorelin-10mg.svg',
+    image: '/products/modern-3d-vial-hero.jpg',
     tags: ['Tesamorelin', 'GHRH', 'Visceral Fat Modeling', 'HPLC-Tested']
   },
 
@@ -550,7 +550,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 10.45 min'
     },
-    image: '/vials/pt-141-10mg.svg',
+    image: '/products/hero-peptide-vial.jpg',
     tags: ['PT-141', 'Bremelanotide', 'Melanocortin', 'MC4R'],
     isPopular: true
   },
@@ -591,7 +591,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 10.12 min'
     },
-    image: '/vials/melanotan-2-10mg.svg',
+    image: '/products/vial-costarica-hero.jpg',
     tags: ['Melanotan 2', 'MT-2', 'MC1R', 'Pigmentation Research']
   },
 
@@ -633,7 +633,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Single sharp peak at 11.10 min'
     },
-    image: '/vials/thymosin-alpha-1-5mg.svg',
+    image: '/products/vial-costarica-hero.jpg',
     tags: ['Thymosin Alpha-1', 'TA-1', 'Cytokine', 'Immune Pathway', 'HPLC-Tested'],
     isFeatured: true
   },
@@ -676,7 +676,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 7.42 min'
     },
-    image: '/vials/semax-30mg.svg',
+    image: '/products/modern-3d-vial-hero.jpg',
     tags: ['Semax', 'Neuropeptide', 'BDNF', 'CNS Signaling']
   },
   {
@@ -716,7 +716,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 6.85 min'
     },
-    image: '/vials/selank-30mg.svg',
+    image: '/products/hero-peptide-vial.jpg',
     tags: ['Selank', 'Tuftsin', 'GABA', 'CNS Signaling']
   },
 
@@ -758,7 +758,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 8.15 min'
     },
-    image: '/vials/ss-31-50mg.svg',
+    image: '/products/vial-costarica-hero.jpg',
     tags: ['SS-31', 'Elamipretide', 'Mitochondria', 'Cardiolipin']
   },
   {
@@ -798,7 +798,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Peak 5.12 min'
     },
-    image: '/vials/epithalon-50mg.svg',
+    image: '/products/modern-3d-vial-hero.jpg',
     tags: ['Epithalon', 'Telomerase', 'Bioregulator', 'Gene Expression']
   },
 
@@ -845,7 +845,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Endotoxin < 0.25 EU/mL (Passed)'
     },
-    image: '/vials/reconstitution-solution-bac-water-10ml.svg',
+    image: '/products/modern-3d-vial-hero.jpg',
     tags: ['BAC Water', 'Bacteriostatic', 'Reconstitution', 'Solvents'],
     isPopular: true
   },
@@ -882,7 +882,7 @@ export const products: Product[] = [
       status: 'VERIFIED',
       chromatogramPeak: 'Pass'
     },
-    image: '/vials/reconstitution-solution-bac-water-30ml.svg',
+    image: '/products/vial-costarica-hero.jpg',
     tags: ['BAC Water', '30ml', 'Solvents']
   }
 ];

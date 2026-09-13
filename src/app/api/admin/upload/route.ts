@@ -1,6 +1,9 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAdmin } from '@/lib/adminAuth';
 import { featureUnavailable } from '@/lib/env';
+import { MEDIA_BUCKET } from '@/lib/media';
+import { permissionsForPath } from '@/lib/routePermissions';
+import { canAccess } from '@/lib/permissions';
 import { ok, badRequest, serverError } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -15,11 +18,15 @@ export const runtime = 'nodejs';
  * service role keeps writes behind an administrator session while the bucket
  * stays publicly *readable*, which is what lets a customer open a certificate.
  *
- *   POST /api/admin/upload   multipart form: file=<File>  kind=image|coa
+ *   POST /api/admin/upload   multipart form: file=<File>  kind=image|coa|avatar
  *   -> { url, path, bytes }
+ *
+ * A profile photo (kind=avatar) is open to every active admin, sub-users
+ * included, so anybody can set their own picture. Every other kind still needs
+ * a section that actually uses uploads.
  */
 
-const BUCKET = 'product-media';
+const BUCKET = MEDIA_BUCKET;
 
 /** Matches the bucket's own file_size_limit set in 0004_storefront.sql. */
 const MAX_MB = 2;
@@ -35,6 +42,13 @@ const KINDS = {
     folder: 'coa',
     types: new Set(['application/pdf']),
     label: 'a PDF certificate',
+  },
+  avatar: {
+    folder: 'avatars',
+    // No SVG or GIF: a profile photo is shown to other staff, and an SVG served
+    // from the public bucket can carry script.
+    types: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
+    label: 'a JPG, PNG, WEBP or AVIF photo',
   },
 } as const;
 
@@ -60,7 +74,9 @@ export async function POST(req: Request) {
   const unavailable = featureUnavailable('adminDatabase');
   if (unavailable) return unavailable;
 
-  const auth = await requireAdmin(req);
+  // Active admin of any kind first; the permission check waits until we know
+  // what is being uploaded.
+  const auth = await requireAdmin(req, { anyAuthenticated: true, allowSubUser: true });
   if (!auth.ok) return auth.response;
 
   let form: FormData;
@@ -74,7 +90,20 @@ export async function POST(req: Request) {
   const kind = String(form.get('kind') ?? 'image') as Kind;
 
   if (!(file instanceof File)) return badRequest('No file was received.');
-  if (!(kind in KINDS)) return badRequest('Upload kind must be "image" or "coa".');
+  if (!(kind in KINDS)) return badRequest('Upload kind must be "image", "coa" or "avatar".');
+
+  if (kind !== 'avatar') {
+    const needed = permissionsForPath(new URL(req.url).pathname);
+    const allowed = needed.length === 0
+      ? auth.admin.profile.is_superadmin
+      : needed.some((p) => canAccess(p, auth.admin.profile));
+    if (!allowed) {
+      return Response.json(
+        { error: 'forbidden', message: 'You do not have permission for that.', requires: needed },
+        { status: 403 }
+      );
+    }
+  }
 
   const rules = KINDS[kind];
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
-import UploadField from './UploadField';
+import UploadField, { type UploadKind } from './UploadField';
 
 /**
  * One form for adding and for editing a record, built from the field
@@ -39,7 +39,7 @@ interface Props {
   busy: boolean;
   error: string;
   fieldErrors: Record<string, string>;
-  upload: (file: File, kind: 'image' | 'coa') => Promise<string>;
+  upload: (file: File, kind: UploadKind) => Promise<string>;
   onCancel: () => void;
   onSubmit: (values: Record<string, unknown>) => void;
 }

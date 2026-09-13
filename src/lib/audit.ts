@@ -29,6 +29,8 @@ export type AuditAction =
   | 'user.delete'
   | 'user.reassign'
   | 'user.password_set'
+  | 'user.profile_update'
+  | 'user.password_change'
   | 'affiliate.create'
   | 'affiliate.update'
   | 'affiliate.delete'

@@ -206,8 +206,10 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
     return (
       <div key={u.id} className="flex flex-col border border-brand-border bg-brand-card">
         <div className="flex gap-3 p-3.5">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center border border-brand-border bg-brand-dark font-display text-base font-black text-brand-textMuted">
-            {String(u.full_name || u.email).trim().charAt(0).toUpperCase()}
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden border border-brand-border bg-brand-dark font-display text-base font-black text-brand-textMuted">
+            {(u as any).avatar_url
+              ? <img src={(u as any).avatar_url} alt="" className="h-full w-full object-cover" />
+              : String(u.full_name || u.email).trim().charAt(0).toUpperCase()}
           </div>
 
           <div className="min-w-0 flex-1">

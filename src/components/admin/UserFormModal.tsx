@@ -363,8 +363,10 @@ export default function UserFormModal({
                         </div>
                       ))}
                       <p className="text-[0.75rem] leading-relaxed text-brand-textMuted">
-                        The dashboard home page is always visible. Managing users and the audit trail
-                        are super-admin only and cannot be granted to anybody else.
+                        The dashboard home page opens once at least one section is ticked, and shows
+                        figures only from those sections. With nothing ticked they can sign in but see
+                        nothing. Managing users and the audit trail are super-admin only and cannot be
+                        granted to anybody else.
                       </p>
                     </div>
                   )}

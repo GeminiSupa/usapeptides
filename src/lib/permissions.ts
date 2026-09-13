@@ -22,7 +22,11 @@ export interface ModuleDef {
   group: string;
   /** Super admins only, never grantable to staff. */
   ownerOnly?: boolean;
-  /** Everyone active sees it; not worth granting individually. */
+  /**
+   * Not granted on its own: opens for anybody who holds at least one other
+   * section. The home page summarises those sections, so an account with
+   * nothing granted must not see it.
+   */
   always?: boolean;
   /** The sub-user's own screens. Staff and owners do not see these. */
   subUserOnly?: boolean;
@@ -143,10 +147,16 @@ export function canAccess(
   if (mod.subUserOnly) return false;
 
   if (mod.ownerOnly) return profile.is_superadmin;
-  if (mod.always) return true;
   if (profile.is_superadmin) return true;
 
-  return Array.isArray(profile.permissions) && profile.permissions.includes(moduleId);
+  const held = Array.isArray(profile.permissions) ? profile.permissions : [];
+
+  // This used to return true for everybody, so a team member added with no
+  // permissions still opened the home page — revenue, order counts and the
+  // latest customers' email addresses.
+  if (mod.always) return held.some((p) => GRANTABLE_IDS.has(p));
+
+  return held.includes(moduleId);
 }
 
 /** Where to drop somebody on sign-in: the first thing they can actually open. */

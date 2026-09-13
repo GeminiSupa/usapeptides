@@ -99,7 +99,66 @@ something outside the code.
   during the verification run. The copy matches the real policy, but it was not
   asked for — clear or change it in Dashboard > Storefront in one click.
 
-## BLOCKING: run `supabase/migrations/0006_users_fixes.sql`
+## 0006 (done, 2026-09-13)
+
+- [x] Owner ran it. **Verified via REST:** `admin_users.base_salary/salary_period/
+      salary_currency`, `orders.referral_code/affiliate_id/referred_by` and
+      `affiliates.user_id` all present.
+- [x] Leftover test row `zz.staff.…@usapeptides.test` deleted — the delete that
+      used to fail on the audit trigger now succeeds, which confirms the fix.
+
+## Users round 2 (2026-09-13)
+
+- [x] **BUG: a team member with no permissions still opened the Dashboard home**,
+      which shows revenue and the latest customers' emails. `home` was
+      `always: true` in `permissions.ts`. Now it opens only for somebody holding
+      at least one section, and `/api/admin/summary` returns only the figures for
+      sections that person can open (`recentOrders` is null without Orders).
+      **Verified against the live DB:** no permissions -> 403 and no home tab;
+      Leads only -> just the open-leads figure, no revenue, no emails.
+- [x] J4 done: **My profile** (click your name in the sidebar). Name, phone,
+      photo, change password. `/api/admin/profile` writes only those three
+      columns on the caller's own row and never takes an id;
+      `/api/admin/profile/password` checks the current password first.
+      Photo upload (`kind=avatar`, `avatars/` folder, no SVG) is open to every
+      active user; other upload kinds still need a section permission.
+      `src/lib/media.ts` adds the own-bucket URL check that CLAUDE.md said
+      existed but did not.
+      **Verified: 34 API checks passed**, including posted `is_superadmin`,
+      `permissions`, email, job title, pay and commission all ignored, outside
+      photo links refused, wrong current password refused, audit rows written
+      with no password in them. Test users, rows and files deleted.
+      Not checked: the modal while signed in in a browser.
+- [x] Sidebar said "owner"; now "super admin".
+- [ ] **Sales agent role** — owner decision 2026-09-13: a team member who sees
+      only their own leads, customers and orders, gets a referral link, and earns
+      a commission % set per person. `supabase/migrations/0007_sales_agents.sql`
+      written (role, referral_code, leads/customers owner_id) — **not run yet,
+      and no code uses it yet.** How peptidecosta does it (read from its source):
+        1. First order arrives with no agent, unless it came through an agent's
+           referral link/QR (the link always wins).
+        2. Unclaimed orders sit in a shared queue; an agent clicks "Claim this
+           order". The claim writes only while the order is still unclaimed, so
+           two agents cannot both win (`claimOrder.js`).
+        3. Every later order from that customer (matched on email/phone) is
+           credited automatically to the agent who closed their first order
+           (`customerHistoryAttributionServer.js`).
+        4. Sub-users sit under a sales agent as their parent: the sub-user earns
+           8% of their own orders, the parent earns a 2% override on those same
+           orders (`subUserCommission.mjs`). Two levels only.
+      So an agent must see unclaimed orders plus their own, not other agents'.
+      Waiting on the owner to confirm before building.
+- [~] Product photos: owner said (2026-09-13) use peptidecosta's vial photos
+      even with the "PEPTIDES COSTA RICA" label. Three single-vial shots copied
+      from its `public/` folder (files only, no data connection), resized to
+      800px JPEG in `public/products/` (50–68 KB), rotated across the 20
+      products. `src/data/products.ts` fallback already points at them.
+      **Database still points at `/vials/*.svg`**: I switched it early, the live
+      site 404'd the photos because the files were not deployed, so I reverted
+      it (live confirmed 200 on the svgs). After the push is live, re-run the
+      switch: only rows still on `/vials/` are changed.
+
+## (history) run `supabase/migrations/0006_users_fixes.sql`
 
 0005 is done (security suite: **63 of 64 passing**, the one failure being my own
 cleanup script, not the code). 0006 fixes a real bug I introduced and adds pay.

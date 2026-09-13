@@ -39,6 +39,8 @@ const ACTION_LABEL: Record<string, string> = {
   'user.delete': 'removed access for',
   'user.reassign': 'reassigned',
   'user.password_set': 'set a new password for',
+  'user.profile_update': 'updated their own profile',
+  'user.password_change': 'changed their own password',
   'affiliate.create': 'added affiliate',
   'affiliate.update': 'edited affiliate',
   'affiliate.delete': 'deleted affiliate',

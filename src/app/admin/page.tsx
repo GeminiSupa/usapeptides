@@ -9,6 +9,8 @@ import StorefrontPanel from '@/components/admin/StorefrontPanel';
 import UsersPanel from '@/components/admin/UsersPanel';
 import AuditPanel from '@/components/admin/AuditPanel';
 import SubUserHome from '@/components/admin/SubUserHome';
+import ProfileModal from '@/components/admin/ProfileModal';
+import type { UploadKind } from '@/components/admin/UploadField';
 import { MODULES, type ModuleDef } from '@/lib/permissions';
 import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
@@ -119,6 +121,8 @@ export default function AdminPage() {
   const [saveError, setSaveError] = useState('');
   const [saveFieldErrors, setSaveFieldErrors] = useState<Record<string, string>>({});
 
+  const [profileOpen, setProfileOpen] = useState(false);
+
   const editorOpen = editorRow !== undefined;
 
   useEffect(() => {
@@ -144,7 +148,7 @@ export default function AdminPage() {
         const p = await res.json().catch(() => null);
         // A 403 on one section must not throw the person out of the whole
         // dashboard, so only an expired session or a missing account does.
-        if (res.status === 401 || /does not have dashboard access|waiting for an owner/i.test(p?.message ?? '')) {
+        if (res.status === 401 || /does not have dashboard access|waiting for (an owner|a super admin)/i.test(p?.message ?? '')) {
           setDenied(p?.message ?? 'Access denied.');
         }
         throw new Error(p?.message ?? 'denied');
@@ -169,7 +173,7 @@ export default function AdminPage() {
   }, [token]);
 
   const upload = useCallback(
-    async (file: File, kind: 'image' | 'coa'): Promise<string> => {
+    async (file: File, kind: UploadKind): Promise<string> => {
       const body = new FormData();
       body.append('file', file);
       body.append('kind', kind);
@@ -286,7 +290,7 @@ export default function AdminPage() {
       <div className="mx-auto max-w-md p-24 text-center">
         <h1 className="page-title">Nothing to show</h1>
         <p className="mt-3 text-xs leading-relaxed text-brand-textMuted">
-          Your account has no sections enabled yet. Ask an owner to give you access.
+          Your account has no sections enabled yet. Ask a super admin to give you access.
         </p>
         <button onClick={signOut} className="btn-ghost mt-6">Sign out</button>
       </div>
@@ -349,11 +353,18 @@ export default function AdminPage() {
               <LogOut className="h-4 w-4" />
             </button>
           </div>
-          <p className="mt-1.5 truncate text-[0.75rem] text-brand-textMuted" title={me.email}>
+          <button
+            onClick={() => setProfileOpen(true)}
+            title={`${me.email} — edit my profile`}
+            className="mt-1.5 block w-full truncate text-left text-[0.75rem] text-brand-textMuted hover:text-brand-accentGlow"
+          >
             {me.fullName || me.email}
-            {me.isOwner && <span className="ml-1 text-action">· owner</span>}
+            {me.isOwner && <span className="ml-1 text-action">· super admin</span>}
             {me.tier === 'sub_user' && <span className="ml-1">· sub-user</span>}
-          </p>
+            <span className="mt-0.5 block text-[0.6875rem] uppercase tracking-[0.12em] underline underline-offset-2">
+              My profile
+            </span>
+          </button>
         </div>
 
         <nav className="flex overflow-x-auto lg:block lg:overflow-visible">
@@ -422,26 +433,31 @@ export default function AdminPage() {
           summary ? (
             <div className="space-y-8">
               <div className="grid grid-cols-2 gap-px border border-brand-border bg-brand-border md:grid-cols-3 xl:grid-cols-5">
-                {[
-                  ['Revenue (30d)', money(summary.metrics.revenue30)],
-                  ['Orders (30d)', summary.metrics.orders30],
-                  ['Awaiting payment', summary.metrics.pendingOrders],
-                  ['Open enquiries', summary.metrics.openInquiries],
-                  ['Reviews to approve', summary.metrics.pendingReviews],
-                  ['Subscribers', summary.metrics.subscribers],
-                  ['Live carts', summary.metrics.activeCarts],
-                  ['Active products', summary.metrics.products],
-                  ['Low stock (<5)', summary.metrics.lowStock],
-                  ['Open leads', summary.metrics.leadsOpen],
-                ].map(([label, value]) => (
-                  <div key={String(label)} className="bg-brand-card p-4">
-                    <div className="eyebrow">{label}</div>
-                    <div className="mt-2 font-display text-xl font-black text-brand-heading">{value}</div>
-                  </div>
-                ))}
+                {/* The API sends only the figures this person may see. */}
+                {([
+                  ['Revenue (30d)', 'revenue30', true],
+                  ['Orders (30d)', 'orders30'],
+                  ['Awaiting payment', 'pendingOrders'],
+                  ['Open enquiries', 'openInquiries'],
+                  ['Reviews to approve', 'pendingReviews'],
+                  ['Subscribers', 'subscribers'],
+                  ['Live carts', 'activeCarts'],
+                  ['Active products', 'products'],
+                  ['Low stock (<5)', 'lowStock'],
+                  ['Open leads', 'leadsOpen'],
+                ] as [string, string, boolean?][])
+                  .filter(([, key]) => summary.metrics[key] !== undefined)
+                  .map(([label, key, isMoney]) => (
+                    <div key={key} className="bg-brand-card p-4">
+                      <div className="eyebrow">{label}</div>
+                      <div className="mt-2 font-display text-xl font-black text-brand-heading">
+                        {isMoney ? money(summary.metrics[key]) : summary.metrics[key]}
+                      </div>
+                    </div>
+                  ))}
               </div>
 
-              <div>
+              {Array.isArray(summary.recentOrders) && <div>
                 <h2 className="mb-3 font-display text-[0.9375rem] font-extrabold uppercase tracking-[0.08em] text-brand-heading">Latest orders</h2>
                 {summary.recentOrders.length === 0 ? (
                   <p className="border border-brand-border bg-brand-card p-8 text-center text-xs text-brand-textMuted">No orders yet.</p>
@@ -465,7 +481,7 @@ export default function AdminPage() {
                     </table>
                   </div>
                 )}
-              </div>
+              </div>}
             </div>
           ) : <p className="text-xs text-brand-textMuted">{loading ? 'Loading...' : 'No data.'}</p>
 
@@ -557,6 +573,15 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {profileOpen && (
+        <ProfileModal
+          authedFetch={authedFetch}
+          upload={upload}
+          onCancel={() => setProfileOpen(false)}
+          onSaved={(p) => setMe((prev) => (prev ? { ...prev, fullName: p.full_name } : prev))}
+        />
+      )}
 
       {editorOpen && data && (
         <RecordEditor
