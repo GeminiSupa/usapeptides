@@ -94,6 +94,10 @@ function normalizeProfile(row: Record<string, any>): AdminProfile {
     email: String(row.email ?? '').toLowerCase(),
     full_name: row.full_name ?? null,
     tier: (hasTierColumn ? row.tier : 'staff') as Tier,
+    // Before 0007 there is no role column, so nobody is an agent and nothing
+    // is scoped — the dashboard behaves exactly as it did.
+    role: row.role === 'sales_agent' ? 'sales_agent' : 'staff',
+    referral_code: row.referral_code ?? null,
     status,
     is_superadmin: hasSuperColumn ? Boolean(row.is_superadmin) : true,
     permissions: Array.isArray(row.permissions) ? row.permissions.map(String) : [],

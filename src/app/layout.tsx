@@ -14,6 +14,7 @@ import COAModal from '@/components/COAModal';
 import ComplianceModal from '@/components/ComplianceModal';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import ChatwootWidget from '@/components/ChatwootWidget';
+import ReferralCapture from '@/components/ReferralCapture';
 
 export default function RootLayout({
   children,
@@ -59,6 +60,7 @@ export default function RootLayout({
                 {/* Renders nothing until Chatwoot is configured. Kept off the
                     dashboard: staff answer chats in Chatwoot, not here. */}
                 <ChatwootWidget />
+                <ReferralCapture />
               </>
             )}
           </CartProvider>

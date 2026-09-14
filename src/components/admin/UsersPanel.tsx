@@ -41,6 +41,9 @@ interface UsersResponse {
   minPassword: number;
   /** False until 0006 has been run; the wage fields are hidden without it. */
   hasPay: boolean;
+  /** False until 0007 has been run; the Sales agent choice is hidden without it. */
+  hasRoles?: boolean;
+  salesAgentModules?: string[];
   counts: { staff: number; subUsers: number; owners: number; pending: number };
 }
 
@@ -221,7 +224,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
               {isYou && <span className="text-[0.6875rem] font-normal text-brand-textMuted">(you)</span>}
             </p>
             <p className="truncate text-[0.8125rem] text-brand-body">
-              {(u as any).job_title || (u.is_superadmin ? 'Super admin' : kind === 'sub' ? 'Sub-user' : 'Staff')}
+              {(u as any).job_title || (u.is_superadmin ? 'Super admin' : kind === 'sub' ? 'Sub-user' : (u as any).role === 'sales_agent' ? 'Sales agent' : 'Staff')}
             </p>
             <p className="truncate font-mono text-[0.6875rem] text-brand-textMuted">{u.email}</p>
             {kind === 'sub' && (
@@ -234,6 +237,11 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
 
         <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-3">
           {statusChip(u)}
+          {(u as any).role === 'sales_agent' && (
+            <span className="border border-brand-borderLight px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
+              Sales agent
+            </span>
+          )}
           {(u as any).base_salary != null && (
             <span className="px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
               {(u as any).salary_currency ?? 'USD'} {Number((u as any).base_salary).toFixed(2)}
@@ -438,6 +446,8 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
           supervisors={supervisors}
           minPassword={data.minPassword}
           hasPay={data.hasPay !== false}
+          hasRoles={data.hasRoles === true}
+          salesAgentModules={data.salesAgentModules ?? []}
           isSelf={form.user?.id === data.you}
           busy={busy}
           error={formError}

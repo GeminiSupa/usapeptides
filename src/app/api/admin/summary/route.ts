@@ -1,7 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAdmin } from '@/lib/adminAuth';
 import { featureUnavailable } from '@/lib/env';
-import { canAccess } from '@/lib/permissions';
+import { canAccess, isSalesAgent } from '@/lib/permissions';
 import { ok, serverError } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +13,9 @@ export const dynamic = 'force-dynamic';
  * open that section. Somebody granted Leads sees the open-leads count and
  * nothing about revenue or customers. Figures the person may not see are left
  * out of the response entirely rather than sent as zero.
+ *
+ * A sales agent's figures are their own: their orders, their revenue, their
+ * leads, plus how many orders are waiting to be claimed.
  *
  * Note: "summary" is also a key in the [resource] whitelist namespace, but
  * this static segment takes precedence over the dynamic one in Next.js
@@ -26,6 +29,7 @@ export async function GET(req: Request) {
   if (!auth.ok) return auth.response;
 
   const may = (section: string) => canAccess(section, auth.admin.profile);
+  const agentId = isSalesAgent(auth.admin.profile) ? auth.admin.id : null;
 
   try {
     const db = getSupabaseAdmin();
@@ -38,23 +42,34 @@ export async function GET(req: Request) {
       return count ?? 0;
     };
 
-    /** Section -> the figures it unlocks. */
+    /** An agent's orders only; everybody else sees the whole business. */
+    const mineOrders = (q: any) => (agentId ? q.eq('referred_by', agentId) : q);
+
     const jobs: Record<string, () => Promise<number>> = {};
 
     if (may('orders')) {
-      jobs.orders30 = () => countOf('orders', (q) => q.gte('created_at', since));
-      jobs.pendingOrders = () => countOf('orders', (q) => q.eq('status', 'pending'));
+      jobs.orders30 = () => countOf('orders', (q) => mineOrders(q.gte('created_at', since)));
+      jobs.pendingOrders = () => countOf('orders', (q) => mineOrders(q.eq('status', 'pending')));
+      if (agentId) jobs.unclaimedOrders = () => countOf('orders', (q) => q.is('referred_by', null));
     }
-    if (may('inquiries')) jobs.openInquiries = () => countOf('customer_inquiries', (q) => q.eq('status', 'new'));
-    if (may('reviews')) jobs.pendingReviews = () => countOf('product_reviews', (q) => q.eq('is_approved', false));
-    if (may('subscribers')) jobs.subscribers = () => countOf('newsletter_subscribers', (q) => q.eq('is_subscribed', true));
-    if (may('carts')) jobs.activeCarts = () => countOf('abandoned_carts', (q) => q.eq('recovered', false));
-    if (may('products')) {
-      jobs.products = () => countOf('products', (q) => q.eq('is_active', true));
-      jobs.lowStock = () => countOf('products', (q) => q.lt('stock_count', 5).eq('is_active', true));
+    if (!agentId) {
+      if (may('inquiries')) jobs.openInquiries = () => countOf('customer_inquiries', (q) => q.eq('status', 'new'));
+      if (may('reviews')) jobs.pendingReviews = () => countOf('product_reviews', (q) => q.eq('is_approved', false));
+      if (may('subscribers')) jobs.subscribers = () => countOf('newsletter_subscribers', (q) => q.eq('is_subscribed', true));
+      if (may('carts')) jobs.activeCarts = () => countOf('abandoned_carts', (q) => q.eq('recovered', false));
+      if (may('products')) {
+        jobs.products = () => countOf('products', (q) => q.eq('is_active', true));
+        jobs.lowStock = () => countOf('products', (q) => q.lt('stock_count', 5).eq('is_active', true));
+      }
+      if (may('notifications')) jobs.unreadNotifications = () => countOf('admin_notifications', (q) => q.eq('is_read', false));
     }
-    if (may('leads')) jobs.leadsOpen = () => countOf('leads', (q) => q.in('status', ['new', 'working']));
-    if (may('notifications')) jobs.unreadNotifications = () => countOf('admin_notifications', (q) => q.eq('is_read', false));
+    if (may('leads')) {
+      jobs.leadsOpen = () =>
+        countOf('leads', (q) => {
+          const open = q.in('status', ['new', 'working']);
+          return agentId ? open.eq('owner_id', agentId) : open;
+        });
+    }
 
     const keys = Object.keys(jobs);
     const values = await Promise.all(keys.map((k) => jobs[k]()));
@@ -64,25 +79,29 @@ export async function GET(req: Request) {
 
     if (may('orders')) {
       // Revenue over the same window, excluding orders that never completed.
-      const { data: revenueRows, error: revenueError } = await db
-        .from('orders')
-        .select('grand_total, status, created_at')
-        .gte('created_at', since)
-        .not('status', 'in', '("cancelled","refunded")');
+      const { data: revenueRows, error: revenueError } = await mineOrders(
+        db
+          .from('orders')
+          .select('grand_total, status, created_at')
+          .gte('created_at', since)
+          .not('status', 'in', '("cancelled","refunded")')
+      );
 
       if (revenueError) return serverError(revenueError.message);
 
-      const revenue30 = (revenueRows ?? []).reduce(
+      const revenue30 = ((revenueRows ?? []) as { grand_total?: number }[]).reduce(
         (sum, r) => sum + Number(r.grand_total ?? 0),
         0
       );
       metrics.revenue30 = Math.round(revenue30 * 100) / 100;
 
-      const { data } = await db
-        .from('orders')
-        .select('order_number, email, status, grand_total, created_at')
-        .order('created_at', { ascending: false })
-        .limit(8);
+      const { data } = await mineOrders(
+        db
+          .from('orders')
+          .select('order_number, email, status, grand_total, created_at')
+          .order('created_at', { ascending: false })
+          .limit(8)
+      );
       recentOrders = data ?? [];
     }
 

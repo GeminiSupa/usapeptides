@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import { readReferral } from '@/components/ReferralCapture';
+import { FLAT_SHIPPING } from '@/lib/checkout';
 import { 
   ShieldCheck, 
   CreditCard, 
@@ -39,22 +41,68 @@ export default function CheckoutPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /**
+   * Saves the order through /api/orders. This used to wait a moment and show the
+   * success page without saving anything, so no order ever reached the
+   * dashboard.
+   *
+   * Only product slugs and quantities are sent; the server prices everything.
+   * Card details are never sent anywhere — nothing on this site can charge a
+   * card yet, so the order is saved as pending.
+   */
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError('');
 
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+          institution: formData.institution,
+          phone: formData.phone,
+          items: cart.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
+          shippingAddress: {
+            line1: formData.address,
+            city: formData.city,
+            state: formData.state,
+            postal_code: formData.zip,
+            country: formData.country,
+          },
+          complianceAck: true,
+          notes: formData.notes || undefined,
+          paymentMethod,
+          ref: readReferral(),
+        }),
+      });
+      const payload = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        const firstField = Object.values((payload?.fields ?? {}) as Record<string, string>)[0];
+        setSubmitError(firstField ?? payload?.message ?? 'We could not place your order. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
       clearCart();
-      router.push('/checkout/success');
-    }, 1500);
+      const orderNumber = payload?.data?.order?.orderNumber;
+      router.push(orderNumber ? `/checkout/success?order=${encodeURIComponent(orderNumber)}` : '/checkout/success');
+    } catch {
+      setSubmitError('We could not reach the store. Check your connection and try again.');
+      setIsSubmitting(false);
+    }
   };
 
-  const shippingCost = hasFreeShipping ? 0 : 9.95;
+  const shippingCost = hasFreeShipping ? 0 : FLAT_SHIPPING;
   const orderTotal = finalTotal + shippingCost;
 
   if (cart.length === 0) {
@@ -336,7 +384,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between">
                 <span>Tracked US Shipping:</span>
                 <span className={hasFreeShipping ? 'text-emerald-400 font-bold' : 'text-white'}>
-                  {hasFreeShipping ? 'FREE' : '$9.95'}
+                  {hasFreeShipping ? 'FREE' : `$${FLAT_SHIPPING.toFixed(2)}`}
                 </span>
               </div>
               <div className="flex justify-between text-base font-black text-white pt-2 border-t border-brand-border">
@@ -344,6 +392,10 @@ export default function CheckoutPage() {
                 <span className="text-cyan-400 text-xl font-mono">${orderTotal.toFixed(2)}</span>
               </div>
             </div>
+
+            {submitError && (
+              <p className="border border-brand-accent/60 p-3 text-xs leading-relaxed text-brand-accentGlow">{submitError}</p>
+            )}
 
             <button
               type="submit"

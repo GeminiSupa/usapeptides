@@ -1,10 +1,10 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { requireAdmin } from '@/lib/adminAuth';
+import { requireAdmin, type AdminIdentity } from '@/lib/adminAuth';
 import { RESOURCES, isResource } from '@/lib/adminResources';
-import { featureUnavailable } from '@/lib/env';
+import { featureUnavailable, supabaseEnv } from '@/lib/env';
+import { isSalesAgent } from '@/lib/permissions';
+import { isCreditable } from '@/lib/attribution';
 import { ok, created, badRequest, notFound, serverError, readJson } from '@/lib/api';
-
-import { supabaseEnv } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,21 +18,19 @@ export const dynamic = 'force-dynamic';
  */
 function migrationHint(error: { code?: string; message?: string } | null): string | null {
   if (!error) return null;
-  const code = error.code ?? '';
-  const message = error.message ?? '';
-  const missingColumn =
-    code === '42703' ||
-    code === 'PGRST204' ||
-    /column .* does not exist|could not find the .* column/i.test(message);
-
-  if (!missingColumn) return null;
+  if (!isMissingColumn(error)) return null;
 
   return (
     'This section needs a database update that has not been run yet. Open the ' +
-    'Supabase SQL editor and run supabase/migrations/0004_storefront.sql, then ' +
-    `reload. (${message})`
+    'Supabase SQL editor and run the files in supabase/migrations you have not ' +
+    `applied yet, in number order, then reload. (${error.message ?? ''})`
   );
 }
+
+const isMissingColumn = (error: { code?: string; message?: string }): boolean =>
+  error.code === '42703' ||
+  error.code === 'PGRST204' ||
+  /column .* does not exist|could not find the .* column/i.test(error.message ?? '');
 
 /**
  * True for a URL inside our own Supabase storage, which is where the upload
@@ -47,6 +45,50 @@ function isStorableUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+/* ------------------------------------------------------- sales agents ----- */
+
+/**
+ * Records that belong to somebody. A sales agent sees their own plus the
+ * unclaimed ones they can claim, never a colleague's.
+ *
+ * The extra columns come from 0006/0007. They are asked for when present and
+ * dropped when not, so staff on an older database still see the table.
+ * Nobody can be a sales agent before 0007, so an agent's query never needs the
+ * fallback.
+ */
+const OWNERSHIP: Record<string, { column: string; extraSelect: string }> = {
+  orders: { column: 'referred_by', extraSelect: 'referred_by, agent_source, agent_claimed_at' },
+  leads: { column: 'owner_id', extraSelect: 'owner_id' },
+};
+
+/** Columns an agent may not write even on their own record: who it belongs to. */
+const AGENT_BLOCKED_COLUMNS = new Set(['assigned_to', 'owner', 'owner_id', 'referred_by']);
+
+const NOT_YOURS = 'You can only change records that are yours. Claim it first.';
+
+/**
+ * An agent's customers are the people whose orders are theirs. Derived rather
+ * than stored so a customer and their orders can never belong to two people.
+ */
+async function agentCustomerEmails(db: ReturnType<typeof getSupabaseAdmin>, agentId: string): Promise<string[]> {
+  const { data } = await db.from('orders').select('email').eq('referred_by', agentId).limit(5000);
+  return Array.from(
+    new Set((data ?? []).map((r: { email?: string }) => String(r.email ?? '').toLowerCase()).filter(Boolean))
+  );
+}
+
+/** Who can be shown as, or assigned as, the owner of a record. */
+async function creditablePeople(db: ReturnType<typeof getSupabaseAdmin>, viewer: AdminIdentity) {
+  if (isSalesAgent(viewer.profile)) {
+    return [{ id: viewer.id, name: viewer.profile.full_name || viewer.email }];
+  }
+  const { data, error } = await db.from('admin_users').select('id, full_name, email, role, tier, status');
+  if (error) return [];
+  return (data ?? [])
+    .filter(isCreditable)
+    .map((p: any) => ({ id: p.id as string, name: (p.full_name || p.email) as string }));
 }
 
 /**
@@ -76,38 +118,83 @@ export async function GET(req: Request, { params }: { params: { resource: string
   const limit = Math.min(Number(url.searchParams.get('limit')) || 50, 200);
   const offset = Math.max(Number(url.searchParams.get('offset')) || 0, 0);
 
-  try {
-    let query = getSupabaseAdmin()
-      .from(config.table)
-      .select(config.select, { count: 'exact' })
-      .order(config.orderBy, { ascending: false })
-      .range(offset, offset + limit - 1);
+  const db = getSupabaseAdmin();
+  const agent = isSalesAgent(auth.admin.profile);
+  const own = OWNERSHIP[params.resource];
 
-    if (status && config.statusColumn) {
-      query = query.eq(config.statusColumn, status);
-    }
-
-    if (q && config.searchable.length) {
-      // PostgREST OR filter across the resource's searchable columns.
-      query = query.or(config.searchable.map((c) => `${c}.ilike.%${q}%`).join(','));
-    }
-
-    const { data, error, count } = await query;
-    if (error) return serverError(migrationHint(error) ?? error.message);
-
-    return ok({
-      rows: data ?? [],
-      total: count ?? 0,
+  const respond = (rows: unknown[], total: number, hasOwnership: boolean, people: { id: string; name: string }[]) =>
+    ok({
+      rows,
+      total,
       limit,
       offset,
       title: config.title,
       blurb: config.blurb,
-      editable: config.editable,
-      deletable: config.deletable,
-      createFields: config.createFields,
+      editable: agent ? config.editable.filter((c) => !AGENT_BLOCKED_COLUMNS.has(c)) : config.editable,
+      deletable: agent ? false : config.deletable,
+      createFields: agent
+        ? params.resource === 'customers'
+          ? []
+          : config.createFields.filter((f) => !AGENT_BLOCKED_COLUMNS.has(f.name))
+        : config.createFields,
       columns: config.columns ?? null,
       statusColumn: config.statusColumn ?? null,
+      ownership: hasOwnership && own
+        ? {
+            column: own.column,
+            you: auth.admin.id,
+            canClaim: agent,
+            canAssign: auth.admin.profile.is_superadmin,
+            people,
+          }
+        : null,
     });
+
+  try {
+    let emails: string[] | null = null;
+    if (agent && params.resource === 'customers') {
+      emails = await agentCustomerEmails(db, auth.admin.id);
+      if (emails.length === 0) return respond([], 0, false, []);
+    }
+
+    const build = (select: string) => {
+      let query = db
+        .from(config.table)
+        .select(select, { count: 'exact' })
+        .order(config.orderBy, { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (status && config.statusColumn) {
+        query = query.eq(config.statusColumn, status);
+      }
+
+      if (q && config.searchable.length) {
+        // PostgREST OR filter across the resource's searchable columns.
+        query = query.or(config.searchable.map((c) => `${c}.ilike.%${q}%`).join(','));
+      }
+
+      // A second or() is ANDed with the search above, not merged into it.
+      if (agent && own) {
+        query = query.or(`${own.column}.is.null,${own.column}.eq.${auth.admin.id}`);
+      }
+      if (emails) query = query.in('email', emails);
+
+      return query;
+    };
+
+    let hasOwnership = Boolean(own);
+    let result = await build(own ? `${config.select}, ${own.extraSelect}` : config.select);
+
+    if (result.error && own && !agent && isMissingColumn(result.error)) {
+      hasOwnership = false;
+      result = await build(config.select);
+    }
+
+    const { data, error, count } = result;
+    if (error) return serverError(migrationHint(error) ?? error.message);
+
+    const people = hasOwnership ? await creditablePeople(db, auth.admin) : [];
+    return respond(data ?? [], count ?? 0, hasOwnership, people);
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);
   }
@@ -123,9 +210,13 @@ export async function POST(req: Request, { params }: { params: { resource: strin
 
   if (!isResource(params.resource)) return notFound('Unknown admin resource.');
   const config = RESOURCES[params.resource];
+  const agent = isSalesAgent(auth.admin.profile);
 
   if (config.createFields.length === 0) {
     return badRequest(`${config.title} records are created by the system, not by hand.`);
+  }
+  if (agent && params.resource === 'customers') {
+    return badRequest('A customer becomes yours when their order does. Claim the order instead.');
   }
 
   const body = await readJson<Record<string, unknown>>(req);
@@ -135,6 +226,8 @@ export async function POST(req: Request, { params }: { params: { resource: strin
   const fields: Record<string, string> = {};
 
   for (const field of config.createFields) {
+    if (agent && AGENT_BLOCKED_COLUMNS.has(field.name)) continue;
+
     const raw = body[field.name];
     const empty = raw === undefined || raw === null || raw === '';
 
@@ -204,6 +297,10 @@ export async function POST(req: Request, { params }: { params: { resource: strin
 
   const insert = config.derive ? config.derive(row) : row;
 
+  // A lead an agent types in is theirs.
+  const own = OWNERSHIP[params.resource];
+  if (agent && own) insert[own.column] = auth.admin.id;
+
   try {
     const { data, error } = await getSupabaseAdmin()
       .from(config.table)
@@ -233,8 +330,11 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
 
   if (!isResource(params.resource)) return notFound('Unknown admin resource.');
   const config = RESOURCES[params.resource];
+  const agent = isSalesAgent(auth.admin.profile);
 
-  if (config.editable.length === 0) {
+  const editable = agent ? config.editable.filter((c) => !AGENT_BLOCKED_COLUMNS.has(c)) : config.editable;
+
+  if (editable.length === 0) {
     return badRequest(`${params.resource} is read-only.`);
   }
 
@@ -246,28 +346,37 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
   // Keep only columns this resource allows to be written.
   const changes: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(body.changes)) {
-    if (config.editable.includes(key)) changes[key] = value;
+    if (editable.includes(key)) changes[key] = value;
   }
 
-  const rejected = Object.keys(body.changes).filter((k) => !config.editable.includes(k));
+  const rejected = Object.keys(body.changes).filter((k) => !editable.includes(k));
   if (Object.keys(changes).length === 0) {
     return badRequest('No editable fields supplied.', {
-      fields: `Allowed: ${config.editable.join(', ')}`,
+      fields: `Allowed: ${editable.join(', ')}`,
     });
   }
 
   const update = config.deriveUpdate ? config.deriveUpdate(changes) : changes;
+  const db = getSupabaseAdmin();
+  const own = OWNERSHIP[params.resource];
 
   try {
-    const { data, error } = await getSupabaseAdmin()
-      .from(config.table)
-      .update(update)
-      .eq('id', body.id)
-      .select(config.select)
-      .maybeSingle();
+    if (agent && params.resource === 'customers') {
+      const { data: customer } = await db.from(config.table).select('email').eq('id', body.id).maybeSingle();
+      const emails = await agentCustomerEmails(db, auth.admin.id);
+      if (!customer || !emails.includes(String((customer as { email?: string }).email ?? '').toLowerCase())) {
+        return notFound(NOT_YOURS);
+      }
+    }
+
+    let query = db.from(config.table).update(update).eq('id', body.id);
+    // Unclaimed and colleagues' records are refused the same way: not found.
+    if (agent && own) query = query.eq(own.column, auth.admin.id);
+
+    const { data, error } = await query.select(config.select).maybeSingle();
 
     if (error) return serverError(migrationHint(error) ?? error.message);
-    if (!data) return notFound('No row with that id.');
+    if (!data) return notFound(agent && own ? NOT_YOURS : 'No row with that id.');
 
     return ok({ row: data, applied: Object.keys(update), ignored: rejected });
   } catch (err) {
@@ -284,6 +393,11 @@ export async function DELETE(req: Request, { params }: { params: { resource: str
 
   if (!isResource(params.resource)) return notFound('Unknown admin resource.');
   const config = RESOURCES[params.resource];
+
+  // An agent deleting a lead would also delete the evidence it was theirs.
+  if (isSalesAgent(auth.admin.profile)) {
+    return badRequest('Only a super admin can delete records.');
+  }
 
   if (!config.deletable) {
     return badRequest(

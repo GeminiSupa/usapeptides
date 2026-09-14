@@ -6,8 +6,9 @@ import {
   GRANTABLE_MODULES, DEFAULT_SUB_USER_CAP,
   canBecomeSubUser, guardSelfEdit, parseRate, sanitizePermissions,
   subUserCapFor, subUserSpotsUsed, validateReassignment, validateSupervisor,
-  isSubUser, type AdminProfile, type Tier, type UserStatus,
+  isSubUser, SALES_AGENT_MODULES, type AdminProfile, type Role, type Tier, type UserStatus,
 } from '@/lib/permissions';
+import { uniqueReferralCode } from '@/lib/referralCodes';
 import { ok, created, badRequest, notFound, serverError, readJson, isEmail, clip } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -55,21 +56,31 @@ const CORE_COLUMNS =
 /** Arrives with 0006. Dropped from the query when the database lacks them. */
 const PAY_COLUMNS = 'base_salary, salary_period, salary_currency';
 
-const SELECT = `${CORE_COLUMNS}, ${PAY_COLUMNS}`;
+/** Arrives with 0007. Dropped the same way. */
+const ROLE_COLUMNS = 'role, referral_code';
+
+const SELECT = `${CORE_COLUMNS}, ${PAY_COLUMNS}, ${ROLE_COLUMNS}`;
 
 /**
- * Read admin_users, falling back to the pre-0006 column set if the pay columns
- * are not there yet. Returns which set was used so the UI can hide the pay
- * fields rather than show boxes that silently fail to save.
+ * Read admin_users with the newest column set the database has, falling back a
+ * migration at a time. Returns which set was used so the UI hides fields that
+ * would silently fail to save, and so writes select only columns that exist.
  */
 async function selectUsers(db: ReturnType<typeof getSupabaseAdmin>) {
-  const full = await db.from('admin_users').select(SELECT);
-  if (!full.error) return { rows: full.data, hasPay: true, error: null };
+  const attempts = [
+    { select: SELECT, hasPay: true, hasRoles: true },
+    { select: `${CORE_COLUMNS}, ${PAY_COLUMNS}`, hasPay: true, hasRoles: false },
+    { select: CORE_COLUMNS, hasPay: false, hasRoles: false },
+  ];
 
-  if (!needsMigration(full.error)) return { rows: null, hasPay: true, error: full.error };
-
-  const core = await db.from('admin_users').select(CORE_COLUMNS);
-  return { rows: core.data, hasPay: false, error: core.error };
+  let lastError: { code?: string; message?: string } | null = null;
+  for (const attempt of attempts) {
+    const result = await db.from('admin_users').select(attempt.select);
+    if (!result.error) return { rows: result.data, ...attempt, error: null };
+    if (!needsMigration(result.error)) return { rows: null, ...attempts[0], error: result.error };
+    lastError = result.error;
+  }
+  return { rows: null, ...attempts[2], error: lastError };
 }
 
 /** 0005 has not been run. Say which file, not "column does not exist". */
@@ -106,7 +117,7 @@ export async function GET(req: Request) {
   if (!auth.ok) return auth.response;
 
   try {
-    const { rows: data, hasPay, error } = await selectUsers(getSupabaseAdmin());
+    const { rows: data, hasPay, hasRoles, error } = await selectUsers(getSupabaseAdmin());
     if (error) return serverError(needsMigration(error) ? SETUP_MESSAGE : error.message);
 
     const rows = ((data ?? []) as unknown as AdminProfile[])
@@ -124,6 +135,9 @@ export async function GET(req: Request) {
       // False until 0006 has been run. The form hides the wage fields rather
       // than offering boxes whose values would be dropped on save.
       hasPay,
+      // False until 0007 has been run. The Sales agent choice is hidden without it.
+      hasRoles,
+      salesAgentModules: Array.from(SALES_AGENT_MODULES),
       counts: {
         staff: rows.filter((r) => !isSubUser(r)).length,
         subUsers: rows.filter((r) => isSubUser(r)).length,
@@ -168,6 +182,14 @@ export async function POST(req: Request) {
   if (listed.error) return serverError(needsMigration(listed.error) ? SETUP_MESSAGE : listed.error.message);
   const all = (listed.rows ?? []) as unknown as AdminProfile[];
   const hasPay = listed.hasPay;
+  const hasRoles = listed.hasRoles;
+
+  const role: Role = tier === 'staff' && body.role === 'sales_agent' ? 'sales_agent' : 'staff';
+  if (role === 'sales_agent' && !hasRoles) {
+    fields.role = 'Sales agents need supabase/migrations/0007_sales_agents.sql to be run first.';
+  } else if (role === 'sales_agent' && body.is_superadmin === true) {
+    fields.role = 'A super admin sees everything, so they cannot also be a sales agent.';
+  }
 
   if (all.some((u) => u.email.toLowerCase() === email)) {
     fields.email = 'Somebody with that address already has dashboard access.';
@@ -216,6 +238,11 @@ export async function POST(req: Request) {
   // the same rule as a constraint.
   const isOwner = tier === 'staff' && body.is_superadmin === true;
 
+  const referralCode = role === 'sales_agent' ? await uniqueReferralCode(db) : null;
+  if (role === 'sales_agent' && !referralCode) {
+    return serverError('Could not create a referral code for them. Try again.');
+  }
+
   try {
     // 1. The login.
     const { data: authData, error: authError } = await db.auth.admin.createUser({
@@ -249,7 +276,7 @@ export async function POST(req: Request) {
       // for sub-users invited by staff, which is a different route.
       status: 'active' as UserStatus,
       is_superadmin: isOwner,
-      permissions: sanitizePermissions(body.permissions),
+      permissions: sanitizePermissions(body.permissions, role),
       parent_user_id: tier === 'sub_user' ? parent!.id : null,
       sub_user_cap: tier === 'staff'
         ? Math.max(0, Math.min(200, Number(body.sub_user_cap ?? DEFAULT_SUB_USER_CAP) || 0))
@@ -260,12 +287,13 @@ export async function POST(req: Request) {
       ...(hasPay
         ? { base_salary: salary, salary_period: salaryPeriod, salary_currency: salaryCurrency }
         : {}),
+      ...(hasRoles ? { role, referral_code: referralCode } : {}),
       invited_by: auth.admin.id,
       approved_by: auth.admin.id,
       approved_at: new Date().toISOString(),
     };
 
-    const inserted = await db.from('admin_users').insert(row).select(SELECT).single();
+    const inserted = await db.from('admin_users').insert(row).select(listed.select).single();
     const profile = inserted.data as unknown as AdminProfile | null;
     const insertError = inserted.error;
 
@@ -286,6 +314,7 @@ export async function POST(req: Request) {
       targetLabel: email,
       detail: {
         tier,
+        role,
         is_superadmin: isOwner,
         permissions: row.permissions,
         parent_user_id: row.parent_user_id,
@@ -314,6 +343,7 @@ const WRITABLE: Record<string, (value: unknown) => unknown> = {
   phone: (v) => clip(v, 40) || null,
   avatar_url: (v) => clip(v, 600) || null,
   tier: (v) => (v === 'sub_user' ? 'sub_user' : 'staff'),
+  role: (v) => (v === 'sales_agent' ? 'sales_agent' : 'staff'),
   status: (v) => (v === 'pending' || v === 'suspended' ? v : 'active'),
   is_superadmin: (v) => Boolean(v),
   permissions: (v) => sanitizePermissions(v),
@@ -374,6 +404,7 @@ export async function PATCH(req: Request) {
   if (!listed.hasPay) {
     for (const key of ['base_salary', 'salary_period', 'salary_currency']) delete changes[key];
   }
+  if (!listed.hasRoles) delete changes.role;
 
   if (Object.keys(fields).length) return badRequest('Could not save.', fields);
   if (Object.keys(changes).length === 0) return badRequest('Nothing to change.');
@@ -436,9 +467,29 @@ export async function PATCH(req: Request) {
     changes.permissions = [];
     changes.sub_user_cap = 0;
     changes.is_superadmin = false;
+    if (listed.hasRoles) changes.role = 'staff';
   }
   if (changes.tier === 'staff' && target.tier === 'sub_user') {
     changes.parent_user_id = null;
+  }
+
+  // Sales agent: a team member, never a super admin, and capped to the sections
+  // an agent may hold. The database has the same rule as a constraint.
+  if (listed.hasRoles && (changes.role ?? target.role) === 'sales_agent') {
+    if ((changes.tier ?? target.tier) === 'sub_user') {
+      return badRequest('A sub-user cannot be a sales agent.');
+    }
+    if ((changes.is_superadmin ?? target.is_superadmin) === true) {
+      return badRequest('A super admin sees everything, so they cannot also be a sales agent. Switch off Super admin first.');
+    }
+    if (changes.permissions !== undefined || changes.role === 'sales_agent') {
+      changes.permissions = sanitizePermissions(changes.permissions ?? target.permissions, 'sales_agent');
+    }
+    if (!target.referral_code) {
+      const code = await uniqueReferralCode(db);
+      if (!code) return serverError('Could not create a referral code for them. Try again.');
+      changes.referral_code = code;
+    }
   }
 
   // An invited sub-user has no login yet: the invite deliberately creates no
@@ -473,7 +524,7 @@ export async function PATCH(req: Request) {
       .from('admin_users')
       .update(changes)
       .eq('id', target.id)
-      .select(SELECT)
+      .select(listed.select)
       .maybeSingle();
 
     if (error) {

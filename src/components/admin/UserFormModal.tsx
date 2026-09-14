@@ -34,6 +34,10 @@ interface Props {
    * are hidden rather than shown and silently dropped on save.
    */
   hasPay?: boolean;
+  /** False until 0007 has been run; the Sales agent choice is hidden without it. */
+  hasRoles?: boolean;
+  /** The sections an agent may be given, from the API. */
+  salesAgentModules?: string[];
   /** True when the person using this form is the same row. */
   isSelf: boolean;
   busy: boolean;
@@ -47,7 +51,8 @@ const input =
   'w-full border border-brand-border bg-brand-dark px-3 py-2 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none disabled:opacity-50';
 
 export default function UserFormModal({
-  mode, user, lockTier, grantable, supervisors, minPassword, hasPay = true, isSelf,
+  mode, user, lockTier, grantable, supervisors, minPassword, hasPay = true,
+  hasRoles = false, salesAgentModules = [], isSelf,
   busy, error, fieldErrors, onCancel, onSubmit,
 }: Props) {
   const editing = mode === 'edit';
@@ -61,6 +66,9 @@ export default function UserFormModal({
   const [phone, setPhone] = useState((user as any)?.phone ?? '');
   const [password, setPassword] = useState('');
   const [isOwner, setIsOwner] = useState(Boolean(user?.is_superadmin));
+  const [role, setRole] = useState<'staff' | 'sales_agent'>(
+    (user as any)?.role === 'sales_agent' ? 'sales_agent' : 'staff'
+  );
   const [cap, setCap] = useState(String(user?.sub_user_cap ?? 5));
   const [commission, setCommission] = useState(String(user?.commission_rate ?? 0));
   const [override, setOverride] = useState(String(user?.override_rate ?? 0));
@@ -78,15 +86,18 @@ export default function UserFormModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [onCancel]);
 
+  const isAgent = hasRoles && tier === 'staff' && role === 'sales_agent';
+
   const groups = useMemo(() => {
     const out: { name: string; modules: ModuleDef[] }[] = [];
-    for (const m of grantable) {
+    const offered = isAgent ? grantable.filter((m) => salesAgentModules.includes(m.id)) : grantable;
+    for (const m of offered) {
       let group = out.find((g) => g.name === m.group);
       if (!group) { group = { name: m.group, modules: [] }; out.push(group); }
       group.modules.push(m);
     }
     return out;
-  }, [grantable]);
+  }, [grantable, isAgent, salesAgentModules]);
 
   const toggle = (id: string) =>
     setPermissions((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
@@ -121,6 +132,7 @@ export default function UserFormModal({
       values.permissions = permissions;
       values.sub_user_cap = cap === '' ? 0 : Number(cap);
       values.is_superadmin = isOwner;
+      if (hasRoles) values.role = role;
     }
 
     // Editing sends only what the server allows on that account. Role, status
@@ -128,6 +140,7 @@ export default function UserFormModal({
     if (editing && isSelf) {
       delete values.permissions;
       delete values.is_superadmin;
+      delete values.role;
     }
 
     onSubmit(values);
@@ -295,9 +308,38 @@ export default function UserFormModal({
                   </div>
                 ) : (
                   <>
+                    {hasRoles && (
+                      <div className="mb-4">
+                        <div className="flex gap-2">
+                          {([['staff', 'Team member'], ['sales_agent', 'Sales agent']] as const).map(([value, label]) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => {
+                                setRole(value);
+                                if (value === 'sales_agent') {
+                                  setIsOwner(false);
+                                  setPermissions((prev) => prev.filter((id) => salesAgentModules.includes(id)));
+                                }
+                              }}
+                              className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
+                                role === value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="mt-2 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                          {role === 'sales_agent'
+                            ? 'A sales agent sees only their own orders, customers and leads, plus orders nobody has claimed yet. They get their own referral link, and can have sub-users under them.'
+                            : 'A team member sees everything in the sections you tick below.'}
+                        </p>
+                      </div>
+                    )}
                     <button
                       type="button"
-                      onClick={() => setIsOwner((v) => !v)}
+                      onClick={() => { if (!isOwner) setRole('staff'); setIsOwner(!isOwner); }}
                       className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
                         isOwner ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
                       }`}
@@ -338,6 +380,12 @@ export default function UserFormModal({
                     </p>
                   ) : (
                     <div className="space-y-4">
+                      {isAgent && (
+                        <p className="border border-brand-border bg-brand-dark p-3 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                          Only these sections can be given to a sales agent. In each one they see only
+                          what is theirs.
+                        </p>
+                      )}
                       {groups.map((group) => (
                         <div key={group.name}>
                           <p className="mb-1.5 text-[0.75rem] uppercase tracking-[0.14em] text-brand-textMuted">

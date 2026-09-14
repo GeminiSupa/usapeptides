@@ -15,6 +15,12 @@
 export type Tier = 'staff' | 'sub_user';
 export type UserStatus = 'pending' | 'active' | 'suspended';
 
+/**
+ * What a team member does. Separate from tier, which is the recruiting tree.
+ * A sales agent is tier 'staff', so they can have sub-users beneath them.
+ */
+export type Role = 'staff' | 'sales_agent';
+
 /** One dashboard section. `id` doubles as the permission name. */
 export interface ModuleDef {
   id: string;
@@ -91,6 +97,14 @@ export const GRANTABLE_IDS = new Set(GRANTABLE_MODULES.map((m) => m.id));
 /** What a sub-user may reach. Short on purpose, and contains no 'users'. */
 export const SUB_USER_MODULES = new Set(['my_earnings', 'my_link']);
 
+/**
+ * The most a sales agent can be given. Inside each, the API shows them only
+ * their own records plus unclaimed ones they can claim — never a colleague's.
+ * Anything else (subscribers, carts, campaigns) would hand over the whole
+ * customer list, so it is not grantable to an agent at all.
+ */
+export const SALES_AGENT_MODULES = new Set(['orders', 'customers', 'leads', 'my_team']);
+
 export const moduleLabel = (id: string): string => byId.get(id)?.label ?? id;
 
 /* -------------------------------------------------------------------------- */
@@ -103,6 +117,9 @@ export interface AdminProfile {
   email: string;
   full_name?: string | null;
   tier: Tier;
+  /** Absent on a database that has not had 0007; reads as 'staff'. */
+  role?: Role;
+  referral_code?: string | null;
   status: UserStatus;
   is_superadmin: boolean;
   permissions: string[];
@@ -120,6 +137,9 @@ export const isSubUser = (p: Pick<AdminProfile, 'tier'> | null | undefined): boo
 
 export const isStaff = (p: Pick<AdminProfile, 'tier'> | null | undefined): boolean =>
   p?.tier !== 'sub_user';
+
+export const isSalesAgent = (p: Pick<AdminProfile, 'tier' | 'role'> | null | undefined): boolean =>
+  p?.role === 'sales_agent' && p?.tier !== 'sub_user';
 
 /**
  * May this profile reach this section?
@@ -151,6 +171,10 @@ export function canAccess(
 
   const held = Array.isArray(profile.permissions) ? profile.permissions : [];
 
+  // A sales agent is capped at their list even if a wider permission was
+  // somehow stored, e.g. somebody changed from staff to agent by hand.
+  if (isSalesAgent(profile) && !mod.always && !SALES_AGENT_MODULES.has(moduleId)) return false;
+
   // This used to return true for everybody, so a team member added with no
   // permissions still opened the home page — revenue, order counts and the
   // latest customers' email addresses.
@@ -174,12 +198,14 @@ export function defaultModule(profile: AdminProfile | null | undefined): string 
  * cannot be written into somebody's permissions array even by a request that
  * never went near the UI.
  */
-export function sanitizePermissions(input: unknown): string[] {
+export function sanitizePermissions(input: unknown, role?: Role): string[] {
   if (!Array.isArray(input)) return [];
   const seen = new Set<string>();
   for (const value of input) {
     const id = String(value ?? '').trim();
-    if (GRANTABLE_IDS.has(id)) seen.add(id);
+    if (!GRANTABLE_IDS.has(id)) continue;
+    if (role === 'sales_agent' && !SALES_AGENT_MODULES.has(id)) continue;
+    seen.add(id);
   }
   return Array.from(seen);
 }
@@ -271,7 +297,7 @@ export function validateReassignment(
 
 /** Fields only an owner may ever write, on anybody. */
 export const OWNER_ONLY_FIELDS = [
-  'tier', 'status', 'is_superadmin', 'permissions',
+  'tier', 'role', 'status', 'is_superadmin', 'permissions',
   'parent_user_id', 'sub_user_cap', 'commission_rate', 'override_rate',
 ] as const;
 
@@ -283,7 +309,7 @@ export const OWNER_ONLY_FIELDS = [
  * can always make the change.
  */
 export const SELF_PROTECTED_FIELDS = [
-  'tier', 'status', 'is_superadmin', 'permissions', 'parent_user_id',
+  'tier', 'role', 'status', 'is_superadmin', 'permissions', 'parent_user_id',
 ] as const;
 
 export function guardSelfEdit(

@@ -16,7 +16,7 @@ import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
-  Pencil, Monitor, ScrollText, GitBranch, Wallet, Link2,
+  Pencil, Monitor, ScrollText, GitBranch, Wallet, Link2, ChevronDown,
 } from 'lucide-react';
 
 /**
@@ -85,13 +85,26 @@ interface RowsResponse {
   deletable: boolean;
   createFields: FieldDef[];
   columns: string[] | null;
+  /** Present on orders and leads: who owns each row, and what the viewer may do about it. */
+  ownership: {
+    column: string;
+    you: string;
+    canClaim: boolean;
+    canAssign: boolean;
+    people: { id: string; name: string }[];
+  } | null;
 }
+
+/** Ownership bookkeeping; shown as the Agent column, never as raw ids. */
+const OWNERSHIP_COLUMNS = new Set(['referred_by', 'agent_source', 'agent_claimed_at', 'owner_id']);
 
 interface Me {
   id: string;
   email: string;
   fullName: string | null;
   tier: 'staff' | 'sub_user';
+  role: 'staff' | 'sales_agent';
+  referralCode: string | null;
   isOwner: boolean;
   permissions: string[];
   allowed: string[];
@@ -122,6 +135,9 @@ export default function AdminPage() {
   const [saveFieldErrors, setSaveFieldErrors] = useState<Record<string, string>>({});
 
   const [profileOpen, setProfileOpen] = useState(false);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [orderDetails, setOrderDetails] = useState<Record<string, any>>({});
+  const [orderDetailError, setOrderDetailError] = useState('');
 
   const editorOpen = editorRow !== undefined;
 
@@ -244,6 +260,46 @@ export default function AdminPage() {
     } catch { /* surfaced */ }
   };
 
+  /** Claim for yourself, or (super admin) assign to someone / clear with null. */
+  const claim = async (id: string, agentId?: string | null) => {
+    if (!resource) return;
+    setError('');
+    try {
+      const res = await authedFetch('/api/admin/claim', {
+        method: 'POST',
+        body: JSON.stringify({ resource, id, ...(agentId !== undefined ? { agent_id: agentId } : {}) }),
+      });
+      if (!res.ok) {
+        const p = await res.json().catch(() => null);
+        setError(p?.message ?? 'Could not claim that.');
+      }
+      void load();
+    } catch { /* surfaced */ }
+  };
+
+  const toggleOrderDetails = async (row: Record<string, any>) => {
+    if (expandedOrderId === row.id) {
+      setExpandedOrderId(null);
+      return;
+    }
+
+    setExpandedOrderId(row.id);
+    setOrderDetailError('');
+    if (orderDetails[row.id]) return;
+
+    try {
+      const res = await authedFetch(`/api/admin/orders/${row.id}`);
+      const p = await res.json().catch(() => null);
+      if (!res.ok) {
+        setOrderDetailError(p?.message ?? 'Could not load order detail.');
+        return;
+      }
+      setOrderDetails((prev) => ({ ...prev, [row.id]: p.data }));
+    } catch {
+      setOrderDetailError('Could not load order detail.');
+    }
+  };
+
   const openEditor = (row: Record<string, any> | null) => {
     setEditorRow(row); setSaveError(''); setSaveFieldErrors({});
   };
@@ -336,9 +392,98 @@ export default function AdminPage() {
   };
 
   const visibleColumns = (d: RowsResponse) =>
-    d.columns?.filter((c) => c in (d.rows[0] ?? {})) ?? Object.keys(d.rows[0] ?? {}).filter((k) => k !== 'id');
+    (d.columns?.filter((c) => c in (d.rows[0] ?? {})) ?? Object.keys(d.rows[0] ?? {}).filter((k) => k !== 'id'))
+      .filter((k) => !OWNERSHIP_COLUMNS.has(k));
+
+  const ownerCell = (row: Record<string, any>, own: NonNullable<RowsResponse['ownership']>) => {
+    const owner = (row[own.column] as string | null) ?? null;
+
+    if (own.canAssign) {
+      return (
+        <select value={owner ?? ''} onChange={(e) => claim(row.id, e.target.value || null)}
+          className="border border-brand-border bg-brand-dark px-2 py-1 text-[0.8125rem] text-brand-heading focus:border-brand-accent focus:outline-none">
+          <option value="">Unclaimed</option>
+          {own.people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {owner && !own.people.some((p) => p.id === owner) && <option value={owner}>Former agent</option>}
+        </select>
+      );
+    }
+    if (!owner) {
+      return own.canClaim ? (
+        <button onClick={() => claim(row.id)}
+          className="bg-brand-accent px-2.5 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
+          Claim
+        </button>
+      ) : <span className="text-brand-textMuted">Unclaimed</span>;
+    }
+    if (owner === own.you) {
+      return <span className="font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-whatsapp">Yours</span>;
+    }
+    return <span>{own.people.find((p) => p.id === owner)?.name ?? 'Another agent'}</span>;
+  };
 
   const canCreate = Boolean(data && data.createFields.length > 0);
+
+  const orderDetail = (row: Record<string, any>) => {
+    const detail = orderDetails[row.id];
+    if (orderDetailError && expandedOrderId === row.id) {
+      return <p className="border border-brand-accent/50 bg-brand-dark p-3 text-brand-body">{orderDetailError}</p>;
+    }
+    if (!detail) return <p className="text-brand-textMuted">Loading order detail...</p>;
+
+    const items = Array.isArray(detail.items) ? detail.items : [];
+    const order = detail.order ?? row;
+
+    return (
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="border border-brand-border bg-brand-dark">
+          <div className="grid grid-cols-[1fr_auto_auto] gap-3 border-b border-brand-border px-3 py-2 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-textMuted">
+            <span>Item</span>
+            <span>Qty</span>
+            <span>Total</span>
+          </div>
+          {items.length === 0 ? (
+            <p className="p-3 text-brand-textMuted">No line items found for this order.</p>
+          ) : items.map((item: any) => (
+            <div key={item.id} className="grid grid-cols-[1fr_auto_auto] gap-3 border-b border-brand-border/60 px-3 py-2 last:border-b-0">
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-brand-heading">{item.product_name}</p>
+                <p className="font-mono text-[0.6875rem] text-brand-textMuted">
+                  {item.sku || item.product_slug} · {money(item.unit_price)} each
+                </p>
+              </div>
+              <span className="font-mono text-brand-body">{item.quantity}</span>
+              <span className="font-mono text-brand-heading">{money(item.line_total)}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-2 border border-brand-border bg-brand-dark p-3">
+          {[
+            ['Subtotal', order.subtotal],
+            ['Discount', order.discount_total],
+            ['Shipping', order.shipping_total],
+            ['Grand total', order.grand_total],
+          ].map(([label, value]) => (
+            <div key={label} className="flex justify-between gap-3 text-[0.8125rem]">
+              <span className="text-brand-textMuted">{label}</span>
+              <span className="font-mono text-brand-heading">{money(value)}</span>
+            </div>
+          ))}
+          {order.payment_provider && (
+            <p className="border-t border-brand-border pt-2 text-[0.75rem] text-brand-textMuted">
+              Payment method: <span className="text-brand-body">{order.payment_provider}</span>
+            </p>
+          )}
+          {order.shipping_address && (
+            <p className="border-t border-brand-border pt-2 text-[0.75rem] leading-relaxed text-brand-textMuted">
+              Ship to: <span className="text-brand-body">{Object.values(order.shipping_address).filter(Boolean).join(', ')}</span>
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   /* -------------------------------------------------------------- view --- */
   return (
@@ -361,6 +506,7 @@ export default function AdminPage() {
             {me.fullName || me.email}
             {me.isOwner && <span className="ml-1 text-action">· super admin</span>}
             {me.tier === 'sub_user' && <span className="ml-1">· sub-user</span>}
+            {me.role === 'sales_agent' && <span className="ml-1">· sales agent</span>}
             <span className="mt-0.5 block text-[0.6875rem] uppercase tracking-[0.12em] underline underline-offset-2">
               My profile
             </span>
@@ -432,12 +578,27 @@ export default function AdminPage() {
         ) : active.id === 'home' ? (
           summary ? (
             <div className="space-y-8">
+              {me.role === 'sales_agent' && (
+                <div className="border border-brand-border bg-brand-card p-4">
+                  <div className="eyebrow">Your referral link</div>
+                  <p className="mt-2 break-all font-mono text-[0.8125rem] text-brand-heading">
+                    {me.referralCode && typeof window !== 'undefined'
+                      ? `${window.location.origin}/?ref=${me.referralCode}`
+                      : 'Being set up. Reload the page in a moment.'}
+                  </p>
+                  <p className="mt-1.5 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                    A customer who buys through this link is yours, and so are all their later orders.
+                    Orders with no agent wait under Orders for somebody to claim them.
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-px border border-brand-border bg-brand-border md:grid-cols-3 xl:grid-cols-5">
                 {/* The API sends only the figures this person may see. */}
                 {([
                   ['Revenue (30d)', 'revenue30', true],
                   ['Orders (30d)', 'orders30'],
                   ['Awaiting payment', 'pendingOrders'],
+                  ['Waiting to be claimed', 'unclaimedOrders'],
                   ['Open enquiries', 'openInquiries'],
                   ['Reviews to approve', 'pendingReviews'],
                   ['Subscribers', 'subscribers'],
@@ -519,29 +680,51 @@ export default function AdminPage() {
                 <thead className="border-b border-brand-border bg-brand-card"><tr>
                   {visibleColumns(data).map((k) => (
                     <th key={k} className="whitespace-nowrap px-3 py-2.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{prettify(k)}</th>))}
+                  {data.ownership && (
+                    <th className="whitespace-nowrap px-3 py-2.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">Agent</th>
+                  )}
                   <th className="px-3 py-2.5" />
                 </tr></thead>
                 <tbody>
                   {data.rows.map((row) => (
-                    <tr key={row.id} className="border-b border-brand-border/60 last:border-b-0 hover:bg-brand-card">
-                      {visibleColumns(data).map((k) => (
-                        <td key={k} className="whitespace-nowrap px-3 py-2.5 text-brand-body">{cell(row, k, data.editable)}</td>))}
-                      <td className="whitespace-nowrap px-3 py-2.5 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {data.editable.length > 0 && (
-                            <button onClick={() => openEditor(row)} title="Edit"
-                              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
-                              <Pencil className="h-2.5 w-2.5" /> Edit
-                            </button>
-                          )}
-                          {data.deletable && (
-                            <button onClick={() => remove(row.id)} title="Delete" className="p-1 text-brand-textMuted hover:text-brand-accentGlow">
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>))}
+                    <React.Fragment key={row.id}>
+                      <tr className="border-b border-brand-border/60 last:border-b-0 hover:bg-brand-card">
+                        {visibleColumns(data).map((k) => (
+                          <td key={k} className="whitespace-nowrap px-3 py-2.5 text-brand-body">{cell(row, k, data.editable)}</td>))}
+                        {data.ownership && (
+                          <td className="whitespace-nowrap px-3 py-2.5 text-brand-body">{ownerCell(row, data.ownership)}</td>
+                        )}
+                        <td className="whitespace-nowrap px-3 py-2.5 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {active.id === 'orders' && (
+                              <button onClick={() => toggleOrderDetails(row)} title="Order detail"
+                                className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
+                                <ChevronDown className={`h-2.5 w-2.5 transition-transform ${expandedOrderId === row.id ? 'rotate-180' : ''}`} /> Detail
+                              </button>
+                            )}
+                            {data.editable.length > 0 && (
+                              <button onClick={() => openEditor(row)} title="Edit"
+                                className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
+                                <Pencil className="h-2.5 w-2.5" /> Edit
+                              </button>
+                            )}
+                            {data.deletable && (
+                              <button onClick={() => remove(row.id)} title="Delete" className="p-1 text-brand-textMuted hover:text-brand-accentGlow">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                      {active.id === 'orders' && expandedOrderId === row.id && (
+                        <tr className="border-b border-brand-border/60 bg-brand-card/70">
+                          <td colSpan={visibleColumns(data).length + (data.ownership ? 2 : 1)} className="p-3 text-xs">
+                            {orderDetail(row)}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
                 </tbody>
               </table>
             </div>

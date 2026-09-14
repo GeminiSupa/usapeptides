@@ -1,5 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { featureUnavailable, BUSINESS } from '@/lib/env';
+import { resolveOrderAttribution } from '@/lib/attribution';
+import { FLAT_SHIPPING, FREE_SHIPPING_THRESHOLD, roundMoney, tierDiscount } from '@/lib/checkout';
 import {
   ok,
   created,
@@ -15,18 +17,8 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-const FREE_SHIPPING_THRESHOLD = 100;
-const FLAT_SHIPPING = 12;
-
-/** Volume tiers, mirroring the storefront's bulk pricing table. */
-function tierDiscount(quantity: number): number {
-  if (quantity >= 10) return 0.2;
-  if (quantity >= 5) return 0.15;
-  if (quantity >= 3) return 0.1;
-  return 0;
-}
-
-const round = (n: number) => Math.round(n * 100) / 100;
+/** How the customer said they will pay. Recorded only; nothing is charged here. */
+const PAYMENT_METHODS = new Set(['card', 'zelle', 'crypto', 'wire']);
 
 interface IncomingItem {
   slug?: unknown;
@@ -53,6 +45,9 @@ export async function POST(req: Request) {
     shippingAddress?: unknown;
     complianceAck?: unknown;
     notes?: unknown;
+    /** The referral code from a `?ref=` link. Only a claim; checked below. */
+    ref?: unknown;
+    paymentMethod?: unknown;
   }>(req);
 
   if (!body) return badRequest('Request body must be valid JSON.');
@@ -117,11 +112,11 @@ export async function POST(req: Request) {
 
       const base = Number(product.sale_price ?? product.price);
       const discount = tierDiscount(line.quantity);
-      const unitPrice = round(base * (1 - discount));
-      const lineTotal = round(unitPrice * line.quantity);
+      const unitPrice = roundMoney(base * (1 - discount));
+      const lineTotal = roundMoney(unitPrice * line.quantity);
 
-      subtotal = round(subtotal + round(base * line.quantity));
-      discountTotal = round(discountTotal + (round(base * line.quantity) - lineTotal));
+      subtotal = roundMoney(subtotal + roundMoney(base * line.quantity));
+      discountTotal = roundMoney(discountTotal + (roundMoney(base * line.quantity) - lineTotal));
 
       lines.push({
         product_id: product.id,
@@ -134,15 +129,29 @@ export async function POST(req: Request) {
       });
     }
 
-    const merchandise = round(subtotal - discountTotal);
+    const merchandise = roundMoney(subtotal - discountTotal);
     const shippingTotal = merchandise >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
-    const grandTotal = round(merchandise + shippingTotal);
+    const grandTotal = roundMoney(merchandise + shippingTotal);
+
+    const email = clip(body.email, 320).toLowerCase();
+
+    // Referral link first, then "the customer stays with their agent". No
+    // match means the order arrives unclaimed for an agent to claim.
+    const attribution = await resolveOrderAttribution(db, { ref: body.ref, email });
 
     const { data: order, error: orderError } = await db
       .from('orders')
       .insert({
         order_number: generateOrderNumber(),
-        email: clip(body.email, 320).toLowerCase(),
+        email,
+        ...(attribution
+          ? {
+              referred_by: attribution.referred_by,
+              agent_source: attribution.agent_source,
+              referral_code: attribution.referral_code,
+              agent_claimed_at: new Date().toISOString(),
+            }
+          : {}),
         full_name: clip(body.fullName, 200) || null,
         institution: clip(body.institution, 200) || null,
         phone: clip(body.phone, 50) || null,
@@ -153,6 +162,7 @@ export async function POST(req: Request) {
         grand_total: grandTotal,
         currency: BUSINESS.currency,
         shipping_address: body.shippingAddress ?? null,
+        payment_provider: PAYMENT_METHODS.has(String(body.paymentMethod)) ? String(body.paymentMethod) : null,
         compliance_ack: true,
         notes: clip(body.notes, 1000) || null,
       })

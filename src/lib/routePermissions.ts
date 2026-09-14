@@ -25,6 +25,9 @@ const RULES: Rule[] = [
   // suspending and reassigning them is handled by the owner-only users route.
   { pattern: /^\/api\/admin\/sub-users(?:\/|$)/,       permissions: ['users', 'my_team'] },
   { pattern: /^\/api\/admin\/audit(?:\/|$)/,           permissions: ['audit'] },
+  // Claiming and assigning. The route re-checks the specific section, and that
+  // the caller is a sales agent or a super admin.
+  { pattern: /^\/api\/admin\/claim$/,                  permissions: ['orders', 'leads'] },
 
   // The generic resource route. The resource name is the permission, which is
   // why the two lists share their names.

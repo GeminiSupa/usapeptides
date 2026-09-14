@@ -28,6 +28,7 @@ interface Mine {
   commission_rate: number | null;
   parent_user_id: string | null;
   status: string;
+  referral_code: string | null;
 }
 
 export default function SubUserHome({ authedFetch, me }: Props) {
@@ -46,13 +47,18 @@ export default function SubUserHome({ authedFetch, me }: Props) {
           commission_rate: p?.data?.commissionRate ?? null,
           parent_user_id: null,
           status: p?.data?.status ?? 'active',
+          referral_code: p?.data?.referralCode ?? null,
         });
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [authedFetch]);
 
-  const link = typeof window === 'undefined' ? '' : `${window.location.origin}/?ref=${me.id}`;
+  // The referral code, not the account id: the id is not a code checkout
+  // recognises, so a link built from it credited nobody.
+  const link = typeof window === 'undefined' || !mine?.referral_code
+    ? ''
+    : `${window.location.origin}/?ref=${mine.referral_code}`;
 
   const copy = async () => {
     try {
@@ -83,7 +89,7 @@ export default function SubUserHome({ authedFetch, me }: Props) {
         <h3 className="eyebrow mb-2">Your referral link</h3>
         <div className="flex flex-wrap items-center gap-2">
           <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap border border-brand-border bg-brand-dark px-3 py-2 font-mono text-[0.8125rem] text-brand-heading">
-            {link}
+            {link || (loading ? 'Loading...' : 'Being set up. Reload the page in a moment.')}
           </code>
           <button
             onClick={() => void copy()}
