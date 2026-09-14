@@ -31,6 +31,7 @@ export type AuditAction =
   | 'user.password_set'
   | 'user.profile_update'
   | 'user.password_change'
+  | 'order.create'
   | 'order.claim'
   | 'order.assign'
   | 'lead.claim'

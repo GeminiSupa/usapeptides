@@ -10,6 +10,7 @@ import UsersPanel from '@/components/admin/UsersPanel';
 import AuditPanel from '@/components/admin/AuditPanel';
 import SubUserHome from '@/components/admin/SubUserHome';
 import ProfileModal from '@/components/admin/ProfileModal';
+import ManualOrderModal from '@/components/admin/ManualOrderModal';
 import type { UploadKind } from '@/components/admin/UploadField';
 import { MODULES, type ModuleDef } from '@/lib/permissions';
 import {
@@ -135,6 +136,7 @@ export default function AdminPage() {
   const [saveFieldErrors, setSaveFieldErrors] = useState<Record<string, string>>({});
 
   const [profileOpen, setProfileOpen] = useState(false);
+  const [manualOrderOpen, setManualOrderOpen] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<Record<string, any>>({});
   const [orderDetailError, setOrderDetailError] = useState('');
@@ -557,6 +559,12 @@ export default function AdminPage() {
                 <Plus className="h-3.5 w-3.5" /> New
               </button>
             )}
+            {active.id === 'orders' && (
+              <button onClick={() => setManualOrderOpen(true)}
+                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
+                <Plus className="h-3.5 w-3.5" /> Manual order
+              </button>
+            )}
           </div>
         </div>
 
@@ -763,6 +771,17 @@ export default function AdminPage() {
           upload={upload}
           onCancel={() => setProfileOpen(false)}
           onSaved={(p) => setMe((prev) => (prev ? { ...prev, fullName: p.full_name } : prev))}
+        />
+      )}
+
+      {manualOrderOpen && (
+        <ManualOrderModal
+          authedFetch={authedFetch}
+          onCancel={() => setManualOrderOpen(false)}
+          onSaved={() => {
+            setManualOrderOpen(false);
+            void load();
+          }}
         />
       )}
 
