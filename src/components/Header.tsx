@@ -71,12 +71,12 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
           <Link href="/" className="flex flex-shrink-0 flex-col leading-none" aria-label="USA Peptide Depot home">
             <Image
-              src="/logo.png"
+              src="/logo-mark.png"
               alt="USA Peptide Depot"
-              width={622}
-              height={205}
+              width={444}
+              height={200}
               priority
-              className="h-9 w-auto sm:h-12"
+              className="h-10 w-auto sm:h-12"
             />
             <span className="mt-1.5 hidden text-[0.625rem] uppercase tracking-[0.18em] text-brand-textMuted sm:block">
               HPLC tested &middot; Ships from the USA
