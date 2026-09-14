@@ -145,11 +145,11 @@
 
 }
 
-/* Scrollbars tuned to the forest and navy shell. */
+/* Scrollbars tuned to the forest shell. */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #151d2d; }
-::-webkit-scrollbar-thumb { background: #405169; }
-::-webkit-scrollbar-thumb:hover { background: #66748a; }
+::-webkit-scrollbar-track { background: #0b2118; }
+::-webkit-scrollbar-thumb { background: #3e5f4f; }
+::-webkit-scrollbar-thumb:hover { background: #587a68; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }
