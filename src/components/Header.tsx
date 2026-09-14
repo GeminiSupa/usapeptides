@@ -71,16 +71,13 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
           <Link href="/" className="flex flex-shrink-0 flex-col leading-none" aria-label="USA Peptide Depot home">
             <Image
-              src="/logo-mark.png"
+              src="/logo.png"
               alt="USA Peptide Depot"
-              width={444}
-              height={200}
+              width={622}
+              height={205}
               priority
-              className="h-10 w-auto sm:h-12"
+              className="h-auto w-[11.5rem] sm:w-[14rem]"
             />
-            <span className="mt-1.5 hidden text-[0.625rem] uppercase tracking-[0.18em] text-brand-textMuted sm:block">
-              HPLC tested &middot; Ships from the USA
-            </span>
           </Link>
 
           {/* Search with a category scope, as on the reference header */}
