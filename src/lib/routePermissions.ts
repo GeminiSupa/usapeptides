@@ -28,6 +28,7 @@ const RULES: Rule[] = [
   // Claiming and assigning. The route re-checks the specific section, and that
   // the caller is a sales agent or a super admin.
   { pattern: /^\/api\/admin\/claim$/,                  permissions: ['orders', 'leads'] },
+  { pattern: /^\/api\/admin\/earnings$/,               permissions: ['my_earnings'] },
 
   // The generic resource route. The resource name is the permission, which is
   // why the two lists share their names.
@@ -45,6 +46,7 @@ const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/commissions(?:\/|$)/,     permissions: ['commissions'] },
   { pattern: /^\/api\/admin\/campaigns(?:\/|$)/,       permissions: ['campaigns'] },
   { pattern: /^\/api\/admin\/subscribers(?:\/|$)/,     permissions: ['subscribers'] },
+  { pattern: /^\/api\/admin\/articles(?:\/|$)/,        permissions: ['articles'] },
   { pattern: /^\/api\/admin\/notifications(?:\/|$)/,   permissions: ['notifications'] },
   { pattern: /^\/api\/admin\/activity(?:\/|$)/,        permissions: ['activity'] },
 

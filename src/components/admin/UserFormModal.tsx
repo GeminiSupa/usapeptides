@@ -218,7 +218,7 @@ export default function UserFormModal({
                     type="button"
                     onClick={() => setTier(value)}
                     className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
-                      tier === value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
+                      tier === value ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted'
                     }`}
                   >
                     {label}
@@ -323,7 +323,7 @@ export default function UserFormModal({
                                 }
                               }}
                               className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
-                                role === value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
+                                role === value ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted'
                               }`}
                             >
                               {label}
@@ -341,7 +341,7 @@ export default function UserFormModal({
                       type="button"
                       onClick={() => { if (!isOwner) setRole('staff'); setIsOwner(!isOwner); }}
                       className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
-                        isOwner ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
+                        isOwner ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted'
                       }`}
                     >
                       {isOwner ? 'Super admin' : 'Not a super admin'}
@@ -400,7 +400,7 @@ export default function UserFormModal({
                                   type="button"
                                   onClick={() => toggle(m.id)}
                                   className={`px-2.5 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] transition-colors ${
-                                    on ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted hover:text-brand-body'
+                                    on ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted hover:text-brand-body'
                                   }`}
                                 >
                                   {m.label}

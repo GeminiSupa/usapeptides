@@ -102,7 +102,7 @@ export default function OrderReceivedPage() {
         <button
           type="submit"
           disabled={state === 'loading'}
-          className="flex items-center justify-center gap-2 bg-brand-accent px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-white transition-colors hover:bg-flag-red disabled:opacity-60 sm:col-span-2"
+          className="flex items-center justify-center gap-2 bg-brand-accent px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-onAccent transition-colors hover:bg-brand-accentHover disabled:opacity-60 sm:col-span-2"
         >
           <Search className="h-3.5 w-3.5" />
           {state === 'loading' ? '...' : 'Find'}
@@ -130,7 +130,7 @@ export default function OrderReceivedPage() {
                 </div>
               </div>
             </div>
-            <span className="bg-brand-accent px-3 py-1 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-white">
+            <span className="bg-brand-accent px-3 py-1 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-brand-onAccent">
               {STATUS_COPY[order.status] ?? order.status}
             </span>
           </div>

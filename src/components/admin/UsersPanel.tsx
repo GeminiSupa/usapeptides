@@ -384,7 +384,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
             {isOwner && (
               <button
                 onClick={() => { setForm({ mode: 'create', tier: 'staff' }); setFormError(''); setFieldErrors({}); }}
-                className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+                className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
               >
                 <Plus className="h-3 w-3" /> Add team member
               </button>
@@ -407,7 +407,7 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
               {isOwner && (
                 <button
                   onClick={() => { setForm({ mode: 'create', tier: 'sub_user' }); setFormError(''); setFieldErrors({}); }}
-                  className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+                  className="ml-auto inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
                 >
                   <Plus className="h-3 w-3" /> Invite a sub-user
                 </button>

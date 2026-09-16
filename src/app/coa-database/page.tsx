@@ -135,7 +135,7 @@ export default function CoaDatabasePage() {
                     {p.coa.lotNumber}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black text-white">
+                    <span className="bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black text-brand-onAccent">
                       {p.coa.purity}
                     </span>
                   </td>

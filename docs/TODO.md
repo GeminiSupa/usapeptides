@@ -147,7 +147,40 @@ something outside the code.
            8% of their own orders, the parent earns a 2% override on those same
            orders (`subUserCommission.mjs`). Two levels only.
       So an agent must see unclaimed orders plus their own, not other agents'.
-      Waiting on the owner to confirm before building.
+      **Owner confirmed. Built 2026-09-13, not committed yet:**
+      - `0007_sales_agents.sql` rewritten (never run, so editing was allowed):
+        `admin_users.role/referral_code`, `orders.agent_source/agent_claimed_at`,
+        `leads.owner_id`. Customers have no owner column — derived from orders.
+      - `src/lib/attribution.ts`: checkout credits link first, then customer
+        history; else unclaimed. `src/lib/referralCodes.ts`: crypto codes,
+        unique across agents and affiliates.
+      - `/api/admin/claim`: agent claims only while unclaimed (conditional
+        update, 409 to the loser, no colleague name leaked); super admin
+        assigns/clears. Audit: order/lead claim/assign.
+      - `[resource]` route: agents see own + unclaimed orders/leads, customers
+        only from own orders; cannot edit unclaimed or others' rows, cannot
+        change ownership columns, cannot delete. Agent permissions capped to
+        orders/customers/leads/my_team (`SALES_AGENT_MODULES`).
+      - Users: Team member / Sales agent choice (hidden until 0007), code
+        generated on creation, or at first sign-in via `/api/admin/me` for
+        anyone older (sub-users too). Sub-user link now uses the code — it
+        used the account id, which credited nobody.
+      - Dashboard: Agent column (Claim button / assign dropdown), agent's
+        referral link and "waiting to be claimed" on home.
+      - `ReferralCapture` remembers `?ref=` for 30 days.
+      **BUG FOUND AND FIXED: checkout never saved an order.** It waited 1.5s and
+      showed the success page. Now posts to `/api/orders`; card details are
+      never sent (nothing can charge a card).
+      **Verified before 0007 (15 checks):** checkout saves a pending unclaimed
+      order; orders/leads/customers/home/users all still load; claim refused for
+      staff, sub-users and no session; creating an agent names 0007. Test rows
+      deleted. **Not yet tested: anything after 0007 is run** (claiming race,
+      agent scoping, link and history attribution).
+      Still open: 8%/2% sub-user earnings maths, agent earnings screen.
+- [ ] Checkout shows shipping $9.95 but `/api/orders` charges $12 flat, so the
+      saved total can differ from what the customer saw. Owner to say which.
+- [ ] Checkout still shows card number boxes that go nowhere. Remove or keep
+      until payments exist — owner decision.
 - [~] Product photos: owner said (2026-09-13) use peptidecosta's vial photos
       even with the "PEPTIDES COSTA RICA" label. Three single-vial shots copied
       from its `public/` folder (files only, no data connection), resized to
@@ -284,6 +317,41 @@ anything hardcoded or weak.
       all-or-nothing
 - [ ] Real product photography to replace the generated placeholder SVGs
 
+## Admin completion programme (started 2026-09-15)
+
+- [x] Deep source inventory completed against `peptidecosta/` without reading
+      its environment files or connecting to its data. Its major admin areas
+      are orders/fulfilment, CRM, team selling, commissions, analytics,
+      marketing, inboxes, website controls and operational notifications.
+- [x] Commission foundation built: affiliate links now resolve at checkout;
+      paid orders create affiliate commission; attributed salespeople receive
+      direct commission; a sub-user's parent receives the configured override;
+      duplicate/retried paid events cannot create duplicate earnings.
+- [x] Real My earnings screen built for sales agents and sub-users with pending,
+      approved and paid totals plus a private transaction list.
+- [x] `0007_sales_agents.sql` and `0008_commissions.sql` confirmed against the
+      live database on 2026-09-15: `sales_commissions`, agent identity fields
+      and order attribution fields are all present and readable through REST.
+- [ ] Verify claim races and end-to-end commission amounts with disposable test
+      orders before considering the money workflow production-tested.
+- [ ] Replace the generic Orders table with an operations screen: order detail,
+      payment state, fulfilment actions, refunds, proof/receipt actions and
+      customer timeline, with integrations gated when unconfigured.
+- [ ] Replace generic CRM sections with customer/lead workspaces, notes,
+      assignments, follow-ups, saved filters and export.
+- [ ] Add analytics, inventory/low-stock controls, notification centre and
+      global dashboard search.
+- [~] Dashboard-managed research articles built: drafts, tag list, images,
+      dates and public publishing. Public pages read only published articles
+      and keep the bundled library as an offline fallback. Requires migration
+      `0009_articles.sql` before it can be used live.
+- [ ] Complete structured product fields, including bulk tiers and COA data.
+- [ ] Build campaigns, broadcasts and abandoned-cart recovery around optional
+      email/Chatwoot/Meta providers; drafting and audience selection must work
+      when sending providers are absent.
+- [ ] Add affiliate self-service login/portal. Internal seller earnings are now
+      available, but outside affiliates still have no login by design.
+
 ## Blocked — needs an account he has not opened
 - [!] Email (SMTP): no order confirmations, no enquiry notifications, campaigns
       can be drafted but not sent
@@ -302,3 +370,39 @@ anything hardcoded or weak.
 - Policy pages are drafts, **not legal advice** — regulated product class
 - The bundled `src/data/products.ts` is now only a fallback. It will drift from
   the database over time; that is fine, but it is not the catalogue any more.
+
+## USA Peptide Depot frontend rebrand (2026-09-13)
+
+- [x] Brand name changed across storefront copy, metadata, fallback content and
+      shared `BUSINESS` identity. Existing domain and support email remain until
+      replacements are supplied.
+- [x] UPD SVG logo used in the storefront header and footer.
+- [x] Forest `#1F4233`, cream `#FDFBF0` and navy `#233049` applied through the
+      shared theme tokens. Conversion-tested action orange and WhatsApp green
+      remain separate and unchanged.
+- [x] Verified on branch `testing`: TypeScript clean; `/`, `/shop`, `/about-us`,
+      `/contact-us` and `/admin/login` return 200; desktop and 390px layouts
+      inspected.
+- [x] Cera Pro webfonts are included for production after the owner confirmed
+      the supplied files are licensed for web deployment. Archivo and Manrope
+      remain as fallbacks.
+
+## Brand-kit colour balance (2026-09-17)
+
+- [x] Owner: "the whole website is green, not the three colours". Owner picked
+      the cream layout. Pages are now cream with forest headings and buttons and
+      navy highlights; header, hero and mobile nav forest; footer and
+      announcement bar navy. Dashboard follows the same cream theme.
+- [x] `brand.*` tokens turned into CSS variables with `.theme-forest` and
+      `.theme-navy` bands; hard-coded `text-white` / `text-gray-*` / cyan /
+      emerald classes replaced with theme tokens. Action orange and WhatsApp
+      green unchanged.
+- [x] Verified locally: TypeScript clean; home, product, shop (375px), cart,
+      compliance popup and dashboard login inspected, no console errors.
+- [x] Signed-in dashboard inspected (overview, Products, Storefront, Users,
+      Fulfillment): all on the cream theme. Storefront preview bar now navy
+      like the real bar. `next build` clean.
+- [x] Fixed an older bug found while checking: Dashboard > Products never
+      loaded (it was wrongly listed as a self-loading screen, so no data and
+      no save/delete). Now shows all 20 products.
+- [ ] Pushed on branch `testing`; not merged to `main`, so not on the live site.

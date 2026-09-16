@@ -126,7 +126,15 @@ only.
   near-square corners.
 - Fonts: Archivo (display, 800, uppercase) over Manrope (body). Root font-size
   steps 14px → 15px at 768px → 16px at 1280px (`globals.css`). Do not shrink it.
-- Brand red is the brand. **Action colours** are separate tokens in
+- **Brand colours come from `brandkit.PDF`: Forest #1F4233, Cream #FDFBF0,
+  Navy #233049.** Pages are cream with forest headings and buttons and navy
+  highlights; the header, hero and mobile nav are forest, the footer and
+  announcement bar navy. The `brand.*` Tailwind tokens are CSS variables
+  (`globals.css`): wrap a band in `.theme-forest` or `.theme-navy` rather than
+  hard-coding colours. Never use `text-white` or `text-gray-*` for page text;
+  use `text-brand-heading/body/textMuted`, and `text-brand-onAccent` on a
+  `bg-brand-accent` fill. The owner rejected an all-green site.
+- **Action colours** are separate tokens in
   `tailwind.config.ts`: `action` #BF4F0B (white text) for add-to-cart, checkout
   and place-order; `whatsapp` #25D366 (dark `whatsapp-ink` text, never white) for
   WhatsApp buttons. These are the owner's conversion-tested colours — do not

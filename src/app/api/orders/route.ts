@@ -147,6 +147,7 @@ export async function POST(req: Request) {
         ...(attribution
           ? {
               referred_by: attribution.referred_by,
+              affiliate_id: attribution.affiliate_id ?? null,
               agent_source: attribution.agent_source,
               referral_code: attribution.referral_code,
               agent_claimed_at: new Date().toISOString(),

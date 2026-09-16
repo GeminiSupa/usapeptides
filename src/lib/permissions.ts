@@ -59,6 +59,7 @@ export const MODULES: ModuleDef[] = [
   { id: 'campaigns',     label: 'Campaigns',       group: 'Marketing' },
   { id: 'subscribers',   label: 'Subscribers',     group: 'Marketing' },
   { id: 'storefront',    label: 'Storefront',      group: 'Marketing' },
+  { id: 'articles',      label: 'Research articles', group: 'Marketing' },
 
   { id: 'notifications', label: 'Notifications',   group: 'Admin' },
   { id: 'activity',      label: 'Activity log',    group: 'Admin' },
@@ -164,7 +165,7 @@ export function canAccess(
 
   // Sub-user screens show nothing useful to staff and would confuse the
   // sidebar, so they are not merely unticked but unavailable.
-  if (mod.subUserOnly) return false;
+  if (mod.subUserOnly) return isSalesAgent(profile) && moduleId === 'my_earnings';
 
   if (mod.ownerOnly) return profile.is_superadmin;
   if (profile.is_superadmin) return true;

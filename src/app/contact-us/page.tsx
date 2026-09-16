@@ -28,7 +28,7 @@ export default function ContactUsPage() {
         <h1 className="page-title">
           Contact USA Peptide Depot
         </h1>
-        <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
+        <p className="text-xs sm:text-sm text-brand-textMuted mt-2 max-w-2xl">
           For technical HPLC inquiries, bulk institutional orders, or shipping assistance, our laboratory team responds within 24 business hours.
         </p>
       </div>
@@ -38,38 +38,38 @@ export default function ContactUsPage() {
         {/* Contact Info Sidebar */}
         <div className="lg:col-span-5 space-y-6">
           <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-6">
-            <h3 className="font-bold text-white text-base">Laboratory Support Details</h3>
+            <h3 className="font-bold text-brand-heading text-base">Laboratory Support Details</h3>
             
-            <div className="space-y-4 text-xs text-gray-300">
+            <div className="space-y-4 text-xs text-brand-body">
               <div className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+                <Mail className="w-5 h-5 text-brand-accentGlow flex-shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-gray-500 text-[10px] uppercase block">Email Address</span>
-                  <a href="mailto:info@usapeptides.com" className="text-white hover:text-cyan-400 font-semibold">
+                  <span className="text-brand-textMuted text-[10px] uppercase block">Email Address</span>
+                  <a href="mailto:info@usapeptides.com" className="text-brand-heading hover:text-brand-accentGlow font-semibold">
                     info@usapeptides.com
                   </a>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <MapPin className="w-5 h-5 text-brand-success flex-shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-gray-500 text-[10px] uppercase block">Operations &amp; Fulfillment</span>
-                  <span className="text-white">United States Logistics &amp; Climate Storage Facility</span>
+                  <span className="text-brand-textMuted text-[10px] uppercase block">Operations &amp; Fulfillment</span>
+                  <span className="text-brand-heading">United States Logistics &amp; Climate Storage Facility</span>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                <Clock className="w-5 h-5 text-brand-textMuted flex-shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-gray-500 text-[10px] uppercase block">Hours of Operation</span>
-                  <span className="text-white">Monday – Friday: 8:00 AM – 6:00 PM EST</span>
+                  <span className="text-brand-textMuted text-[10px] uppercase block">Hours of Operation</span>
+                  <span className="text-brand-heading">Monday – Friday: 8:00 AM – 6:00 PM EST</span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-brand-border text-[11px] text-gray-400">
-              <strong className="text-amber-400 block mb-1">Compliance Policy:</strong>
+            <div className="pt-4 border-t border-brand-border text-[11px] text-brand-textMuted">
+              <strong className="text-red-700 block mb-1">Compliance Policy:</strong>
               We do not answer questions relating to human administration or medical advice. Inquiries must pertain to laboratory chemistry, in-vitro protocols, or orders.
             </div>
           </div>
@@ -80,54 +80,54 @@ export default function ContactUsPage() {
           <div className="p-6 sm:p-8 rounded-2xl bg-brand-card border border-brand-border">
             {submitted ? (
               <div className="text-center py-12 space-y-3">
-                <div className="w-12 h-12 rounded-full bg-emerald-950 text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/40">
+                <div className="w-12 h-12 rounded-full bg-forest-50 text-brand-success mx-auto flex items-center justify-center border border-brand-success/40">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-white">Message Received</h3>
-                <p className="text-xs text-gray-400 max-w-sm mx-auto">
+                <h3 className="text-lg font-bold text-brand-heading">Message Received</h3>
+                <p className="text-xs text-brand-textMuted max-w-sm mx-auto">
                   Thank you for reaching out. A laboratory specialist will reply to <strong>{formData.email}</strong> shortly.
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
-                  className="mt-4 px-4 py-2 bg-brand-dark border border-brand-border rounded-xl text-xs font-semibold text-gray-300"
+                  className="mt-4 px-4 py-2 bg-brand-dark border border-brand-border rounded-xl text-xs font-semibold text-brand-body"
                 >
                   Send Another Message
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <h3 className="font-bold text-white text-base mb-4">Send a Laboratory Inquiry</h3>
+                <h3 className="font-bold text-brand-heading text-base mb-4">Send a Laboratory Inquiry</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Your Name *</label>
+                    <label className="text-xs text-brand-textMuted block mb-1">Your Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Email Address *</label>
+                    <label className="text-xs text-brand-textMuted block mb-1">Email Address *</label>
                     <input
                       type="email"
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Subject / Inquiry Type</label>
+                    <label className="text-xs text-brand-textMuted block mb-1">Subject / Inquiry Type</label>
                     <select
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
                     >
                       <option value="General Inquiry">General Product Inquiry</option>
                       <option value="COA Request">COA / Purity Test Request</option>
@@ -136,32 +136,32 @@ export default function ContactUsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Order # (Optional)</label>
+                    <label className="text-xs text-brand-textMuted block mb-1">Order # (Optional)</label>
                     <input
                       type="text"
                       placeholder="e.g. USP-123456"
                       value={formData.orderNumber}
                       onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">Message Details *</label>
+                  <label className="text-xs text-brand-textMuted block mb-1">Message Details *</label>
                   <textarea
                     rows={5}
                     required
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="Provide details regarding your research compounds, testing questions, or order..."
-                    className="w-full bg-brand-dark border border-brand-border rounded-xl p-3 text-xs text-white focus:outline-none focus:"
+                    className="w-full bg-brand-dark border border-brand-border rounded-xl p-3 text-xs text-brand-heading focus:outline-none focus:"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-6 rounded-xl bg-brand-accent hover:bg-flag-red text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-xl bg-brand-accent hover:bg-brand-accentHover text-brand-onAccent font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4" />
                   <span>Send Message to Laboratory Team</span>

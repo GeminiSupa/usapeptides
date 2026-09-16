@@ -284,7 +284,7 @@ export default function ManualOrderModal({ authedFetch, onCancel, onSaved }: Pro
             <button
               type="submit"
               disabled={busy || loadingProducts}
-              className="w-full bg-brand-accent px-4 py-3 font-display text-[0.75rem] font-black uppercase tracking-[0.12em] text-white transition-colors hover:bg-flag-red disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full bg-brand-accent px-4 py-3 font-display text-[0.75rem] font-black uppercase tracking-[0.12em] text-brand-onAccent transition-colors hover:bg-brand-accentHover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {busy ? 'Creating...' : 'Create order'}
             </button>

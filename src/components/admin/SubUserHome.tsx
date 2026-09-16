@@ -31,10 +31,17 @@ interface Mine {
   referral_code: string | null;
 }
 
+interface Earnings {
+  totals: { pending: number; approved: number; paid: number };
+  rows: { id: string; kind: string; rate: number; amount: number; status: string; created_at: string }[];
+}
+
 export default function SubUserHome({ authedFetch, me }: Props) {
   const [mine, setMine] = useState<Mine | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [earnings, setEarnings] = useState<Earnings | null>(null);
+  const [earningsError, setEarningsError] = useState('');
 
   useEffect(() => {
     authedFetch('/api/admin/me')
@@ -52,6 +59,16 @@ export default function SubUserHome({ authedFetch, me }: Props) {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+  }, [authedFetch]);
+
+  useEffect(() => {
+    authedFetch('/api/admin/earnings')
+      .then(async (res) => {
+        const p = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(p?.message ?? 'Could not load earnings.');
+        setEarnings(p.data);
+      })
+      .catch((err) => setEarningsError((err as Error).message));
   }, [authedFetch]);
 
   // The referral code, not the account id: the id is not a code checkout
@@ -106,16 +123,44 @@ export default function SubUserHome({ authedFetch, me }: Props) {
           <Wallet className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-textMuted" strokeWidth={1.75} />
           <div>
             <h3 className="font-display text-xs font-extrabold uppercase tracking-[0.1em] text-brand-heading">
-              Earnings are not being tracked yet
+              Your earnings
             </h3>
             <p className="mt-2 text-[0.8125rem] leading-relaxed text-brand-textMuted">
-              Orders do not yet record which referral link brought them in, so there is no total to
-              show you. Rather than print a figure of zero and have it read as “you have earned
-              nothing”, this says plainly that the plumbing is not finished. Your rate and your link
-              above are real and already saved.
+              {earningsError || (!earnings ? 'Loading earnings...' : 'Commission is recorded when an attributed order is marked paid.')}
             </p>
           </div>
         </div>
+        {earnings && (
+          <>
+            <div className="mt-4 grid grid-cols-3 gap-3 border-t border-brand-border pt-4">
+              {(['pending', 'approved', 'paid'] as const).map((status) => (
+                <div key={status}>
+                  <div className="eyebrow">{status}</div>
+                  <div className="mt-1 font-display text-lg font-black text-brand-heading">
+                    ${Number(earnings.totals[status]).toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {earnings.rows.length > 0 && (
+              <div className="mt-4 overflow-x-auto border-t border-brand-border pt-4">
+                <table className="w-full text-left text-[0.75rem]">
+                  <thead className="text-brand-textMuted"><tr><th className="pb-2">Date</th><th>Type</th><th>Status</th><th className="text-right">Amount</th></tr></thead>
+                  <tbody>
+                    {earnings.rows.slice(0, 25).map((row) => (
+                      <tr key={row.id} className="border-t border-brand-border/60">
+                        <td className="py-2">{new Date(row.created_at).toLocaleDateString()}</td>
+                        <td>{row.kind === 'override' ? 'Team override' : 'Direct sale'} ({Number(row.rate)}%)</td>
+                        <td className="capitalize">{row.status}</td>
+                        <td className="text-right font-semibold">${Number(row.amount).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

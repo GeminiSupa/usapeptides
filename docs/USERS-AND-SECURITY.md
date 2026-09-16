@@ -45,6 +45,25 @@ always visible; everything else is off until granted.
 link. Not "orders, but hidden" — the API refuses sub-users on every other route
 by default.
 
+**Sales agent** (needs `0007_sales_agents.sql`). A team member (tier staff,
+never a super admin) who can be given only Orders, Customers, Leads and Recruit
+sellers. Inside those they see their own records plus unclaimed orders and
+leads, never a colleague's. They can be the parent of sub-users.
+
+How a sale becomes theirs, decided on the server:
+
+1. the customer used their referral link;
+2. otherwise, the customer ordered before and that order is theirs — the
+   customer stays with their agent (only while the agent is still active);
+3. otherwise the order arrives unclaimed and an agent presses Claim. The write
+   only succeeds while the order is still unclaimed, so two agents pressing at
+   once cannot both win, and the loser is not told who did;
+4. a super admin can assign or clear any order or lead.
+
+An agent cannot change who owns a record, edit an unclaimed or colleague's
+record, or delete anything. A customer's owner is never stored — it is read
+from their orders, so the two cannot disagree.
+
 ---
 
 ## The security model, and why each piece is there

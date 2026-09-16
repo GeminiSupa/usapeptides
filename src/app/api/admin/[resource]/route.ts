@@ -3,6 +3,7 @@ import { requireAdmin, type AdminIdentity } from '@/lib/adminAuth';
 import { RESOURCES, isResource } from '@/lib/adminResources';
 import { featureUnavailable, supabaseEnv } from '@/lib/env';
 import { isSalesAgent } from '@/lib/permissions';
+import { generateCommissionsForOrder } from '@/lib/commissions';
 import { isCreditable } from '@/lib/attribution';
 import { ok, created, badRequest, notFound, serverError, readJson } from '@/lib/api';
 
@@ -377,6 +378,17 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
 
     if (error) return serverError(migrationHint(error) ?? error.message);
     if (!data) return notFound(agent && own ? NOT_YOURS : 'No row with that id.');
+
+    if (params.resource === 'orders' && update.status === 'paid') {
+      const commissionError = await generateCommissionsForOrder(db, body.id);
+      if (commissionError) {
+        return serverError(
+          /sales_commissions|schema cache|does not exist/i.test(commissionError)
+            ? 'The order was marked paid, but earnings need migration 0008_commissions.sql. Run it in Supabase, then mark the order paid again.'
+            : `The order was marked paid, but its commission could not be recorded: ${commissionError}`
+        );
+      }
+    }
 
     return ok({ row: data, applied: Object.keys(update), ignored: rejected });
   } catch (err) {

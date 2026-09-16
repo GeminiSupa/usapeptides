@@ -35,46 +35,46 @@ export default function COAModal() {
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-brand-border bg-brand-darker flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+            <div className="w-10 h-10 rounded-xl bg-forest-50 border border-brand-success/40 flex items-center justify-center text-brand-success">
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-[10px] uppercase font-bold text-cyan-400 tracking-wider">
+              <div className="text-[10px] uppercase font-bold text-brand-accentGlow tracking-wider">
                 Third-Party Analytical Laboratory Report
               </div>
-              <h2 className="text-base sm:text-lg font-extrabold text-white">
+              <h2 className="text-base sm:text-lg font-extrabold text-brand-heading">
                 Certificate of Analysis (COA)
               </h2>
             </div>
           </div>
           <button
             onClick={() => setSelectedCOAProduct(null)}
-            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-brand-dark"
+            className="p-2 text-brand-textMuted hover:text-brand-heading rounded-lg hover:bg-brand-dark"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 text-xs text-gray-300">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 text-xs text-brand-body">
           
           {/* Top Compound Summary Card */}
           <div className="p-4 rounded-xl bg-brand-darker border border-brand-border grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <span className="text-[10px] text-gray-500 uppercase block">Product Name</span>
-              <span className="text-xs font-bold text-white truncate block">{name}</span>
+              <span className="text-[10px] text-brand-textMuted uppercase block">Product Name</span>
+              <span className="text-xs font-bold text-brand-heading truncate block">{name}</span>
             </div>
             <div>
-              <span className="text-[10px] text-gray-500 uppercase block">Lot / Batch Number</span>
-              <span className="text-xs font-bold text-cyan-400 font-mono block">{coa.lotNumber}</span>
+              <span className="text-[10px] text-brand-textMuted uppercase block">Lot / Batch Number</span>
+              <span className="text-xs font-bold text-brand-accentGlow font-mono block">{coa.lotNumber}</span>
             </div>
             <div>
-              <span className="text-[10px] text-gray-500 uppercase block">Test Date</span>
-              <span className="text-xs font-bold text-gray-200 block">{coa.testDate}</span>
+              <span className="text-[10px] text-brand-textMuted uppercase block">Test Date</span>
+              <span className="text-xs font-bold text-brand-body block">{coa.testDate}</span>
             </div>
             <div>
-              <span className="text-[10px] text-gray-500 uppercase block">HPLC Purity Status</span>
-              <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-400">
+              <span className="text-[10px] text-brand-textMuted uppercase block">HPLC Purity Status</span>
+              <span className="inline-flex items-center gap-1 text-xs font-black text-brand-success">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {coa.purity} ({coa.status})
               </span>
@@ -84,17 +84,17 @@ export default function COAModal() {
           {/* HPLC Chromatogram Graphic (Visual Simulation) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
-                <Activity className="w-4 h-4 text-cyan-400" />
+              <span className="font-bold text-brand-heading text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-4 h-4 text-brand-accentGlow" />
                 Reverse-Phase HPLC UV-214nm Chromatogram
               </span>
-              <span className="text-[10px] text-gray-400 font-mono">Column: C18 4.6×250mm, 5μm</span>
+              <span className="text-[10px] text-brand-textMuted font-mono">Column: C18 4.6×250mm, 5μm</span>
             </div>
 
             <div className="p-4 rounded-xl bg-brand-darker border border-brand-border/80 relative">
               {/* Synthetic HPLC Peak SVG */}
-              <div className="w-full h-44 sm:h-52 bg-slate-950/90 rounded-lg p-2 relative flex flex-col justify-between border border-brand-border/40">
-                <div className="text-[9px] text-gray-500 font-mono flex justify-between px-2">
+              <div className="w-full h-44 sm:h-52 bg-brand-darker rounded-lg p-2 relative flex flex-col justify-between border border-brand-border/40">
+                <div className="text-[9px] text-brand-textMuted font-mono flex justify-between px-2">
                   <span>mAU (Absorbance @ 214nm)</span>
                   <span>Janoshik / MZ Biolabs Verified</span>
                 </div>
@@ -128,7 +128,7 @@ export default function COAModal() {
                   </text>
                 </svg>
 
-                <div className="text-[9px] text-gray-500 font-mono flex justify-between px-2 pt-1 border-t border-brand-border/40">
+                <div className="text-[9px] text-brand-textMuted font-mono flex justify-between px-2 pt-1 border-t border-brand-border/40">
                   <span>0.0 min</span>
                   <span>5.0 min</span>
                   <span>10.0 min</span>
@@ -141,12 +141,12 @@ export default function COAModal() {
 
           {/* Peak Integration Table */}
           <div className="space-y-2">
-            <span className="font-bold text-white text-xs uppercase tracking-wider block">
+            <span className="font-bold text-brand-heading text-xs uppercase tracking-wider block">
               Chromatographic Peak Area Integration
             </span>
             <div className="overflow-x-auto rounded-xl border border-brand-border">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-brand-darker text-gray-400 border-b border-brand-border">
+                <thead className="bg-brand-darker text-brand-textMuted border-b border-brand-border">
                   <tr>
                     <th className="p-2.5">Peak #</th>
                     <th className="p-2.5">Retention Time (min)</th>
@@ -156,14 +156,14 @@ export default function COAModal() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-border/60 bg-brand-dark/40">
-                  <tr className="text-white font-bold bg-cyan-950/20">
-                    <td className="p-2.5 text-cyan-400">1 (Target)</td>
+                  <tr className="text-brand-heading font-bold bg-navy-50">
+                    <td className="p-2.5 text-brand-accentGlow">1 (Target)</td>
                     <td className="p-2.5">14.82 min</td>
                     <td className="p-2.5">4892.4</td>
                     <td className="p-2.5">912.8</td>
-                    <td className="p-2.5 text-right text-emerald-400">{coa.purity}</td>
+                    <td className="p-2.5 text-right text-brand-success">{coa.purity}</td>
                   </tr>
-                  <tr className="text-gray-400">
+                  <tr className="text-brand-textMuted">
                     <td className="p-2.5">2 (Minor Impurity)</td>
                     <td className="p-2.5">17.10 min</td>
                     <td className="p-2.5">17.6</td>
@@ -177,31 +177,31 @@ export default function COAModal() {
 
           {/* Chemical Structure Verification */}
           <div className="p-4 rounded-xl bg-brand-darker border border-brand-border space-y-2">
-            <span className="font-bold text-white text-xs uppercase tracking-wider block">
+            <span className="font-bold text-brand-heading text-xs uppercase tracking-wider block">
               Mass Spectrometry & Chemical Identification
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {casNumber && (
                 <div>
-                  <span className="text-gray-500 block">CAS Number:</span>
-                  <span className="text-white font-mono">{casNumber}</span>
+                  <span className="text-brand-textMuted block">CAS Number:</span>
+                  <span className="text-brand-heading font-mono">{casNumber}</span>
                 </div>
               )}
               {molarMass && (
                 <div>
-                  <span className="text-gray-500 block">Observed Mass (ESI-MS):</span>
-                  <span className="text-emerald-400 font-mono font-bold">{molarMass} (Matched)</span>
+                  <span className="text-brand-textMuted block">Observed Mass (ESI-MS):</span>
+                  <span className="text-brand-success font-mono font-bold">{molarMass} (Matched)</span>
                 </div>
               )}
               {formula && (
                 <div>
-                  <span className="text-gray-500 block">Molecular Formula:</span>
-                  <span className="text-white font-mono">{formula}</span>
+                  <span className="text-brand-textMuted block">Molecular Formula:</span>
+                  <span className="text-brand-heading font-mono">{formula}</span>
                 </div>
               )}
               <div>
-                <span className="text-gray-500 block">Testing Laboratory:</span>
-                <span className="text-cyan-400">{coa.lab}</span>
+                <span className="text-brand-textMuted block">Testing Laboratory:</span>
+                <span className="text-brand-accentGlow">{coa.lab}</span>
               </div>
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function COAModal() {
 
         {/* Footer */}
         <div className="p-4 border-t border-brand-border bg-brand-darker flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-[11px] text-gray-500 text-center sm:text-left">
+          <div className="text-[11px] text-brand-textMuted text-center sm:text-left">
             Authenticity sealed with digital analytical signature
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -231,7 +231,7 @@ export default function COAModal() {
             )}
             <button
               onClick={() => setSelectedCOAProduct(null)}
-              className="px-4 py-2 rounded-xl bg-brand-card hover:bg-brand-cardHover border border-brand-border text-gray-300 text-xs font-semibold"
+              className="px-4 py-2 rounded-xl bg-brand-card hover:bg-brand-cardHover border border-brand-border text-brand-body text-xs font-semibold"
             >
               Close
             </button>

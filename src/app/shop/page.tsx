@@ -62,7 +62,7 @@ export default function ShopPage() {
         <h1 className="page-title">
           All Research Peptides
         </h1>
-        <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-xs sm:text-sm text-brand-textMuted mt-2 max-w-2xl leading-relaxed">
           HPLC-verified lyophilized peptides for in-vitro research use. Bulk volume tiers calculated automatically with verified Certificate of Analysis available per batch.
         </p>
       </div>
@@ -73,8 +73,8 @@ export default function ShopPage() {
         <div className="space-y-6">
           <div className="p-5 rounded-2xl bg-brand-card border border-brand-border space-y-6">
             <div className="flex items-center justify-between pb-3 border-b border-brand-border">
-              <span className="font-bold text-xs uppercase text-white flex items-center gap-2">
-                <Filter className="w-4 h-4 text-cyan-400" />
+              <span className="font-bold text-xs uppercase text-brand-heading flex items-center gap-2">
+                <Filter className="w-4 h-4 text-brand-accentGlow" />
                 Filter Compounds
               </span>
               {(selectedCategory !== 'all' || searchQuery || inStockOnly) && (
@@ -84,7 +84,7 @@ export default function ShopPage() {
                     setSearchQuery('');
                     setInStockOnly(false);
                   }}
-                  className="text-[11px] text-rose-400 hover:underline flex items-center gap-1"
+                  className="text-[11px] text-red-600 hover:underline flex items-center gap-1"
                 >
                   <X className="w-3 h-3" />
                   <span>Reset</span>
@@ -94,17 +94,17 @@ export default function ShopPage() {
 
             {/* Keyword Search */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-300 block">
+              <label className="text-xs font-semibold text-brand-body block">
                 Search Within Catalog
               </label>
               <div className="relative">
-                <Search className="w-4 h-4 text-gray-500 absolute left-3 top-2.5" />
+                <Search className="w-4 h-4 text-brand-textMuted absolute left-3 top-2.5" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="e.g. BPC, Tirz, 10mg..."
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl pl-9 pr-3 py-2 text-xs text-brand-heading placeholder-brand-textMuted focus:outline-none focus:"
                 />
               </div>
             </div>
@@ -112,11 +112,11 @@ export default function ShopPage() {
             {/* In Stock toggle */}
             <div className="pt-2">
               <label 
-                className="flex items-center gap-2.5 text-xs text-gray-300 cursor-pointer select-none"
+                className="flex items-center gap-2.5 text-xs text-brand-body cursor-pointer select-none"
                 onClick={() => setInStockOnly(!inStockOnly)}
               >
                 <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
-                  inStockOnly ? 'bg-cyan-500 border-cyan-400 text-black' : 'bg-brand-dark border-brand-border'
+                  inStockOnly ? 'bg-cyan-500 border-brand-accentGlow text-black' : 'bg-brand-dark border-brand-border'
                 }`}>
                   {inStockOnly && <Check className="w-3 h-3 stroke-[3]" />}
                 </div>
@@ -126,7 +126,7 @@ export default function ShopPage() {
 
             {/* Category Filter */}
             <div className="space-y-2 pt-2 border-t border-brand-border/60">
-              <label className="text-xs font-semibold text-gray-300 block">
+              <label className="text-xs font-semibold text-brand-body block">
                 Research Categories
               </label>
               <div className="space-y-1">
@@ -134,8 +134,8 @@ export default function ShopPage() {
                   onClick={() => setSelectedCategory('all')}
                   className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${
                     selectedCategory === 'all'
-                      ? 'bg-brand-accent text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em]'
-                      : 'text-gray-400 hover:text-white hover:bg-brand-dark'
+                      ? 'bg-brand-accent text-brand-onAccent font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em]'
+                      : 'text-brand-textMuted hover:text-brand-heading hover:bg-brand-dark'
                   }`}
                 >
                   <span>All Categories</span>
@@ -147,8 +147,8 @@ export default function ShopPage() {
                     onClick={() => setSelectedCategory(cat.slug)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${
                       selectedCategory === cat.slug
-                        ? 'bg-brand-accent text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em]'
-                        : 'text-gray-400 hover:text-white hover:bg-brand-dark'
+                        ? 'bg-brand-accent text-brand-onAccent font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em]'
+                        : 'text-brand-textMuted hover:text-brand-heading hover:bg-brand-dark'
                     }`}
                   >
                     <span className="truncate pr-2">{cat.name}</span>
@@ -165,19 +165,19 @@ export default function ShopPage() {
           
           {/* Top Bar Sort & Count */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-brand-card border border-brand-border text-xs">
-            <span className="text-gray-400">
-              Showing <strong className="text-white">{filteredProducts.length}</strong> research compounds
+            <span className="text-brand-textMuted">
+              Showing <strong className="text-brand-heading">{filteredProducts.length}</strong> research compounds
             </span>
 
             <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-              <span className="text-gray-400 flex items-center gap-1 flex-shrink-0">
-                <ArrowUpDown className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-brand-textMuted flex items-center gap-1 flex-shrink-0">
+                <ArrowUpDown className="w-3.5 h-3.5 text-brand-accentGlow" />
                 Sort By:
               </span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-brand-dark border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:"
+                className="bg-brand-dark border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-heading focus:outline-none focus:"
               >
                 <option value="featured">Featured / Popular</option>
                 <option value="price-low">Price: Low to High</option>
@@ -190,9 +190,9 @@ export default function ShopPage() {
           {/* Product Grid */}
           {filteredProducts.length === 0 ? (
             <div className="text-center py-20 p-8 rounded-2xl bg-brand-card border border-brand-border space-y-3">
-              <FlaskConical className="w-12 h-12 mx-auto text-gray-600 animate-pulse" />
-              <h3 className="text-base font-bold text-white">No research peptides match your filters</h3>
-              <p className="text-xs text-gray-400 max-w-sm mx-auto">
+              <FlaskConical className="w-12 h-12 mx-auto text-brand-textMuted animate-pulse" />
+              <h3 className="text-base font-bold text-brand-heading">No research peptides match your filters</h3>
+              <p className="text-xs text-brand-textMuted max-w-sm mx-auto">
                 Try selecting &quot;All Categories&quot; or clearing your active search terms.
               </p>
               <button
@@ -201,7 +201,7 @@ export default function ShopPage() {
                   setSearchQuery('');
                   setInStockOnly(false);
                 }}
-                className="px-4 py-2 bg-brand-accent rounded-xl text-xs font-bold text-white"
+                className="px-4 py-2 bg-brand-accent rounded-xl text-xs font-bold text-brand-onAccent"
               >
                 Reset All Filters
               </button>

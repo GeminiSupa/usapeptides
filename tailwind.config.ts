@@ -3,10 +3,18 @@ import type { Config } from "tailwindcss";
 /**
  * USA Peptide Depot theme.
  *
- * The brand kit supplies forest #1F4233, cream #FDFBF0 and navy #233049.
- * Existing semantic token names remain stable so the storefront and dashboard
- * inherit the new identity without scattering business-specific colour values.
+ * The brand kit supplies forest #1F4233, cream #FDFBF0 and navy #233049, and
+ * sets them the way the kit does: cream pages, forest type and buttons, navy as
+ * the second colour.
+ *
+ * The `brand.*` tokens are CSS variables (see globals.css), so one class swaps a
+ * whole region: pages default to cream, and `.theme-forest` / `.theme-navy`
+ * turn the header, hero and footer into light-on-dark without touching the
+ * components inside them.
  */
+
+/** A brand token that reads a CSS variable and still accepts `/60` opacity. */
+const v = (name: string) => `rgb(var(--brand-${name}) / <alpha-value>)`;
 
 // Semantic error red remains red; it is no longer used as a brand colour.
 const red = {
@@ -68,6 +76,12 @@ const forest = {
   950: '#0d1f18',
 };
 
+const cream = {
+  DEFAULT: '#fdfbf0',
+  100: '#f6f2e2',
+  200: '#ece8d8',
+};
+
 const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -108,21 +122,29 @@ const config: Config = {
           hover: '#1DB954',
           ink: '#06210F',
         },
+        // Fixed brand colours, for the few places that must not follow the theme.
+        forest: { ...forest, DEFAULT: forest[800] },
+        navy: { ...blue, DEFAULT: blue[900] },
+        cream,
         brand: {
-          dark: forest[900],
-          darker: forest[950],
-          card: forest[800],
-          cardHover: forest[700],
-          border: '#3e5f4f',
-          borderLight: '#587a68',
-          accent: forest[500],
-          accentGlow: neutral[50],
+          dark: v('dark'),
+          darker: v('darker'),
+          card: v('card'),
+          cardHover: v('card-hover'),
+          border: v('border'),
+          borderLight: v('border-light'),
+          accent: v('accent'),
+          accentHover: v('accent-hover'),
+          // Text on an `accent` fill.
+          onAccent: v('on-accent'),
+          accentGlow: v('highlight'),
+          success: v('success'),
+          textMuted: v('muted'),
+          heading: v('heading'),
+          body: v('body'),
           cyan: blue[300],
           emerald: neutral[100],
           gold: neutral[200],
-          textMuted: forest[200],
-          heading: neutral[50],
-          body: neutral[200],
         },
         // Repoint the ramps the existing pages already reference.
         red,

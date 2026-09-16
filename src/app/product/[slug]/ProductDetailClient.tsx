@@ -103,7 +103,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             />
 
             <div className="absolute left-4 top-4 z-20 flex flex-col items-start gap-2">
-              <span className="bg-brand-accent px-2.5 py-1 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-white">
+              <span className="bg-brand-accent px-2.5 py-1 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-brand-onAccent">
                 {product.purity} HPLC
               </span>
               <span className="border border-brand-border bg-brand-dark px-2.5 py-1 font-mono text-[0.625rem] text-brand-body">
@@ -116,7 +116,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
               className={`absolute right-4 top-4 z-20 border p-2.5 transition-colors ${
                 isFavorited
-                  ? 'border-brand-accent bg-brand-accent text-white'
+                  ? 'border-brand-accent bg-brand-accent text-brand-onAccent'
                   : 'border-brand-border bg-brand-dark text-brand-textMuted hover:text-brand-heading'
               }`}
             >
@@ -172,7 +172,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                     <span className="text-[0.6875rem] text-brand-textMuted">/ vial</span>
                   </div>
                   {discountPercent > 0 && (
-                    <span className="mt-1 inline-block bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-white">
+                    <span className="mt-1 inline-block bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-brand-onAccent">
                       {discountPercent}% volume discount applied
                     </span>
                   )}
@@ -333,7 +333,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                   )}
                   <button
                     onClick={() => setSelectedCOAProduct(product)}
-                    className="bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+                    className="bg-brand-accent px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
                   >
                     Open full report
                   </button>
@@ -370,7 +370,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 ['Storage', 'Lyophilized vials keep at -20°C. Once in solution, hold at 2–8°C and use within 30 days.'],
               ].map(([label, body], i) => (
                 <li key={label} className="flex gap-3">
-                  <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center bg-brand-accent font-display text-[0.625rem] font-black text-white">
+                  <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center bg-brand-accent font-display text-[0.625rem] font-black text-brand-onAccent">
                     {i + 1}
                   </span>
                   <span>

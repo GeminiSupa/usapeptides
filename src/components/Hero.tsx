@@ -9,7 +9,7 @@ import Link from 'next/link';
  */
 export default function Hero() {
   return (
-    <section className="border-b border-brand-border bg-brand-dark">
+    <section className="theme-forest border-b border-brand-border bg-brand-dark">
       <div className="shell py-20 sm:py-28 lg:py-32">
         <div className="mx-auto max-w-4xl text-center">
           <p className="eyebrow text-brand-textMuted">

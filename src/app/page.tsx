@@ -200,7 +200,7 @@ export default function HomePage() {
                 <span className="font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading">
                   Sample analysis
                 </span>
-                <span className="bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-white">
+                <span className="bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-brand-onAccent">
                   Pass
                 </span>
               </div>

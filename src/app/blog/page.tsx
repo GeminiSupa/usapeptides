@@ -2,10 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { articles } from '@/data/articles';
+import { useArticles } from '@/hooks/useArticles';
 import { FileText, ArrowRight, Clock, User, Sparkles } from 'lucide-react';
 
 export default function BlogIndexPage() {
+  const { articles } = useArticles();
   return (
     <div className="shell py-10 space-y-10">
       
@@ -16,7 +17,7 @@ export default function BlogIndexPage() {
         <h1 className="page-title">
           Peptide Research &amp; Analytical Guides
         </h1>
-        <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-2xl">
+        <p className="text-xs sm:text-sm text-brand-textMuted mt-2 max-w-2xl">
           Explore laboratory protocols, HPLC chromatogram reading guides, receptor pathways, and peptide stability research.
         </p>
       </div>
@@ -25,7 +26,7 @@ export default function BlogIndexPage() {
         {articles.map((art) => (
           <article
             key={art.id}
-            className="group rounded-2xl bg-brand-card hover:bg-brand-cardHover border border-brand-border hover:border-cyan-500/40 p-5 flex flex-col justify-between transition-all"
+            className="group rounded-2xl bg-brand-card hover:bg-brand-cardHover border border-brand-border hover:border-brand-accentGlow/40 p-5 flex flex-col justify-between transition-all"
           >
             <div className="space-y-4">
               <div className="aspect-video rounded-xl bg-brand-darker overflow-hidden">
@@ -37,7 +38,7 @@ export default function BlogIndexPage() {
               </div>
 
               <div className="flex items-center gap-2 text-[10px] text-brand-textMuted">
-                <span className="text-cyan-400 font-bold uppercase">{art.category}</span>
+                <span className="text-brand-accentGlow font-bold uppercase">{art.category}</span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
@@ -46,17 +47,17 @@ export default function BlogIndexPage() {
               </div>
 
               <Link href={`/blog/${art.slug}`}>
-                <h2 className="text-base font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                <h2 className="text-base font-bold text-brand-heading group-hover:text-brand-accentGlow transition-colors line-clamp-2 leading-snug">
                   {art.title}
                 </h2>
               </Link>
 
-              <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">
+              <p className="text-xs text-brand-textMuted line-clamp-3 leading-relaxed">
                 {art.excerpt}
               </p>
             </div>
 
-            <div className="pt-4 mt-4 border-t border-brand-border/60 flex items-center justify-between text-xs font-bold text-cyan-400">
+            <div className="pt-4 mt-4 border-t border-brand-border/60 flex items-center justify-between text-xs font-bold text-brand-accentGlow">
               <Link href={`/blog/${art.slug}`} className="hover:underline flex items-center gap-1">
                 <span>Read Full Publication</span>
                 <ArrowRight className="w-3.5 h-3.5" />

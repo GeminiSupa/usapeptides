@@ -53,7 +53,7 @@ export default function AnnouncementBanner() {
   );
 
   return (
-    <div className="border-b border-black/25 bg-flag-red">
+    <div className="border-b border-black/25 bg-navy">
       {href ? (
         <Link href={href} className="announce block">{track}</Link>
       ) : (

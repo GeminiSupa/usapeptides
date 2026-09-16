@@ -64,26 +64,26 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       >
         {/* Search Input Bar */}
         <div className="p-4 border-b border-brand-border flex items-center gap-3 bg-brand-darker">
-          <Search className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+          <Search className="w-5 h-5 text-brand-accentGlow flex-shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search peptides by name, CAS, SKU, or pathway..."
-            className="w-full bg-transparent text-white placeholder-gray-500 text-sm focus:outline-none"
+            className="w-full bg-transparent text-brand-heading placeholder-brand-textMuted text-sm focus:outline-none"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="p-1 text-gray-400 hover:text-white"
+              className="p-1 text-brand-textMuted hover:text-brand-heading"
             >
               <X className="w-4 h-4" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="text-xs bg-brand-card px-2.5 py-1 rounded-lg border border-brand-border text-gray-400 hover:text-white"
+            className="text-xs bg-brand-card px-2.5 py-1 rounded-lg border border-brand-border text-brand-textMuted hover:text-brand-heading"
           >
             ESC
           </button>
@@ -96,16 +96,16 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           </div>
 
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <FlaskConical className="w-10 h-10 mx-auto mb-3 text-gray-600 animate-pulse" />
+            <div className="text-center py-12 text-brand-textMuted">
+              <FlaskConical className="w-10 h-10 mx-auto mb-3 text-brand-textMuted animate-pulse" />
               <p className="text-sm">No research compounds found matching &quot;{query}&quot;</p>
-              <p className="text-xs text-gray-600 mt-1">Try searching by category or CAS number</p>
+              <p className="text-xs text-brand-textMuted mt-1">Try searching by category or CAS number</p>
             </div>
           ) : (
             filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-brand-dark/50 hover:bg-brand-darker border border-brand-border/60 hover:border-cyan-500/40 transition-colors group"
+                className="flex items-center justify-between p-3 rounded-xl bg-brand-dark/50 hover:bg-brand-darker border border-brand-border/60 hover:border-brand-accentGlow/40 transition-colors group"
               >
                 <Link
                   href={`/product/${product.slug}`}
@@ -121,10 +121,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-cyan-400 truncate">
+                      <h4 className="text-xs sm:text-sm font-bold text-brand-heading group-hover:text-brand-accentGlow truncate">
                         {product.name}
                       </h4>
-                      <span className="text-[10px] text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-500/30 flex-shrink-0">
+                      <span className="text-[10px] text-brand-success bg-forest-50 px-1.5 py-0.2 rounded border border-brand-success/30 flex-shrink-0">
                         {product.purity}
                       </span>
                     </div>
@@ -135,7 +135,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 </Link>
 
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-xs sm:text-sm font-extrabold text-white">
+                  <span className="text-xs sm:text-sm font-extrabold text-brand-heading">
                     ${product.salePrice ? product.salePrice.toFixed(2) : product.price.toFixed(2)}
                   </span>
                   <button
@@ -143,7 +143,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       addToCart(product, 1);
                       onClose();
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-brand-accent hover:bg-flag-red text-white text-xs font-semibold transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-brand-onAccent text-xs font-semibold transition-colors"
                   >
                     Add
                   </button>
@@ -154,12 +154,12 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Footer info */}
-        <div className="p-3 bg-brand-darker border-t border-brand-border text-center text-xs text-gray-500 flex items-center justify-between px-4">
+        <div className="p-3 bg-brand-darker border-t border-brand-border text-center text-xs text-brand-textMuted flex items-center justify-between px-4">
           <span>All compounds strictly for in-vitro research use only</span>
           <Link 
             href="/shop" 
             onClick={onClose}
-            className="text-cyan-400 hover:underline flex items-center gap-1 font-medium"
+            className="text-brand-accentGlow hover:underline flex items-center gap-1 font-medium"
           >
             <span>Browse Full Catalog</span>
             <ArrowRight className="w-3 h-3" />

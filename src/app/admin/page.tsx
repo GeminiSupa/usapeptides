@@ -17,7 +17,7 @@ import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
-  Pencil, Monitor, ScrollText, GitBranch, Wallet, Link2, ChevronDown,
+  Pencil, Monitor, ScrollText, GitBranch, Wallet, Link2, ChevronDown, FileText,
 } from 'lucide-react';
 
 /**
@@ -53,6 +53,7 @@ const ICONS: Record<string, typeof LayoutDashboard> = {
   audit: ScrollText,
   my_earnings: Wallet,
   my_link: Link2,
+  articles: FileText,
 };
 
 /**
@@ -64,8 +65,12 @@ const ICONS: Record<string, typeof LayoutDashboard> = {
  */
 const NOT_A_SECTION = new Set(['affiliates', 'my_team', 'my_link']);
 
-/** Sections with a purpose-built screen; everything else is the generic table. */
-const CUSTOM = new Set(['home', 'storefront', 'products', 'users', 'audit', 'my_earnings']);
+/**
+ * Sections with a purpose-built screen that load their own data. Products is
+ * not one: it has its own view but reads and writes through the generic
+ * resource API, so it must keep a `resource`.
+ */
+const CUSTOM = new Set(['home', 'storefront', 'users', 'audit', 'my_earnings']);
 
 const STATUS_OPTIONS: Record<string, string[]> = {
   status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
@@ -364,7 +369,7 @@ export default function AdminPage() {
       return (
         <button onClick={() => patch(row.id, { [key]: !value })}
           className={`px-2 py-0.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors ${
-            value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'}`}>
+            value ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted'}`}>
           {value ? 'Yes' : 'No'}
         </button>
       );
@@ -413,7 +418,7 @@ export default function AdminPage() {
     if (!owner) {
       return own.canClaim ? (
         <button onClick={() => claim(row.id)}
-          className="bg-brand-accent px-2.5 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
+          className="bg-brand-accent px-2.5 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover">
           Claim
         </button>
       ) : <span className="text-brand-textMuted">Unclaimed</span>;
@@ -522,7 +527,7 @@ export default function AdminPage() {
             return (
               <button key={s.id} onClick={() => { setSection(s.id); setQuery(''); setError(''); }}
                 className={`flex flex-shrink-0 items-center gap-2.5 px-4 py-2.5 text-left font-display text-[0.8125rem] font-extrabold uppercase tracking-[0.1em] transition-colors lg:w-full ${
-                  on ? 'bg-brand-accent text-white' : 'text-brand-body hover:text-brand-accentGlow'}`}>
+                  on ? 'bg-brand-accent text-brand-onAccent' : 'text-brand-body hover:text-brand-accentGlow'}`}>
                 <Icon className="h-3.5 w-3.5 flex-shrink-0" /><span>{s.label}</span>
               </button>
             );
@@ -555,13 +560,13 @@ export default function AdminPage() {
             )}
             {canCreate && resource && active.id !== 'products' && (
               <button onClick={() => openEditor(null)}
-                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
+                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover">
                 <Plus className="h-3.5 w-3.5" /> New
               </button>
             )}
             {active.id === 'orders' && (
               <button onClick={() => setManualOrderOpen(true)}
-                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red">
+                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover">
                 <Plus className="h-3.5 w-3.5" /> Manual order
               </button>
             )}
@@ -642,7 +647,7 @@ export default function AdminPage() {
                           <tr key={o.order_number} className="border-b border-brand-border/60 last:border-b-0">
                             <td className="px-4 py-2.5 font-mono text-[0.8125rem] text-brand-heading">{o.order_number}</td>
                             <td className="px-4 py-2.5 text-brand-body">{o.email}</td>
-                            <td className="px-4 py-2.5"><span className="bg-brand-accent px-2 py-0.5 font-display text-[0.75rem] font-black uppercase text-white">{o.status}</span></td>
+                            <td className="px-4 py-2.5"><span className="bg-brand-accent px-2 py-0.5 font-display text-[0.75rem] font-black uppercase text-brand-onAccent">{o.status}</span></td>
                             <td className="px-4 py-2.5 font-mono text-brand-body">{money(o.grand_total)}</td>
                             <td className="px-4 py-2.5 font-mono text-[0.8125rem] text-brand-textMuted">{new Date(o.created_at).toLocaleDateString()}</td>
                           </tr>))}

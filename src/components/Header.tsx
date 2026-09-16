@@ -47,7 +47,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
   return (
     <>
       {/* Utility bar */}
-      <div className="border-b border-brand-border bg-brand-darker">
+      <div className="theme-forest border-b border-brand-border bg-brand-darker">
         <div className="shell flex flex-col items-center justify-between gap-1 py-2 text-[0.6875rem] text-brand-textMuted md:flex-row">
           <span className="tracking-wide">
             Free tracked shipping on US orders over $100
@@ -58,7 +58,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
         </div>
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-brand-border bg-brand-dark/95 backdrop-blur-md">
+      <header className="theme-forest sticky top-0 z-40 border-b border-brand-border bg-brand-dark/95 backdrop-blur-md">
         {/* Row 1 - brand, search, actions */}
         <div className="shell flex h-20 items-center gap-1 sm:gap-4">
           <button
@@ -114,7 +114,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             >
               <Heart className="h-5 w-5" />
               {wishlist.length > 0 && (
-                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center bg-brand-accent text-[0.5625rem] font-bold text-white">
+                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center bg-brand-accent text-[0.5625rem] font-bold text-brand-onAccent">
                   {wishlist.length}
                 </span>
               )}
@@ -130,13 +130,13 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative ml-1 flex items-center gap-2 bg-brand-accent px-3.5 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+              className="relative ml-1 flex items-center gap-2 bg-brand-accent px-3.5 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
               aria-label="View cart"
             >
               <ShoppingBag className="h-4 w-4" />
               <span className="hidden sm:inline">${subtotal.toFixed(2)}</span>
               {totalItems > 0 && (
-                <span className="flex h-4 min-w-4 items-center justify-center bg-white px-1 text-[0.5625rem] font-black text-brand-accent">
+                <span className="flex h-4 min-w-4 items-center justify-center bg-brand-onAccent px-1 text-[0.5625rem] font-black text-brand-accent">
                   {totalItems}
                 </span>
               )}

@@ -136,7 +136,7 @@ export default function RecordEditor({
           disabled={locked}
           onClick={() => set(f.name, !value)}
           className={`px-3 py-1.5 font-display text-[0.75rem] font-black uppercase tracking-[0.1em] transition-colors disabled:opacity-50 ${
-            value ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
+            value ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted'
           }`}
         >
           {value ? 'Yes' : 'No'}

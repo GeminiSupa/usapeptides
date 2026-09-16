@@ -85,7 +85,7 @@ export default function BulkDiscountsPage() {
                 onClick={() => setQty(n)}
                 className={`border px-3 py-1.5 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] transition-colors ${
                   qty === n
-                    ? 'border-brand-accent bg-brand-accent text-white'
+                    ? 'border-brand-accent bg-brand-accent text-brand-onAccent'
                     : 'border-brand-borderLight text-brand-heading hover:border-brand-accent'
                 }`}
               >

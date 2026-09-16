@@ -8,7 +8,7 @@ import { categories } from '@/data/categories';
 
 export default function Footer() {
   return (
-    <footer className="mt-24 border-t border-brand-border bg-brand-darker text-brand-body">
+    <footer className="theme-navy mt-24 border-t border-brand-border bg-brand-dark text-brand-body">
       <div className="shell grid grid-cols-1 gap-10 py-16 md:grid-cols-2 lg:grid-cols-5">
         {/* Brand + newsletter */}
         <div className="space-y-5 lg:col-span-2">
@@ -44,7 +44,7 @@ export default function Footer() {
               />
               <button
                 type="submit"
-                className="flex flex-shrink-0 items-center gap-1 bg-brand-accent px-4 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+                className="flex flex-shrink-0 items-center gap-1 bg-brand-accent px-4 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
               >
                 <span>Join</span>
                 <ArrowRight className="h-3 w-3" />

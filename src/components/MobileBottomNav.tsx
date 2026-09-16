@@ -13,11 +13,11 @@ export default function MobileBottomNav() {
   const { wishlist } = useWishlist();
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-brand-darker/95 backdrop-blur-md border-t border-brand-border px-4 py-2 flex items-center justify-around">
+    <div className="theme-forest lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-brand-darker/95 backdrop-blur-md border-t border-brand-border px-4 py-2 flex items-center justify-around">
       <Link
         href="/"
         className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
-          pathname === '/' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'
+          pathname === '/' ? 'text-brand-accentGlow' : 'text-brand-textMuted hover:text-brand-heading'
         }`}
       >
         <Home className="w-5 h-5" />
@@ -27,7 +27,7 @@ export default function MobileBottomNav() {
       <Link
         href="/shop"
         className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
-          pathname === '/shop' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'
+          pathname === '/shop' ? 'text-brand-accentGlow' : 'text-brand-textMuted hover:text-brand-heading'
         }`}
       >
         <Grid className="w-5 h-5" />
@@ -37,7 +37,7 @@ export default function MobileBottomNav() {
       <Link
         href="/wishlist"
         className={`relative flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
-          pathname === '/wishlist' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'
+          pathname === '/wishlist' ? 'text-brand-accentGlow' : 'text-brand-textMuted hover:text-brand-heading'
         }`}
       >
         <Heart className="w-5 h-5" />
@@ -51,12 +51,12 @@ export default function MobileBottomNav() {
 
       <button
         onClick={() => setIsCartOpen(true)}
-        className="relative flex flex-col items-center gap-1 text-[10px] font-medium text-gray-400 hover:text-white transition-colors"
+        className="relative flex flex-col items-center gap-1 text-[10px] font-medium text-brand-textMuted hover:text-brand-heading transition-colors"
       >
-        <ShoppingBag className="w-5 h-5 text-cyan-400" />
+        <ShoppingBag className="w-5 h-5 text-brand-accentGlow" />
         <span>Cart</span>
         {totalItems > 0 && (
-          <span className="absolute -top-1 right-1 bg-emerald-500 text-brand-darker font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+          <span className="absolute -top-1 right-1 bg-brand-accent text-brand-onAccent font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
             {totalItems}
           </span>
         )}
@@ -65,7 +65,7 @@ export default function MobileBottomNav() {
       <Link
         href="/my-account"
         className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
-          pathname === '/my-account' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'
+          pathname === '/my-account' ? 'text-brand-accentGlow' : 'text-brand-textMuted hover:text-brand-heading'
         }`}
       >
         <User className="w-5 h-5" />

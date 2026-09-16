@@ -136,7 +136,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
                 key={key}
                 onClick={() => onPatch(p.id, { [key]: !p[key] })}
                 className={`px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] transition-colors ${
-                  p[key] ? 'bg-brand-accent text-white' : 'border border-brand-borderLight text-brand-textMuted'
+                  p[key] ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted'
                 }`}
               >
                 {label}
@@ -196,7 +196,7 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
           {withoutCoa > 0 && <span>{withoutCoa} without a certificate</span>}
           <button
             onClick={onNew}
-            className="inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-white transition-colors hover:bg-flag-red"
+            className="inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
           >
             <Plus className="h-3 w-3" /> New product
           </button>

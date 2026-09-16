@@ -28,8 +28,9 @@ type Db = ReturnType<typeof getSupabaseAdmin>;
 export type AgentSource = 'referral_link' | 'customer_history' | 'claim' | 'assigned';
 
 export interface Attribution {
-  referred_by: string;
-  agent_source: AgentSource;
+  referred_by: string | null;
+  affiliate_id?: string | null;
+  agent_source: AgentSource | null;
   referral_code: string | null;
 }
 
@@ -52,6 +53,20 @@ export async function resolveOrderAttribution(
   try {
     const code = normalizeReferralCode(ref);
     if (code) {
+      const { data: affiliate } = await db
+        .from('affiliates')
+        .select('id, referral_code, is_active')
+        .ilike('referral_code', code)
+        .maybeSingle();
+      if (affiliate?.is_active) {
+        return {
+          referred_by: null,
+          affiliate_id: affiliate.id,
+          agent_source: null,
+          referral_code: affiliate.referral_code ?? code,
+        };
+      }
+
       // The code alphabet has no % or _, so ilike here is an exact,
       // case-insensitive match rather than a pattern.
       const { data } = await db
@@ -61,7 +76,7 @@ export async function resolveOrderAttribution(
         .maybeSingle();
 
       if (isCreditable(data)) {
-        return { referred_by: data.id, agent_source: 'referral_link', referral_code: data.referral_code ?? code };
+        return { referred_by: data.id, affiliate_id: null, agent_source: 'referral_link', referral_code: data.referral_code ?? code };
       }
     }
 
@@ -87,7 +102,7 @@ export async function resolveOrderAttribution(
         // Somebody who has left or been suspended does not keep collecting on
         // the customer; the order arrives unclaimed and a current agent picks it up.
         if (isCreditable(owner)) {
-          return { referred_by: owner.id, agent_source: 'customer_history', referral_code: null };
+          return { referred_by: owner.id, affiliate_id: null, agent_source: 'customer_history', referral_code: null };
         }
       }
     }

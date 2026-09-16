@@ -84,8 +84,8 @@ export default function StorefrontPanel({ authedFetch }: Props) {
       <div>
         <h3 className="eyebrow mb-2">Preview</h3>
         {preview ? (
-          <div className="overflow-hidden border border-black/25 bg-flag-red">
-            <div className="whitespace-nowrap px-4 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-white">
+          <div className="overflow-hidden border border-black/25 bg-navy">
+            <div className="whitespace-nowrap px-4 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-cream">
               {preview}
             </div>
           </div>
@@ -113,7 +113,7 @@ export default function StorefrontPanel({ authedFetch }: Props) {
                     onClick={() => update(b.id, { isActive: !b.isActive })}
                     className={`inline-flex items-center gap-1 px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] transition-colors ${
                       b.isActive
-                        ? 'bg-brand-accent text-white'
+                        ? 'bg-brand-accent text-brand-onAccent'
                         : 'border border-brand-borderLight text-brand-textMuted'
                     }`}
                   >

@@ -4,7 +4,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Brand theme. Values are space-separated RGB so Tailwind opacity modifiers
+ * (`bg-brand-dark/95`) still work. The default is the brand kit's cream page;
+ * the two dark themes are for whole bands (header, hero, footer).
+ */
 @layer base {
+  :root {
+    --brand-dark: 253 251 240;         /* cream  #FDFBF0 - page */
+    --brand-darker: 246 242 226;       /* deeper cream band */
+    --brand-card: 255 254 250;
+    --brand-card-hover: 246 242 226;
+    --brand-border: 226 220 200;
+    --brand-border-light: 201 194 170;
+    --brand-accent: 31 66 51;          /* forest #1F4233 */
+    --brand-accent-hover: 47 92 72;
+    --brand-on-accent: 253 251 240;
+    --brand-highlight: 35 48 73;       /* navy   #233049 */
+    --brand-success: 47 92 72;
+    --brand-muted: 94 102 97;
+    --brand-heading: 31 66 51;
+    --brand-body: 42 53 48;
+  }
+
+  .theme-forest {
+    --brand-dark: 31 66 51;
+    --brand-darker: 24 52 40;
+    --brand-card: 39 75 59;
+    --brand-card-hover: 47 92 72;
+    --brand-border: 62 95 79;
+    --brand-border-light: 88 122 104;
+    --brand-accent: 253 251 240;
+    --brand-accent-hover: 236 232 216;
+    --brand-on-accent: 31 66 51;
+    --brand-highlight: 253 251 240;
+    --brand-success: 188 212 197;
+    --brand-muted: 188 212 197;
+    --brand-heading: 253 251 240;
+    --brand-body: 236 232 216;
+  }
+
+  .theme-navy {
+    --brand-dark: 35 48 73;
+    --brand-darker: 27 37 57;
+    --brand-card: 41 58 82;
+    --brand-card-hover: 50 69 97;
+    --brand-border: 63 85 120;
+    --brand-border-light: 83 108 147;
+    --brand-accent: 253 251 240;
+    --brand-accent-hover: 236 232 216;
+    --brand-on-accent: 35 48 73;
+    --brand-highlight: 253 251 240;
+    --brand-success: 195 205 221;
+    --brand-muted: 195 205 221;
+    --brand-heading: 253 251 240;
+    --brand-body: 236 232 216;
+  }
+
+  /* Dark bands set their own text colour so plain text inside them is legible. */
+  .theme-forest, .theme-navy {
+    color: rgb(var(--brand-body));
+  }
+
   html {
     /*
      * Everything on this site is sized in rem, so this one number sets the
@@ -28,7 +89,7 @@
     @apply bg-brand-dark text-brand-body font-sans;
     font-size: 1rem;
     line-height: 1.65;
-    @apply selection:bg-brand-accent selection:text-white;
+    @apply selection:bg-brand-accent selection:text-brand-onAccent;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -71,10 +132,10 @@
     @apply max-w-shell mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Brand-green primary action, square-ish, uppercase. */
+  /* Primary action: forest on cream, cream on the dark bands. */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 font-display uppercase
-           bg-brand-accent text-white border border-brand-accent
+           bg-brand-accent text-brand-onAccent border border-brand-accent
            px-7 py-3.5 transition-colors duration-150;
     font-size: 0.75rem;
     font-weight: 800;
@@ -82,13 +143,12 @@
     border-radius: 2px;
   }
   .btn-primary:hover {
-    background-color: #2f5c48;
-    border-color: #2f5c48;
+    @apply bg-brand-accentHover border-brand-accentHover;
   }
 
   /**
    * The buy button. Same geometry as .btn-primary so they are interchangeable,
-   * different fill: brand red states what the site is, this states what to do
+   * different fill: the brand colour states what the site is, this states what to do
    * next. Used for add-to-cart, checkout and place-order, nowhere else — an
    * action colour on six things at once points at none of them.
    */
@@ -145,11 +205,11 @@
 
 }
 
-/* Scrollbars tuned to the forest shell. */
+/* Scrollbars in the brand palette: forest thumb on a cream track. */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #0b2118; }
-::-webkit-scrollbar-thumb { background: #3e5f4f; }
-::-webkit-scrollbar-thumb:hover { background: #587a68; }
+::-webkit-scrollbar-track { background: #f6f2e2; }
+::-webkit-scrollbar-thumb { background: #90b79f; }
+::-webkit-scrollbar-thumb:hover { background: #1f4233; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }
@@ -199,7 +259,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ffffff;
+  color: #fdfbf0;
 }
 @keyframes announce-scroll {
   from { transform: translateX(0); }

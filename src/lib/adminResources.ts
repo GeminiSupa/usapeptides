@@ -431,6 +431,43 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     ],
   },
 
+  articles: {
+    table: 'articles',
+    title: 'Research articles',
+    blurb: 'Draft and publish original research-library articles for the public website.',
+    select: 'id, slug, title, excerpt, content, category, author, image, tags, read_time, is_published, published_at, created_at',
+    orderBy: 'created_at',
+    searchable: ['title', 'slug', 'category', 'author'],
+    editable: ['slug', 'title', 'excerpt', 'content', 'category', 'author', 'image', 'tags', 'read_time', 'is_published', 'published_at'],
+    deletable: true,
+    createFields: [
+      { group: 'Article', name: 'title', label: 'Title', type: 'text', required: true },
+      { group: 'Article', name: 'slug', label: 'Web address', type: 'text', help: 'Leave blank to build it from the title.' },
+      { group: 'Article', name: 'category', label: 'Category', type: 'text', required: true },
+      { group: 'Article', name: 'author', label: 'Author', type: 'text', required: true },
+      { group: 'Article', name: 'read_time', label: 'Reading time', type: 'text', help: 'For example: 6 min read.' },
+      { group: 'Article', name: 'excerpt', label: 'Short introduction', type: 'textarea', required: true },
+      { group: 'Article', name: 'content', label: 'Full article', type: 'textarea', required: true },
+      { group: 'Media', name: 'image', label: 'Header image', type: 'image' },
+      { group: 'Media', name: 'tags', label: 'Tags', type: 'text', help: 'Separate tags with commas.' },
+      { group: 'Publishing', name: 'is_published', label: 'Publish on the website', type: 'boolean' },
+      { group: 'Publishing', name: 'published_at', label: 'Publish date', type: 'date', help: 'Leave blank to publish now when switched on.' },
+    ],
+    columns: ['title', 'category', 'author', 'is_published', 'published_at'],
+    derive: (row) => {
+      if (!row.slug && row.title) row.slug = slugify(String(row.title));
+      row.tags = String(row.tags ?? '').split(',').map((tag) => tag.trim()).filter(Boolean);
+      if (!row.read_time) row.read_time = '5 min read';
+      if (row.is_published && !row.published_at) row.published_at = new Date().toISOString();
+      return row;
+    },
+    deriveUpdate: (changes) => {
+      if (changes.tags !== undefined) changes.tags = String(changes.tags ?? '').split(',').map((tag) => tag.trim()).filter(Boolean);
+      if (changes.is_published === true && !changes.published_at) changes.published_at = new Date().toISOString();
+      return changes;
+    },
+  },
+
   notifications: {
     table: 'admin_notifications',
     title: 'Notifications',
