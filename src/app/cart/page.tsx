@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import WhatsAppOrderButton from '@/components/WhatsAppOrderButton';
 import { 
   ShoppingBag, 
   Trash2, 
@@ -308,6 +309,13 @@ export default function CartPage() {
                 <span>Proceed to Secure Checkout</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
+
+              <WhatsAppOrderButton
+                className="w-full"
+                disabled={!ackCompliance}
+                lines={cart.map((i) => ({ name: i.product.name, quantity: i.quantity, unitPrice: i.selectedPrice }))}
+                total={finalTotal}
+              />
 
               <div className="text-[10px] text-brand-textMuted text-center flex items-center justify-center gap-1.5 pt-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-brand-success" />

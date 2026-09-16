@@ -18,6 +18,7 @@ interface Rule {
 const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/summary$/,                permissions: ['home'] },
   { pattern: /^\/api\/admin\/banners(?:\/|$)/,         permissions: ['storefront'] },
+  { pattern: /^\/api\/admin\/whatsapp(?:\/|$)/,        permissions: ['storefront'] },
   { pattern: /^\/api\/admin\/upload(?:\/|$)/,          permissions: ['products', 'storefront', 'users'] },
 
   { pattern: /^\/api\/admin\/users(?:\/|$)/,           permissions: ['users'] },

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, ExternalLink, Eye, EyeOff } from 'lucide-react';
 import type { Banner } from '@/lib/banner';
+import WhatsAppSettings from './WhatsAppSettings';
 
 /**
  * The Storefront tab: the announcement strip that runs above the header on
@@ -72,6 +73,8 @@ export default function StorefrontPanel({ authedFetch }: Props) {
 
   return (
     <div className="max-w-3xl space-y-6">
+      <WhatsAppSettings authedFetch={authedFetch} />
+
       <div className="border border-brand-border bg-brand-card p-4">
         <h2 className="eyebrow mb-2">Announcement strip</h2>
         <p className="text-[0.8125rem] leading-relaxed text-brand-textMuted">

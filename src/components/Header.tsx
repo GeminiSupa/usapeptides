@@ -46,18 +46,6 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
   return (
     <>
-      {/* Utility bar */}
-      <div className="theme-forest border-b border-brand-border bg-brand-darker">
-        <div className="shell flex flex-col items-center justify-between gap-1 py-2 text-[0.6875rem] text-brand-textMuted md:flex-row">
-          <span className="tracking-wide">
-            Free tracked shipping on US orders over $100
-            <span className="mx-2 text-brand-borderLight">/</span>
-            HPLC test results published per product
-          </span>
-          <span className="tracking-wide">For in-vitro research use only</span>
-        </div>
-      </div>
-
       <header className="theme-forest sticky top-0 z-40 border-b border-brand-border bg-brand-dark/95 backdrop-blur-md">
         {/* Row 1 - brand, search, actions */}
         <div className="shell flex h-20 items-center gap-1 sm:gap-4">

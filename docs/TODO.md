@@ -406,3 +406,21 @@ anything hardcoded or weak.
       loaded (it was wrongly listed as a self-loading screen, so no data and
       no save/delete). Now shows all 20 products.
 - [ ] Pushed on branch `testing`; not merged to `main`, so not on the live site.
+
+## Order on WhatsApp + banner removal (2026-09-17)
+
+- [x] "Order on WhatsApp" button on product pages, the cart drawer and the cart
+      page (greyed out until the research-use box is ticked). Opens WhatsApp
+      with the items and total typed out. Number set in Dashboard > Storefront
+      (`site_settings` row `whatsapp`, no migration); hidden until a number is
+      saved and switched on. API `/api/admin/whatsapp`, storefront permission.
+- [x] Verified: API refuses no login (401), bad numbers and "on with no
+      number" (400); buttons render and build the right wa.me link (tested
+      with a temporary local-only number, reverted). Build clean.
+- [ ] Dashboard WhatsApp card not inspected in the browser (could not mint a
+      browser session this time).
+- [!] Owner to enter the real WhatsApp number in Dashboard > Storefront.
+- [x] Owner asked to remove the banners: thin utility strip deleted from the
+      header; scrolling announcement cleared in the database (was "Free
+      shipping on every US order over $100 — HPLC test report published with
+      every vial", linking to /shop). The announcement feature itself remains.

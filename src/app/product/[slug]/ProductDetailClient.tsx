@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import BulkPricingTable from '@/components/BulkPricingTable';
 import ProductCard from '@/components/ProductCard';
+import WhatsAppOrderButton from '@/components/WhatsAppOrderButton';
 import {
   FileText,
   Heart,
@@ -224,6 +225,12 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                   )}
                 </button>
               </div>
+
+              <WhatsAppOrderButton
+                className="w-full"
+                lines={[{ name: product.name, quantity, unitPrice }]}
+                total={totalPrice}
+              />
             </div>
           </div>
 

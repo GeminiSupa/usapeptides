@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import WhatsAppOrderButton from '@/components/WhatsAppOrderButton';
 import { 
   X, 
   Trash2, 
@@ -233,6 +234,11 @@ export default function CartDrawer() {
                   <span>Proceed to Checkout</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
+                <WhatsAppOrderButton
+                  className="w-full"
+                  lines={cart.map((i) => ({ name: i.product.name, quantity: i.quantity, unitPrice: i.selectedPrice }))}
+                  total={finalTotal}
+                />
                 <Link
                   href="/cart"
                   onClick={() => setIsCartOpen(false)}
