@@ -13,6 +13,7 @@ export async function GET(req:Request){
   ['Articles','articles','id,is_published'],['Fulfilment','fulfillment_queue','id,stage'],
   ['CRM','crm_activity','id,subject_type'],['Notifications','admin_notifications','id,is_read'],
   ['Notification read state','admin_notification_reads','admin_user_id,notification_id'],
+  ['Order/customer CRM sync','orders','id,customer_id,referred_by'],
   ['Categories','product_categories','id,name,slug,is_active'],
  ] as const;
  const database=[] as {name:string;table:string;ok:boolean;message:string}[];

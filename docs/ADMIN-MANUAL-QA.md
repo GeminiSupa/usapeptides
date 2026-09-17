@@ -1,7 +1,7 @@
 # USA Peptide Depot admin portal — manual QA
 
 Run this after deploying the current code and applying migrations `0009`,
-`0010`, `0011`, and `0012`. Use test records prefixed with `zz.` so they are easy to find and
+`0010`, `0011`, `0012`, and `0013`. Use test records prefixed with `zz.` so they are easy to find and
 remove. Do not use real card information; no payment processor is connected.
 
 ## 1. System and access
@@ -53,16 +53,19 @@ remove. Do not use real card information; no payment processor is connected.
 2. Click **Detail**. It must open a separate scrollable popup, not expand the
    orders table. Verify customer, address, line quantities, prices, discounts,
    payment, attribution, notes, fulfilment, activity, shipping and totals.
-3. Return to **Products**. Stock must have fallen from `4` to `2`.
-4. Change the order to `paid`. Confirm one pending commission is generated if
+3. Open **Customers** and confirm the purchaser exists and is linked to the
+   order. Open **Leads** and confirm the same person has source `checkout` and
+   status `converted`. A repeat order must update, not duplicate, that lead.
+4. Return to **Products**. Stock must have fallen from `4` to `2`.
+5. Change the order to `paid`. Confirm one pending commission is generated if
    an agent owns it, and a row appears in **Fulfilment** at `queued`.
-5. Move fulfilment through `picking`, `packed`, then `dispatched`. Reload after
+6. Move fulfilment through `picking`, `packed`, then `dispatched`. Reload after
    each change; the stage must persist.
-6. Change the order to `cancelled`. Stock must return to `4` exactly once.
+7. Change the order to `cancelled`. Stock must return to `4` exactly once.
    Saving `cancelled` again must not add stock again.
-7. Reopen it as `processing`. Stock must return to `2`. If stock is lower than
+8. Reopen it as `processing`. Stock must return to `2`. If stock is lower than
    the required quantity, reopening must be refused.
-8. Confirm **Notifications** contains the new-order alert.
+9. Confirm **Notifications** contains the new-order alert.
 
 ## 4. Sales agents and ownership
 

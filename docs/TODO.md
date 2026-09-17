@@ -372,6 +372,10 @@ anything hardcoded or weak.
       administrator after `0012_notification_center.sql`; external email and
       WhatsApp delivery remain gated by their providers. TypeScript passes;
       database and browser QA remain.
+- [~] Fixed the checkout CRM gap: `0013_order_contact_sync.sql` links every new
+      order to a customer profile and creates or converts the matching lead,
+      preserving agent ownership. It also backfills existing orders, so orders
+      placed before the fix appear in Customers and Leads after migration.
 
 ## Blocked — needs an account he has not opened
 - [!] Email (SMTP): no order confirmations, no enquiry notifications, campaigns
