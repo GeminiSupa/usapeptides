@@ -351,6 +351,13 @@ anything hardcoded or weak.
       when sending providers are absent.
 - [ ] Add affiliate self-service login/portal. Internal seller earnings are now
       available, but outside affiliates still have no login by design.
+- [~] Admin operations completion pass (2026-09-17): production build passes;
+      added 90-day analytics, unified seller/affiliate commission approval and
+      settlement, system-health diagnostics, automatic inventory reservation
+      and restoration, automatic fulfilment creation/stage timestamps, and
+      new-order notifications. Migration `0010_order_operations.sql` must be
+      applied before the lifecycle automation is live. Manual QA checklist is
+      in `docs/ADMIN-MANUAL-QA.md`.
 
 ## Blocked — needs an account he has not opened
 - [!] Email (SMTP): no order confirmations, no enquiry notifications, campaigns
@@ -424,3 +431,14 @@ anything hardcoded or weak.
       header; scrolling announcement cleared in the database (was "Free
       shipping on every US order over $100 — HPLC test report published with
       every vial", linking to /shop). The announcement feature itself remains.
+
+## Mobile usability pass (2026-09-17)
+
+- [x] Pulled `testing` (already current) and tightened phone layouts: compact
+      header that no longer overflows at 320–390px, scrollable mobile menu,
+      safe-area-aware 44px bottom navigation targets, collapsible shop filters,
+      two-column phone catalogue, larger form controls, calculator presets that
+      wrap cleanly, and stacked product controls on narrow screens.
+- [x] TypeScript clean. Browser-verified home, shop and a product page at
+      375x812: no horizontal overflow; header and bottom navigation fit; shop
+      shows a usable two-column grid; narrow product assurances stack cleanly.

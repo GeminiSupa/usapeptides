@@ -56,7 +56,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       <Link
         href={`/product/${product.slug}`}
-        className="block aspect-square overflow-hidden bg-brand-darker p-5"
+        className="block aspect-square overflow-hidden bg-brand-darker p-3 sm:p-5"
       >
         <img
           src={product.image}
@@ -66,9 +66,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         />
       </Link>
 
-      <div className="flex flex-1 flex-col border-t border-brand-border p-4 text-center">
+      <div className="flex flex-1 flex-col border-t border-brand-border p-3 text-center sm:p-4">
         <Link href={`/product/${product.slug}`} className="block">
-          <h3 className="font-display text-[0.8125rem] font-extrabold leading-snug text-brand-heading transition-colors group-hover:text-brand-accentGlow">
+          <h3 className="font-display text-[0.75rem] font-extrabold leading-snug text-brand-heading transition-colors group-hover:text-brand-accentGlow sm:text-[0.8125rem]">
             {product.name}
           </h3>
         </Link>
@@ -88,7 +88,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             e.preventDefault();
             setSelectedCOAProduct(product);
           }}
-          className="mx-auto mt-2 inline-flex items-center gap-1 text-[0.6875rem] font-semibold text-brand-textMuted transition-colors hover:text-brand-accentGlow"
+          className="mx-auto mt-2 inline-flex min-h-8 items-center gap-1 text-[0.6875rem] font-semibold text-brand-textMuted transition-colors hover:text-brand-accentGlow"
         >
           <FileText className="h-3 w-3" />
           <span>HPLC test result</span>
@@ -98,7 +98,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <button
           onClick={handleQuickAdd}
-          className={`mt-4 w-full border px-4 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors ${
+          className={`mt-3 min-h-11 w-full border px-2 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.08em] transition-colors sm:mt-4 sm:px-4 sm:tracking-[0.12em] ${
             added
               ? 'border-whatsapp bg-whatsapp text-whatsapp-ink'
               : 'border-action bg-action text-white hover:border-action-hover hover:bg-action-hover'

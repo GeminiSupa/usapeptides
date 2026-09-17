@@ -19,6 +19,7 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'name'>('featured');
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
+  const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
 
   const { products } = useCatalogue();
 
@@ -52,7 +53,7 @@ export default function ShopPage() {
   }, [products, selectedCategory, searchQuery, sortBy, inStockOnly]);
 
   return (
-    <div className="shell py-10 space-y-8">
+    <div className="shell space-y-6 py-7 sm:space-y-8 sm:py-10">
       
       {/* Page Header */}
       <div className="border-b border-brand-border pb-6">
@@ -70,8 +71,17 @@ export default function ShopPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         {/* Left Sidebar Filters */}
-        <div className="space-y-6">
-          <div className="p-5 rounded-2xl bg-brand-card border border-brand-border space-y-6">
+        <div className="space-y-3 lg:space-y-6">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((open) => !open)}
+            aria-expanded={filtersOpen}
+            className="flex min-h-12 w-full items-center justify-between border border-brand-border bg-brand-card px-4 font-display text-xs font-extrabold uppercase tracking-[0.1em] text-brand-heading lg:hidden"
+          >
+            <span className="flex items-center gap-2"><Filter className="h-4 w-4" /> Filter products</span>
+            <span className="text-brand-textMuted">{filtersOpen ? 'Close' : 'Open'}</span>
+          </button>
+          <div className={`${filtersOpen ? 'block' : 'hidden'} space-y-6 border border-brand-border bg-brand-card p-4 lg:block lg:p-5`}>
             <div className="flex items-center justify-between pb-3 border-b border-brand-border">
               <span className="font-bold text-xs uppercase text-brand-heading flex items-center gap-2">
                 <Filter className="w-4 h-4 text-brand-accentGlow" />
@@ -164,12 +174,12 @@ export default function ShopPage() {
         <div className="lg:col-span-3 space-y-6">
           
           {/* Top Bar Sort & Count */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-brand-card border border-brand-border text-xs">
+          <div className="flex flex-col items-start justify-between gap-3 border border-brand-border bg-brand-card p-4 text-xs sm:flex-row sm:items-center">
             <span className="text-brand-textMuted">
               Showing <strong className="text-brand-heading">{filteredProducts.length}</strong> research compounds
             </span>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
               <span className="text-brand-textMuted flex items-center gap-1 flex-shrink-0">
                 <ArrowUpDown className="w-3.5 h-3.5 text-brand-accentGlow" />
                 Sort By:
@@ -177,7 +187,7 @@ export default function ShopPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-brand-dark border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-heading focus:outline-none focus:"
+                className="min-h-11 min-w-0 flex-1 border border-brand-border bg-brand-dark px-3 py-2 text-xs text-brand-heading focus:outline-none sm:flex-none"
               >
                 <option value="featured">Featured / Popular</option>
                 <option value="price-low">Price: Low to High</option>
@@ -207,7 +217,7 @@ export default function ShopPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

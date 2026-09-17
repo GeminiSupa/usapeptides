@@ -81,9 +81,9 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     .slice(0, 4);
 
   return (
-    <div className="shell space-y-14 py-10">
+    <div className="shell space-y-10 py-6 sm:space-y-14 sm:py-10">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-[0.6875rem] uppercase tracking-[0.1em] text-brand-textMuted">
+      <nav className="flex min-w-0 items-center gap-1.5 overflow-hidden text-[0.6875rem] uppercase tracking-[0.08em] text-brand-textMuted sm:gap-2 sm:tracking-[0.1em]">
         <Link href="/" className="hover:text-brand-accentGlow">Home</Link>
         <ChevronRight className="h-3 w-3" />
         <Link href="/shop" className="hover:text-brand-accentGlow">Shop</Link>
@@ -96,7 +96,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
         {/* Image */}
         <div className="space-y-4 lg:col-span-6">
-          <div className="relative flex aspect-square items-center justify-center border border-brand-border bg-brand-card p-8">
+          <div className="relative flex aspect-square items-center justify-center border border-brand-border bg-brand-card p-5 sm:p-8">
             <img
               src={product.image}
               alt={product.name}
@@ -126,16 +126,16 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           </div>
 
           {/* Assurance strip */}
-          <div className="grid grid-cols-3 divide-x divide-brand-border border border-brand-border">
+          <div className="grid grid-cols-1 divide-y divide-brand-border border border-brand-border min-[420px]:grid-cols-3 min-[420px]:divide-x min-[420px]:divide-y-0">
             {[
               { icon: ShieldCheck, t: 'Independently tested', s: 'HPLC + ESI-MS' },
               { icon: Truck, t: 'Ships from the USA', s: 'Tracked delivery' },
               { icon: Lock, t: 'Sealed under argon', s: 'Type I borosilicate' },
             ].map(({ icon: Icon, t, s }) => (
-              <div key={t} className="px-3 py-4 text-center">
-                <Icon className="mx-auto mb-2 h-4 w-4 text-brand-accentGlow" strokeWidth={1.75} />
-                <div className="font-display text-[0.6875rem] font-extrabold text-brand-heading">{t}</div>
-                <div className="text-[0.625rem] text-brand-textMuted">{s}</div>
+              <div key={t} className="flex items-center gap-3 px-3 py-3 text-left min-[420px]:block min-[420px]:py-4 min-[420px]:text-center">
+                <Icon className="h-4 w-4 flex-shrink-0 text-brand-accentGlow min-[420px]:mx-auto min-[420px]:mb-2" strokeWidth={1.75} />
+                <div><div className="font-display text-[0.6875rem] font-extrabold text-brand-heading">{t}</div>
+                <div className="text-[0.625rem] text-brand-textMuted">{s}</div></div>
               </div>
             ))}
           </div>
@@ -159,7 +159,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
           <div className="border border-brand-border bg-brand-card">
             <div className="space-y-4 p-5">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col items-start justify-between gap-4 min-[420px]:flex-row">
                 <div>
                   <div className="flex items-baseline gap-2">
                     <span className="font-display text-[2rem] font-black leading-none text-brand-heading">
@@ -181,7 +181,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
                 <button
                   onClick={() => setSelectedCOAProduct(product)}
-                  className="flex flex-shrink-0 items-center gap-1.5 border border-brand-borderLight px-3 py-2 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-heading transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+                  className="flex min-h-11 w-full flex-shrink-0 items-center justify-center gap-1.5 border border-brand-borderLight px-3 py-2 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-heading transition-colors hover:border-brand-accent hover:text-brand-accentGlow min-[420px]:w-auto"
                 >
                   <FileText className="h-3.5 w-3.5" />
                   <span>Test report</span>
@@ -238,14 +238,14 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
           <p className="text-xs leading-relaxed text-brand-body">{product.description}</p>
 
-          <div className="flex items-center justify-between border border-brand-border bg-brand-card px-4 py-3">
+          <div className="flex flex-col items-start justify-between gap-3 border border-brand-border bg-brand-card px-4 py-3 min-[420px]:flex-row min-[420px]:items-center">
             <div className="flex items-center gap-2.5">
               <Calculator className="h-4 w-4 text-brand-accentGlow" />
               <span className="text-xs text-brand-body">Working out diluent volume?</span>
             </div>
             <Link
               href="/calculator"
-              className="flex-shrink-0 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-accentGlow hover:text-brand-heading"
+              className="flex min-h-10 flex-shrink-0 items-center font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-accentGlow hover:text-brand-heading"
             >
               Open calculator
             </Link>
@@ -271,7 +271,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           ))}
         </div>
 
-        <div className="border border-brand-border bg-brand-card p-6 text-xs leading-relaxed text-brand-body">
+        <div className="border border-brand-border bg-brand-card p-4 text-xs leading-relaxed text-brand-body sm:p-6">
           {activeTab === 'overview' && (
             <div className="space-y-4">
               <p>{product.description}</p>

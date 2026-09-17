@@ -48,10 +48,10 @@ export default function Header({ onOpenSearch }: HeaderProps) {
     <>
       <header className="theme-forest sticky top-0 z-40 border-b border-brand-border bg-brand-dark/95 backdrop-blur-md">
         {/* Row 1 - brand, search, actions */}
-        <div className="shell flex h-20 items-center gap-1 sm:gap-4">
+        <div className="shell flex h-16 items-center gap-0 sm:h-20 sm:gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-brand-body hover:text-brand-heading lg:hidden"
+            className="-ml-2 flex h-11 w-11 flex-shrink-0 items-center justify-center text-brand-body hover:text-brand-heading lg:hidden"
             aria-label="Toggle navigation"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -64,7 +64,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
               width={622}
               height={205}
               priority
-              className="h-auto w-[11.5rem] sm:w-[14rem]"
+              className="h-auto w-[8.75rem] min-[380px]:w-[10rem] sm:w-[14rem]"
             />
           </Link>
 
@@ -86,10 +86,10 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             </button>
           </div>
 
-          <div className="ml-auto flex items-center gap-1 md:ml-0">
+          <div className="ml-auto flex flex-shrink-0 items-center md:ml-0">
             <button
               onClick={onOpenSearch}
-              className="p-2.5 text-brand-body hover:text-brand-heading md:hidden"
+              className="flex h-11 w-10 items-center justify-center text-brand-body hover:text-brand-heading md:hidden"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
@@ -97,7 +97,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
             <Link
               href="/wishlist"
-              className="relative p-2.5 text-brand-body hover:text-brand-accentGlow"
+              className="relative hidden h-11 w-10 items-center justify-center text-brand-body hover:text-brand-accentGlow sm:flex"
               title="Wishlist"
             >
               <Heart className="h-5 w-5" />
@@ -118,7 +118,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative ml-1 flex items-center gap-2 bg-brand-accent px-3.5 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
+              className="relative ml-1 flex min-h-11 items-center gap-1.5 bg-brand-accent px-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover sm:gap-2 sm:px-3.5"
               aria-label="View cart"
             >
               <ShoppingBag className="h-4 w-4" />
@@ -200,13 +200,13 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
         {/* Mobile drawer */}
         {mobileMenuOpen && (
-          <div className="animate-fadeIn border-t border-brand-border bg-brand-card px-4 py-5 lg:hidden">
+          <div className="max-h-[calc(100dvh-4rem)] animate-fadeIn overflow-y-auto overscroll-contain border-t border-brand-border bg-brand-card px-4 pb-8 pt-2 lg:hidden">
             <div className="flex flex-col">
               {NAV.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="border-b border-brand-border/60 py-3 font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading"
+                  className="flex min-h-12 items-center border-b border-brand-border/60 py-3 font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading"
                 >
                   {item.label}
                 </Link>

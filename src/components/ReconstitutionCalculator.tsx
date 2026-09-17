@@ -21,13 +21,13 @@ export default function ReconstitutionCalculator() {
   const fillPercent = Math.min(100, (syringeUnits / maxUnits) * 100);
 
   return (
-    <div className="bg-brand-card border border-brand-border rounded-2xl p-6 sm:p-8">
-      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-brand-border">
+    <div className="border border-brand-border bg-brand-card p-4 sm:p-8">
+      <div className="mb-6 flex items-start gap-3 border-b border-brand-border pb-4 sm:items-center">
         <div className="w-10 h-10 rounded-xl bg-brand-accent/20 border border-brand-accentGlow/40 flex items-center justify-center text-brand-accentGlow">
           <Calculator className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-brand-heading">Laboratory Reconstitution Calculator</h3>
+          <h3 className="text-base font-bold text-brand-heading sm:text-lg">Laboratory Reconstitution Calculator</h3>
           <p className="text-xs text-brand-textMuted">Calculate diluent volume, concentration, and insulin syringe unit markings</p>
         </div>
       </div>
@@ -41,12 +41,12 @@ export default function ReconstitutionCalculator() {
             <label className="block text-xs font-semibold text-brand-body uppercase tracking-wider mb-2">
               1. Peptide Vial Mass (mg)
             </label>
-            <div className="grid grid-cols-5 gap-2 mb-2">
+            <div className="mb-2 grid grid-cols-3 gap-2 sm:grid-cols-5">
               {[2, 5, 10, 15, 50].map((mg) => (
                 <button
                   key={mg}
                   onClick={() => setVialMg(mg)}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all border ${
+                  className={`min-h-11 border py-2 text-xs font-bold transition-all ${
                     vialMg === mg
                       ? 'bg-brand-accent text-brand-onAccent'
                       : 'bg-brand-dark/80 text-brand-textMuted border-brand-border hover:text-brand-heading'
@@ -71,12 +71,12 @@ export default function ReconstitutionCalculator() {
             <label className="block text-xs font-semibold text-brand-body uppercase tracking-wider mb-2">
               2. Reconstitution Water Volume (mL)
             </label>
-            <div className="grid grid-cols-4 gap-2 mb-2">
+            <div className="mb-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {[1.0, 2.0, 3.0, 5.0].map((ml) => (
                 <button
                   key={ml}
                   onClick={() => setBacMl(ml)}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all border ${
+                  className={`min-h-11 border py-2 text-xs font-bold transition-all ${
                     bacMl === ml
                       ? 'bg-brand-accent text-brand-onAccent'
                       : 'bg-brand-dark/80 text-brand-textMuted border-brand-border hover:text-brand-heading'
@@ -101,12 +101,12 @@ export default function ReconstitutionCalculator() {
             <label className="block text-xs font-semibold text-brand-body uppercase tracking-wider mb-2">
               3. Desired Research Aliquot Dose (mcg)
             </label>
-            <div className="grid grid-cols-4 gap-2 mb-2">
+            <div className="mb-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {[100, 250, 500, 1000].map((mcg) => (
                 <button
                   key={mcg}
                   onClick={() => setTargetMcg(mcg)}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all border ${
+                  className={`min-h-11 border py-2 text-xs font-bold transition-all ${
                     targetMcg === mcg
                       ? 'bg-brand-accent text-brand-onAccent'
                       : 'bg-brand-dark/80 text-brand-textMuted border-brand-border hover:text-brand-heading'
@@ -131,7 +131,7 @@ export default function ReconstitutionCalculator() {
             <label className="block text-xs font-semibold text-brand-body uppercase tracking-wider mb-2">
               4. Syringe Capacity
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {[
                 { type: '100', label: '1.0 mL (100 Units)' },
                 { type: '50', label: '0.5 mL (50 Units)' },
@@ -140,7 +140,7 @@ export default function ReconstitutionCalculator() {
                 <button
                   key={s.type}
                   onClick={() => setSyringeType(s.type as any)}
-                  className={`py-2 px-1 rounded-lg text-xs font-medium transition-all border ${
+                  className={`min-h-11 border px-2 py-2 text-xs font-medium transition-all ${
                     syringeType === s.type
                       ? 'bg-navy-50 text-brand-accentGlow'
                       : 'bg-brand-dark/80 text-brand-textMuted border-brand-border hover:text-brand-heading'
