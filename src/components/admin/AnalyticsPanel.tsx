@@ -37,6 +37,24 @@ const MEDIUM: Record<string, string> = {
   direct: 'Direct (typed the address / bookmark)', organic: 'Search engines', social: 'Social media', referral: 'Other websites',
   email: 'Email', cpc: 'Paid ads', campaign: 'Tagged campaign links', ai: 'AI assistants (ChatGPT etc.)',
 };
+const PAGE_NAMES: Record<string, string> = {
+  '/': 'Home page', '/shop': 'Shop', '/cart': 'Cart', '/checkout': 'Checkout', '/checkout/success': 'Order confirmed',
+  '/order-received': 'Order confirmed', '/about-us': 'About us', '/contact-us': 'Contact us', '/faq': 'FAQ',
+  '/blog': 'Blog', '/affiliates': 'Affiliates', '/bulk-discounts': 'Bulk discounts', '/calculator': 'Calculator',
+  '/coa-database': 'COA database', '/my-account': 'My account', '/wishlist': 'Wishlist', '/unsubscribe': 'Unsubscribe',
+  '/privacy-policy': 'Privacy policy', '/return-refund-policy': 'Refund policy', '/shipping-policy': 'Shipping policy',
+};
+const PAGE_KINDS: Record<string, string> = { product: 'Product', category: 'Category', blog: 'Blog post' };
+const titleCase = (slug: string) => decodeURIComponent(slug).replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+/** "/product/bpc-157" → "/product/bpc-157 (Product: BPC-157 10mg)". Unknown paths are shown as they are. */
+const pageLabel = (path: string, productNames: Record<string, string> = {}) => {
+  const clean = path.length > 1 ? path.replace(/\/+$/, '') : path;
+  if (!clean) return '(unknown page)';
+  const [, kind, slug] = clean.split('/');
+  const name = PAGE_NAMES[clean]
+    ?? (slug && PAGE_KINDS[kind] ? `${PAGE_KINDS[kind]}: ${(kind === 'product' && productNames[slug]) || titleCase(slug)}` : '');
+  return name ? `${clean} (${name})` : clean;
+};
 const hourLabel = (h: string) => { const n = Number(h); return n % 6 === 0 ? `${n % 12 || 12}${n < 12 ? 'a' : 'p'}` : ''; };
 
 export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }) {
@@ -73,6 +91,8 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
   const period = data?.window?.label ?? '';
   const kpis = data?.kpis ?? {};
   const noDelta = range.range === 'all' ? Object.keys(kpis) : NO_DELTA;
+  const productNames: Record<string, string> = Object.fromEntries((data?.products ?? []).map((p: any) => [p.slug, p.name]));
+  const labelPage = (path: string) => pageLabel(path, productNames);
 
   const doExport = async (format: SheetFormat) => {
     setMenu(false);
@@ -194,13 +214,16 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
                     <SourcesTable rows={data.sources} />
                   </Card>
                   <Card title="Most viewed pages" help="Pages opened most often in the period.">
-                    <BarList rows={data.topPages} empty="No page views yet." />
+                    <PageNote>Which pages people open most. The number is how many times the page was opened; the % is its share of all page views.</PageNote>
+                    <BarList rows={data.topPages} labelFor={labelPage} empty="No page views yet." />
                   </Card>
                   <Card title="Landing pages" help="The first page people saw — what brings them in.">
-                    <BarList rows={data.landingPages} empty="No visits yet." />
+                    <PageNote>The first page people arrive on. The number is how many visits started there; the % is its share of all visits.</PageNote>
+                    <BarList rows={data.landingPages} labelFor={labelPage} empty="No visits yet." />
                   </Card>
                   <Card title="Exit pages" help="The last page people saw before leaving. A checkout page high here means people give up at checkout.">
-                    <BarList rows={data.exitPages} empty="No visits yet." />
+                    <PageNote>The last page people saw before leaving. If Checkout or Cart is high here, people are giving up before paying.</PageNote>
+                    <BarList rows={data.exitPages} labelFor={labelPage} empty="No visits yet." />
                   </Card>
                   <Card title="Devices" help="Phone, tablet or computer.">
                     <BarList rows={data.devices} labelFor={(n) => n[0].toUpperCase() + n.slice(1)} />
@@ -289,6 +312,10 @@ function Section({ id, title, help, children }: { id: string; title: string; hel
       {children}
     </section>
   );
+}
+
+function PageNote({ children }: { children: React.ReactNode }) {
+  return <p className="mb-3 text-[0.6875rem] leading-snug text-brand-textMuted">{children}</p>;
 }
 
 function SourcesTable({ rows }: { rows?: any[] }) {
