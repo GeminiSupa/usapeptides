@@ -54,14 +54,14 @@ export const MODULES: ModuleDef[] = [
   { id: 'carts',         label: 'Abandoned carts', group: 'People' },
 
   { id: 'leads',         label: 'Leads',           group: 'Sales' },
-  { id: 'prospects',     label: 'Prospects',       group: 'Sales' },
+  { id: 'prospects',     label: 'Prospector',      group: 'Sales' },
   { id: 'affiliates',    label: 'Affiliates',      group: 'Sales' },
   { id: 'commissions',   label: 'Commissions',     group: 'Sales' },
 
   { id: 'campaigns',     label: 'Campaigns',       group: 'Marketing' },
   { id: 'subscribers',   label: 'Subscribers',     group: 'Marketing' },
   { id: 'storefront',    label: 'Storefront',      group: 'Marketing' },
-  { id: 'articles',      label: 'Research articles', group: 'Marketing' },
+  { id: 'articles',      label: 'Blog',            group: 'Marketing' },
 
   { id: 'notifications', label: 'Notifications',   group: 'Admin' },
   { id: 'activity',      label: 'Activity log',    group: 'Admin' },

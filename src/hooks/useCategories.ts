@@ -24,7 +24,7 @@ export function useCategories() {
           .eq('is_active', true)
           .order('sort_order')
           .order('name'),
-        supabase.from('products').select('category_slug').eq('is_live', true),
+        supabase.from('products').select('category_slug').eq('is_active', true),
       ]);
       if (error || !data?.length) return;
       const counts = new Map<string, number>();

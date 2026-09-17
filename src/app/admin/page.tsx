@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import RecordEditor, { type FieldDef } from '@/components/admin/RecordEditor';
 import ProductsPanel from '@/components/admin/ProductsPanel';
-import StorefrontPanel from '@/components/admin/StorefrontPanel';
+import StorefrontHub from '@/components/admin/StorefrontHub';
 import UsersPanel from '@/components/admin/UsersPanel';
 import AuditPanel from '@/components/admin/AuditPanel';
 import SubUserHome from '@/components/admin/SubUserHome';
@@ -16,7 +16,9 @@ import AnalyticsPanel from '@/components/admin/AnalyticsPanel';
 import SystemHealthPanel from '@/components/admin/SystemHealthPanel';
 import OrderDetailModal from '@/components/admin/OrderDetailModal';
 import CategoriesPanel from '@/components/admin/CategoriesPanel';
-import NotificationsPanel from '@/components/admin/NotificationsPanel';
+import CustomersPanel from '@/components/admin/CustomersPanel';
+import ProspectorPanel from '@/components/admin/ProspectorPanel';
+import CampaignsPanel from '@/components/admin/CampaignsPanel';
 import NotificationBell from '@/components/admin/NotificationBell';
 import DealsPanel from '@/components/admin/DealsPanel';
 import type { UploadKind } from '@/components/admin/UploadField';
@@ -25,7 +27,7 @@ import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
-  Pencil, Monitor, ScrollText, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3,
+  Pencil, Monitor, ScrollText, MapPin, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3,
 } from 'lucide-react';
 
 /**
@@ -49,7 +51,7 @@ const ICONS: Record<string, typeof LayoutDashboard> = {
   reviews: Star,
   carts: ShoppingCart,
   leads: Target,
-  prospects: Building2,
+  prospects: MapPin,
   affiliates: Handshake,
   commissions: Receipt,
   campaigns: Megaphone,
@@ -72,16 +74,19 @@ const ICONS: Record<string, typeof LayoutDashboard> = {
  *
  * `affiliates` and `my_team` unlock tabs inside Users, and `my_link` is folded
  * into the sub-user's own screen. Listing them in the sidebar as well would
- * give two doors to one room.
+ * give two doors to one room. `notifications` lives in the bell at the top.
  */
-const NOT_A_SECTION = new Set(['affiliates', 'my_team', 'my_link']);
+const NOT_A_SECTION = new Set(['affiliates', 'my_team', 'my_link', 'notifications']);
 
 /**
  * Sections with a purpose-built screen that load their own data. Products is
  * not one: it has its own view but reads and writes through the generic
  * resource API, so it must keep a `resource`.
  */
-const CUSTOM = new Set(['home', 'analytics', 'storefront', 'users', 'audit', 'system', 'categories', 'deals', 'notifications', 'my_earnings', 'commissions']);
+const CUSTOM = new Set(['home', 'articles', 'analytics', 'storefront', 'users', 'audit', 'system', 'categories', 'deals', 'notifications', 'my_earnings', 'commissions', 'customers', 'prospects', 'campaigns']);
+
+/** Resource screens that draw their own search and refresh controls. */
+const SELF_TOOLBAR = new Set(['products']);
 
 const STATUS_OPTIONS: Record<string, string[]> = {
   status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
@@ -226,7 +231,10 @@ export default function AdminPage() {
   /** The sidebar: the module list, in order, minus what this person cannot open. */
   const sections: ModuleDef[] = useMemo(() => {
     if (!me) return [];
-    return MODULES.filter((m) => me.allowed.includes(m.id) && !NOT_A_SECTION.has(m.id));
+    return MODULES.filter((m) => me.allowed.includes(m.id) && !NOT_A_SECTION.has(m.id))
+      // The blog is a tab inside Storefront; list it on its own only for
+      // somebody who can open the blog but not the rest of the storefront.
+      .filter((m) => !(m.id === 'articles' && me.allowed.includes('storefront')));
   }, [me]);
 
   const active = sections.find((s) => s.id === section) ?? sections[0];
@@ -555,8 +563,8 @@ export default function AdminPage() {
             )}
           </div>
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-            {me.allowed.includes('notifications') && <NotificationBell authedFetch={authedFetch} onOpen={() => setSection('notifications')} />}
-            {resource && (
+            {me.allowed.includes('notifications') && <NotificationBell authedFetch={authedFetch} onNavigate={(next) => { if (me.allowed.includes(next) && !NOT_A_SECTION.has(next)) { setSection(next); setQuery(''); setError(''); } }} />}
+            {resource && !SELF_TOOLBAR.has(active.id) && (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
                 <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()}
@@ -564,7 +572,7 @@ export default function AdminPage() {
                   className="min-h-11 w-full border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none sm:w-auto" />
               </div>
             )}
-            {(resource || active.id === 'home') && (
+            {((resource && !SELF_TOOLBAR.has(active.id)) || active.id === 'home') && (
               <button onClick={() => load()} title="Refresh"
                 className="border border-brand-borderLight p-2 text-brand-body hover:border-brand-accent hover:text-brand-accentGlow">
                 <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -589,7 +597,7 @@ export default function AdminPage() {
 
         {/* -------------------------------------------------------- custom */}
         {active.id === 'users' ? (
-          <UsersPanel authedFetch={authedFetch} isOwner={me.isOwner} />
+          <UsersPanel authedFetch={authedFetch} isOwner={me.isOwner} upload={upload} />
 
         ) : active.id === 'audit' ? (
           <AuditPanel authedFetch={authedFetch} />
@@ -612,11 +620,17 @@ export default function AdminPage() {
         ) : active.id === 'deals' ? (
           <DealsPanel authedFetch={authedFetch} />
 
-        ) : active.id === 'notifications' ? (
-          <NotificationsPanel authedFetch={authedFetch} onNavigate={(next) => { if (me.allowed.includes(next)) setSection(next); }} />
+        ) : active.id === 'campaigns' ? (
+          <CampaignsPanel authedFetch={authedFetch} upload={upload} />
+        ) : active.id === 'prospects' ? (
+          <ProspectorPanel authedFetch={authedFetch} me={me} />
+        ) : active.id === 'customers' ? (
+          <CustomersPanel authedFetch={authedFetch} upload={upload} isAgent={me.role === 'sales_agent'} />
 
         ) : active.id === 'storefront' ? (
-          <StorefrontPanel authedFetch={authedFetch} />
+          <StorefrontHub authedFetch={authedFetch} upload={upload} />
+        ) : active.id === 'articles' ? (
+          <StorefrontHub authedFetch={authedFetch} upload={upload} initialTab="blog" />
 
         ) : active.id === 'home' ? (
           summary ? (
@@ -690,28 +704,16 @@ export default function AdminPage() {
           ) : <p className="text-xs text-brand-textMuted">{loading ? 'Loading...' : 'No data.'}</p>
 
         ) : active.id === 'products' && data ? (
-          data.rows.length > 0 ? (
-            <ProductsPanel
-              rows={data.rows}
-              total={data.total}
-              onEdit={(row) => openEditor(row)}
-              onPatch={patch}
-              onDelete={remove}
-              onNew={() => openEditor(null)}
-              onRefresh={() => void load()}
-            />
-          ) : (
-            <div className="border border-brand-border bg-brand-card p-12 text-center">
-              <Boxes className="mx-auto h-6 w-6 text-brand-textMuted" strokeWidth={1.5} />
-              <p className="mt-4 font-display text-sm font-extrabold text-brand-heading">
-                {loading ? 'Loading...' : 'No products yet'}
-              </p>
-              <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-brand-textMuted">{data.blurb}</p>
-              <button onClick={() => openEditor(null)} className="btn-primary mt-5">
-                <Plus className="h-3.5 w-3.5" /> Add the first product
-              </button>
-            </div>
-          )
+          <ProductsPanel
+            rows={data.rows}
+            total={data.total}
+            authedFetch={authedFetch}
+            onEdit={(row) => openEditor(row)}
+            onPatch={patch}
+            onDelete={remove}
+            onNew={() => openEditor(null)}
+            onRefresh={() => void load()}
+          />
 
         /* --------------------------------------------------- generic table */
         ) : data && data.rows.length > 0 ? (

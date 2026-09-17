@@ -20,7 +20,8 @@ const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/analytics$/,              permissions: ['analytics'] },
   { pattern: /^\/api\/admin\/banners(?:\/|$)/,         permissions: ['storefront'] },
   { pattern: /^\/api\/admin\/whatsapp(?:\/|$)/,        permissions: ['storefront'] },
-  { pattern: /^\/api\/admin\/upload(?:\/|$)/,          permissions: ['products', 'storefront', 'users'] },
+  { pattern: /^\/api\/admin\/site-content$/,           permissions: ['storefront'] },
+  { pattern: /^\/api\/admin\/upload(?:\/|$)/,          permissions: ['products', 'storefront', 'users', 'articles', 'campaigns'] },
 
   { pattern: /^\/api\/admin\/users(?:\/|$)/,           permissions: ['users'] },
   // Inviting and listing your own sub-users needs only my_team; approving,

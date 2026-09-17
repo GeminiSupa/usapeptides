@@ -8,7 +8,16 @@ type Notification = { id: string; kind: string; title: string; body: string | nu
 
 const ICONS: Record<string, typeof Bell> = { order: ShoppingBag, inquiry: Inbox, review: Star, stock: CircleAlert, fulfillment: PackageCheck, system: Bell };
 
-export default function NotificationsPanel({ authedFetch, onNavigate }: { authedFetch: Fetcher; onNavigate: (section: string) => void }) {
+/**
+ * The notification list. Shown inside the bell's drop-down (`compact`), which
+ * is the only place it lives now — there is no separate Notifications tab.
+ */
+export default function NotificationsPanel({ authedFetch, onNavigate, compact = false, onUnreadChange }: {
+  authedFetch: Fetcher;
+  onNavigate: (section: string) => void;
+  compact?: boolean;
+  onUnreadChange?: (count: number) => void;
+}) {
   const [items, setItems] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<'unread' | 'all'>('unread');
   const [loading, setLoading] = useState(true);
@@ -39,6 +48,7 @@ export default function NotificationsPanel({ authedFetch, onNavigate }: { authed
   }, [load]);
 
   const unread = items.filter((item) => !item.is_read).length;
+  useEffect(() => { if (!loading) onUnreadChange?.(unread); }, [unread, loading, onUnreadChange]);
   const visible = useMemo(() => filter === 'unread' ? items.filter((item) => !item.is_read) : items, [filter, items]);
 
   const mark = async (id?: string, unreadValue = false) => {
@@ -61,6 +71,37 @@ export default function NotificationsPanel({ authedFetch, onNavigate }: { authed
     const match = item.link?.match(/[?&]section=([^&]+)/);
     if (match) onNavigate(decodeURIComponent(match[1]));
   };
+
+  if (compact) {
+    return <div className="flex max-h-[min(34rem,75vh)] flex-col">
+      <div className="flex items-center justify-between gap-2 border-b border-brand-border px-3 py-2.5">
+        <div className="flex gap-1">
+          {(['unread', 'all'] as const).map((value) => <button key={value} onClick={() => setFilter(value)} className={`chip ${filter === value ? 'bg-brand-accent text-brand-onAccent' : 'text-brand-textMuted hover:text-brand-heading'}`}>{value === 'unread' ? `Unread ${unread}` : `All ${items.length}`}</button>)}
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => void load()} title="Refresh" className="p-1.5 text-brand-textMuted hover:text-brand-heading"><RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /></button>
+          <button onClick={() => void mark()} disabled={!unread || Boolean(busy)} className="chip border border-brand-borderLight text-brand-heading disabled:opacity-40"><CheckCheck className="h-3 w-3" /> All read</button>
+        </div>
+      </div>
+      {error && <p className="border-b border-brand-border p-3 text-xs text-action">{error}</p>}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {loading && !items.length ? <p className="p-6 text-center text-xs text-brand-textMuted">Loading…</p>
+          : visible.length === 0 ? <p className="p-8 text-center text-xs text-brand-textMuted"><CheckCheck className="mx-auto mb-2 h-5 w-5" />All caught up.</p>
+          : visible.map((item) => { const Icon = ICONS[item.kind] ?? Bell; return (
+            <div key={item.id} className={`flex gap-2.5 border-b border-brand-border/60 px-3 py-2.5 last:border-b-0 ${item.is_read ? 'opacity-60' : ''}`}>
+              <Icon className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-accentGlow" />
+              <button onClick={() => void open(item)} className="min-w-0 flex-1 text-left">
+                <p className="text-[0.8125rem] font-semibold leading-snug text-brand-heading">{item.title}</p>
+                {item.body && <p className="mt-0.5 line-clamp-2 text-[0.75rem] text-brand-body">{item.body}</p>}
+                <p className="mt-1 text-[0.6875rem] text-brand-textMuted">{new Date(item.created_at).toLocaleString()}</p>
+              </button>
+              <button disabled={busy === item.id} onClick={() => void mark(item.id, item.is_read)} title={item.is_read ? 'Mark unread' : 'Mark read'}
+                className="self-start text-[0.625rem] font-bold uppercase text-brand-textMuted hover:text-brand-heading">{item.is_read ? 'Unread' : 'Read'}</button>
+            </div>); })}
+      </div>
+      {!perUserReads && <p className="border-t border-brand-border p-2 text-[0.6875rem] text-brand-textMuted">Run migration 0012 for private read status.</p>}
+    </div>;
+  }
 
   return <div className="space-y-4">
     <div className="border border-brand-border bg-brand-card p-4">

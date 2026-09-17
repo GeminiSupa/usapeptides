@@ -1,24 +1,29 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { Pencil, FileText, FileX2, ImageOff, Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ArrowDown, ArrowUp, FileText, FileX2, ImageOff, LayoutGrid, List, Pencil, Plus, QrCode,
+  RefreshCw, Save, Search, Trash2,
+} from 'lucide-react';
 import { categories } from '@/data/categories';
+import ProductImportExport from './ProductImportExport';
+import QrCodeModal, { type QrTarget } from './QrCodeModal';
 
 /**
  * The Products tab.
  *
- * Grouped by category, because a flat list of every peptide is not something
- * anyone can find anything in, and filterable to one category from the
- * dropdown. Each card shows at a glance whether the product has a photo and a
- * certificate, since those are the two things that are usually missing.
- *
- * The quick toggles and the stock box write immediately. Everything else is
- * behind Edit, which opens the full form.
+ * Two layouts: a dense list (the default on a laptop, one line per product,
+ * sortable) and tiles grouped by category. The choice is remembered per
+ * browser. Quick toggles and the stock box write immediately; everything else
+ * is behind Edit.
  */
+
+type Fetcher = (path: string, init?: RequestInit) => Promise<Response>;
 
 interface Props {
   rows: Record<string, any>[];
   total: number;
+  authedFetch: Fetcher;
   onEdit: (row: Record<string, any>) => void;
   onPatch: (id: string, changes: Record<string, unknown>) => Promise<void> | void;
   onDelete: (id: string) => void;
@@ -26,15 +31,33 @@ interface Props {
   onRefresh: () => void;
 }
 
+type View = 'list' | 'tiles';
+type SortKey = 'name' | 'category' | 'price' | 'stock_count';
+
 const money = (n: unknown) => `$${Number(n ?? 0).toFixed(2)}`;
-
 const LOW_STOCK = 5;
+const VIEW_KEY = 'admin.products.view';
 
-export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, onNew, onRefresh }: Props) {
+export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatch, onDelete, onNew, onRefresh }: Props) {
+  const [view, setView] = useState<View>('list');
   const [filter, setFilter] = useState('all');
+  const [text, setText] = useState('');
+  const [sort, setSort] = useState<{ key: SortKey; asc: boolean }>({ key: 'name', asc: true });
   const [stockDrafts, setStockDrafts] = useState<Record<string, number>>({});
+  const [qr, setQr] = useState<QrTarget | null>(null);
 
-  /** Categories that actually hold products, plus every one on offer. */
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(VIEW_KEY);
+      if (saved === 'list' || saved === 'tiles') setView(saved);
+    } catch { /* storage blocked: keep the default */ }
+  }, []);
+
+  const changeView = (next: View) => {
+    setView(next);
+    try { window.localStorage.setItem(VIEW_KEY, next); } catch { /* ignore */ }
+  };
+
   const options = useMemo(() => {
     const counts = new Map<string, number>();
     for (const r of rows) {
@@ -43,12 +66,25 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
     }
     const known = categories.map((c) => c.name);
     const extra = Array.from(counts.keys()).filter((c) => !known.includes(c));
-    return [...known, ...extra].map((name) => ({ name, count: counts.get(name) ?? 0 }));
+    return [...known, ...extra].map((name) => ({ name, count: counts.get(name) ?? 0 })).filter((o) => o.count > 0);
   }, [rows]);
 
-  const visible = filter === 'all' ? rows : rows.filter((r) => String(r.category ?? '') === filter);
+  const visible = useMemo(() => {
+    const q = text.trim().toLowerCase();
+    const list = rows.filter((r) => {
+      if (filter !== 'all' && String(r.category ?? 'Uncategorised') !== filter) return false;
+      if (!q) return true;
+      return [r.name, r.sku, r.slug, r.category].some((v) => String(v ?? '').toLowerCase().includes(q));
+    });
+    const dir = sort.asc ? 1 : -1;
+    return [...list].sort((a, b) => {
+      const key = sort.key;
+      if (key === 'price') return (Number(a.sale_price ?? a.price) - Number(b.sale_price ?? b.price)) * dir;
+      if (key === 'stock_count') return (Number(a.stock_count ?? 0) - Number(b.stock_count ?? 0)) * dir;
+      return String(a[key] ?? '').localeCompare(String(b[key] ?? '')) * dir;
+    });
+  }, [rows, filter, text, sort]);
 
-  /** Only the groups with something in them, in catalogue order. */
   const grouped = useMemo(() => {
     const byCategory = new Map<string, Record<string, any>[]>();
     for (const r of visible) {
@@ -56,8 +92,6 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
       if (!byCategory.has(name)) byCategory.set(name, []);
       byCategory.get(name)!.push(r);
     }
-    // Catalogue order first, then anything with a category the list does not
-    // know about, so a product is never dropped from the page for having one.
     const order = [...categories.map((c) => c.name), ...Array.from(byCategory.keys())];
     const seen = new Set<string>();
     const groups: { name: string; items: Record<string, any>[] }[] = [];
@@ -71,170 +105,238 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
 
   const withoutImage = rows.filter((r) => !r.image).length;
   const withoutCoa = rows.filter((r) => !r.coa_url).length;
+  const lowStock = rows.filter((r) => Number(r.stock_count ?? 0) < LOW_STOCK).length;
 
-  const card = (p: Record<string, any>) => {
+  const openQr = (p: Record<string, any>) => setQr({
+    title: p.name,
+    subtitle: p.sku ? `SKU ${p.sku}` : undefined,
+    url: `${window.location.origin}/product/${p.slug}`,
+    filename: `qr-${p.slug}`,
+  });
+
+  /* ------------------------------------------------------------ pieces --- */
+
+  const thumb = (p: Record<string, any>, size: string) => (
+    <div className={`${size} flex-shrink-0 border border-brand-border bg-white p-0.5`}>
+      {p.image ? (
+        <img src={p.image} alt="" loading="lazy" className="h-full w-full object-contain" />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-brand-textMuted" title="No photo">
+          <ImageOff className="h-3.5 w-3.5" />
+        </div>
+      )}
+    </div>
+  );
+
+  const stockBox = (p: Record<string, any>) => {
     const low = Number(p.stock_count ?? 0) < LOW_STOCK;
-
+    const draft = stockDrafts[p.id];
+    const dirty = draft !== undefined && draft !== Number(p.stock_count ?? 0);
+    const saveStock = async () => {
+      await onPatch(p.id, { stock_count: draft });
+      setStockDrafts((prev) => { const next = { ...prev }; delete next[p.id]; return next; });
+    };
     return (
-      <div key={p.id} className="flex flex-col border border-brand-border bg-brand-card">
-        <div className="flex gap-3 p-3">
-          <div className="h-20 w-16 flex-shrink-0 border border-brand-border bg-brand-dark p-1">
-            {p.image ? (
-              <img src={p.image} alt="" className="h-full w-full object-contain" />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-brand-textMuted">
-                <ImageOff className="h-3.5 w-3.5" />
-                <span className="text-[0.625rem] uppercase tracking-wider">no photo</span>
-              </div>
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-xs font-extrabold text-brand-heading" title={p.name}>
-              {p.name}
-            </p>
-            <p className="mt-0.5 truncate font-mono text-[0.6875rem] text-brand-textMuted">
-              {p.sku || 'no SKU'} · /{p.slug}
-            </p>
-
-            <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="font-display text-sm font-black text-brand-heading">
-                {money(p.sale_price ?? p.price)}
-              </span>
-              {p.sale_price != null && (
-                <span className="font-mono text-[0.75rem] text-brand-textMuted line-through">
-                  {money(p.price)}
-                </span>
-              )}
-            </div>
-
-            <div className="mt-2 flex items-center gap-2">
-              <label className="eyebrow">Stock</label>
-              <input
-                type="number"
-                min="0"
-                value={stockDrafts[p.id] ?? Number(p.stock_count ?? 0)}
-                onChange={(e) => setStockDrafts((prev) => ({ ...prev, [p.id]: Number(e.target.value) }))}
-                className={`w-16 border bg-brand-dark px-2 py-1 text-[0.8125rem] focus:outline-none ${
-                  low
-                    ? 'border-brand-accent text-brand-accentGlow'
-                    : 'border-brand-border text-brand-heading focus:border-brand-accent'
-                }`}
-              />
-              {stockDrafts[p.id] !== undefined && stockDrafts[p.id] !== Number(p.stock_count ?? 0) && (
-                <button onClick={async () => { await onPatch(p.id, { stock_count: stockDrafts[p.id] }); setStockDrafts((prev) => { const next = { ...prev }; delete next[p.id]; return next; }); }}
-                  className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 text-[0.6875rem] font-bold uppercase text-brand-heading hover:border-brand-accent">
-                  <Save className="h-3 w-3" /> Save
-                </button>
-              )}
-              {low && <span className="eyebrow text-brand-accentGlow">low</span>}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-auto flex flex-wrap items-center gap-1.5 border-t border-brand-border p-2.5">
-          {([['is_active', 'Live'], ['is_featured', 'Featured'], ['in_stock', 'In stock']] as const).map(
-            ([key, label]) => (
-              <button
-                key={key}
-                onClick={() => onPatch(p.id, { [key]: !p[key] })}
-                className={`px-2 py-0.5 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] transition-colors ${
-                  p[key] ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted'
-                }`}
-              >
-                {label}
-              </button>
-            )
-          )}
-
-          <span
-            title={p.coa_url ? 'Certificate uploaded' : 'No certificate yet'}
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.6875rem] font-black uppercase tracking-[0.1em] ${
-              p.coa_url ? 'text-whatsapp' : 'text-brand-textMuted'
-            }`}
-          >
-            {p.coa_url ? <FileText className="h-3 w-3" /> : <FileX2 className="h-3 w-3" />} COA
-          </span>
-
-          <div className="ml-auto flex items-center gap-1">
-            <button
-              onClick={() => onEdit(p)}
-              className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
-            >
-              <Pencil className="h-2.5 w-2.5" /> Edit
-            </button>
-            <button
-              onClick={() => onDelete(p.id)}
-              title="Delete product"
-              className="p-1 text-brand-textMuted hover:text-brand-accentGlow"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-          </div>
-        </div>
+      <div className="flex items-center gap-1.5">
+        <input
+          type="number" min="0" aria-label={`Stock for ${p.name}`}
+          value={draft ?? Number(p.stock_count ?? 0)}
+          onChange={(e) => setStockDrafts((prev) => ({ ...prev, [p.id]: Math.max(0, Number(e.target.value)) }))}
+          onKeyDown={(e) => { if (e.key === 'Enter' && dirty) void saveStock(); }}
+          className={`w-16 border bg-brand-dark px-2 py-1 text-[0.8125rem] focus:outline-none ${
+            low ? 'border-action text-action' : 'border-brand-border text-brand-heading focus:border-brand-accent'}`}
+        />
+        {dirty && (
+          <button onClick={() => void saveStock()} title="Save stock"
+            className="inline-flex items-center gap-1 border border-brand-borderLight px-1.5 py-1 text-[0.6875rem] font-bold uppercase text-brand-heading hover:border-brand-accent">
+            <Save className="h-3 w-3" />
+          </button>
+        )}
       </div>
     );
   };
 
-  return (
-    <div>
-      <div className="mb-5 flex flex-wrap items-center gap-3 border border-brand-border bg-brand-card p-3">
-        <label className="eyebrow">Category</label>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border border-brand-border bg-brand-dark px-3 py-1.5 text-xs text-brand-heading focus:border-brand-accent focus:outline-none"
-        >
-          <option value="all">All categories ({rows.length})</option>
-          {options.map((o) => (
-            <option key={o.name} value={o.name}>
-              {o.name} ({o.count})
-            </option>
-          ))}
-        </select>
+  const toggles = (p: Record<string, any>) => (
+    <div className="flex flex-wrap items-center gap-1">
+      {([['is_active', 'Live'], ['is_featured', 'Featured']] as const).map(([key, label]) => (
+        <button key={key} onClick={() => onPatch(p.id, { [key]: !p[key] })}
+          title={p[key] ? `Turn ${label.toLowerCase()} off` : `Turn ${label.toLowerCase()} on`}
+          className={`chip transition-colors ${p[key] ? 'bg-brand-accent text-brand-onAccent' : 'border border-brand-borderLight text-brand-textMuted hover:text-brand-heading'}`}>
+          {label}
+        </button>
+      ))}
+    </div>
+  );
 
-        <div className="ml-auto flex flex-wrap items-center gap-4 text-[0.75rem] text-brand-textMuted">
-          <span>{total} in the catalogue</span>
+  const coa = (p: Record<string, any>) => (
+    <span title={p.coa_url ? 'Certificate uploaded' : 'No certificate yet'}
+      className={`inline-flex items-center gap-1 text-[0.6875rem] font-black uppercase tracking-[0.1em] ${p.coa_url ? 'text-brand-accentGlow' : 'text-brand-textMuted'}`}>
+      {p.coa_url ? <FileText className="h-3 w-3" /> : <FileX2 className="h-3 w-3" />} COA
+    </span>
+  );
+
+  const actions = (p: Record<string, any>) => (
+    <div className="flex items-center justify-end gap-1">
+      <button onClick={() => openQr(p)} title="QR code" className="p-1.5 text-brand-textMuted hover:text-brand-heading">
+        <QrCode className="h-3.5 w-3.5" />
+      </button>
+      <button onClick={() => onEdit(p)}
+        className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
+        <Pencil className="h-2.5 w-2.5" /> Edit
+      </button>
+      <button onClick={() => onDelete(p.id)} title="Delete product" className="p-1.5 text-brand-textMuted hover:text-action">
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+
+  const price = (p: Record<string, any>) => (
+    <span className="whitespace-nowrap">
+      <span className="font-display font-black text-brand-heading">{money(p.sale_price ?? p.price)}</span>
+      {p.sale_price != null && <span className="ml-1.5 font-mono text-[0.75rem] text-brand-textMuted line-through">{money(p.price)}</span>}
+    </span>
+  );
+
+  const tile = (p: Record<string, any>) => (
+    <div key={p.id} className={`flex flex-col border bg-brand-card ${p.is_active ? 'border-brand-border' : 'border-dashed border-brand-borderLight opacity-75'}`}>
+      <div className="flex gap-3 p-3">
+        {thumb(p, 'h-20 w-20')}
+        <div className="min-w-0 flex-1">
+          <p className="line-clamp-2 font-display text-[0.8125rem] font-extrabold leading-snug text-brand-heading" title={p.name}>{p.name}</p>
+          <p className="mt-0.5 truncate font-mono text-[0.6875rem] text-brand-textMuted">{p.sku || 'no SKU'}</p>
+          <div className="mt-1.5 text-sm">{price(p)}</div>
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-2 border-t border-brand-border px-3 py-2">
+        <span className="eyebrow">Stock</span>
+        {stockBox(p)}
+      </div>
+      <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-brand-border px-3 py-2">
+        {toggles(p)}
+        {coa(p)}
+        <div className="ml-auto">{actions(p)}</div>
+      </div>
+    </div>
+  );
+
+  const sortHead = (key: SortKey, label: string, className = '') => (
+    <th className={`px-3 py-2.5 ${className}`}>
+      <button onClick={() => setSort((s) => ({ key, asc: s.key === key ? !s.asc : true }))}
+        className="inline-flex items-center gap-1 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted hover:text-brand-heading">
+        {label}
+        {sort.key === key && (sort.asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+      </button>
+    </th>
+  );
+
+  const plainHead = (label: string, className = '') => (
+    <th className={`px-3 py-2.5 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted ${className}`}>{label}</th>
+  );
+
+  const listView = (
+    <div className="overflow-x-auto border border-brand-border bg-brand-card">
+      <table className="w-full min-w-[56rem] text-left text-xs">
+        <thead className="border-b border-brand-border">
+          <tr>
+            {sortHead('name', 'Product')}
+            {sortHead('category', 'Category')}
+            {sortHead('price', 'Price', 'text-right')}
+            {sortHead('stock_count', 'Stock')}
+            {plainHead('Status')}
+            {plainHead('Files')}
+            {plainHead('', 'w-40')}
+          </tr>
+        </thead>
+        <tbody>
+          {visible.map((p) => (
+            <tr key={p.id} className={`border-b border-brand-border/60 last:border-b-0 hover:bg-brand-dark ${p.is_active ? '' : 'opacity-70'}`}>
+              <td className="px-3 py-2">
+                <div className="flex items-center gap-3">
+                  {thumb(p, 'h-10 w-10')}
+                  <div className="min-w-0">
+                    <button onClick={() => onEdit(p)} className="block max-w-[22rem] truncate text-left font-semibold text-brand-heading hover:underline" title={p.name}>
+                      {p.name}
+                    </button>
+                    <p className="truncate font-mono text-[0.6875rem] text-brand-textMuted">{p.sku || 'no SKU'} · /{p.slug}</p>
+                  </div>
+                </div>
+              </td>
+              <td className="max-w-[14rem] truncate px-3 py-2 text-brand-body" title={p.category}>{p.category || '—'}</td>
+              <td className="px-3 py-2 text-right">{price(p)}</td>
+              <td className="px-3 py-2">{stockBox(p)}</td>
+              <td className="px-3 py-2">{toggles(p)}</td>
+              <td className="px-3 py-2">
+                <div className="flex items-center gap-2">
+                  {coa(p)}
+                  {!p.image && <span className="text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-textMuted">No photo</span>}
+                </div>
+              </td>
+              <td className="px-3 py-2">{actions(p)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const tilesView = filter !== 'all' || text ? (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">{visible.map(tile)}</div>
+  ) : (
+    <div className="space-y-7">
+      {grouped.map((group) => (
+        <section key={group.name}>
+          <h2 className="mb-3 flex items-baseline gap-2 border-b border-brand-border pb-2">
+            <span className="font-display text-xs font-extrabold uppercase tracking-[0.1em] text-brand-heading">{group.name}</span>
+            <span className="text-[0.75rem] text-brand-textMuted">{group.items.length}</span>
+          </h2>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">{group.items.map(tile)}</div>
+        </section>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.75rem] text-brand-textMuted">
+          <span><strong className="text-brand-heading">{total}</strong> products</span>
+          {lowStock > 0 && <span className="text-action">{lowStock} low on stock</span>}
           {withoutImage > 0 && <span>{withoutImage} without a photo</span>}
           {withoutCoa > 0 && <span>{withoutCoa} without a certificate</span>}
-          <button
-            onClick={onRefresh}
-            className="inline-flex items-center gap-1.5 border border-brand-borderLight px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-body hover:border-brand-accent"
-          ><RefreshCw className="h-3 w-3" /> Refresh</button>
-          <button
-            onClick={onNew}
-            className="inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
-          >
-            <Plus className="h-3 w-3" /> New product
-          </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <ProductImportExport authedFetch={authedFetch} onImported={onRefresh} />
+          <button onClick={onRefresh} className="btn-secondary"><RefreshCw className="h-3.5 w-3.5" /> Refresh</button>
+          <button onClick={onNew} className="btn-primary px-3 py-2"><Plus className="h-3.5 w-3.5" /> New product</button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 border border-brand-border bg-brand-card p-3">
+        <div className="relative min-w-[12rem] flex-1">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
+          <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Find by name, SKU or category"
+            className="field-input pl-8" />
+        </div>
+        <select value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Category" className="field-input w-auto max-w-xs">
+          <option value="all">All categories ({rows.length})</option>
+          {options.map((o) => <option key={o.name} value={o.name}>{o.name} ({o.count})</option>)}
+        </select>
+        <div className="flex border border-brand-borderLight" role="group" aria-label="Layout">
+          {([['list', List, 'List'], ['tiles', LayoutGrid, 'Tiles']] as const).map(([id, Icon, label]) => (
+            <button key={id} onClick={() => changeView(id)} aria-pressed={view === id} title={`${label} view`}
+              className={`flex items-center gap-1.5 px-3 py-2 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] ${
+                view === id ? 'bg-brand-accent text-brand-onAccent' : 'text-brand-body hover:text-brand-heading'}`}>
+              <Icon className="h-3.5 w-3.5" /> {label}
+            </button>
+          ))}
         </div>
       </div>
 
       {visible.length === 0 ? (
-        <p className="border border-brand-border bg-brand-card p-10 text-center text-xs text-brand-textMuted">
-          Nothing in this category yet.
-        </p>
-      ) : filter !== 'all' ? (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {visible.map(card)}
-        </div>
-      ) : (
-        <div className="space-y-7">
-          {grouped.map((group) => (
-            <section key={group.name}>
-              <h2 className="mb-3 flex items-baseline gap-2 border-b border-brand-border pb-2">
-                <span className="font-display text-xs font-extrabold uppercase tracking-[0.1em] text-brand-heading">
-                  {group.name}
-                </span>
-                <span className="text-[0.75rem] text-brand-textMuted">{group.items.length}</span>
-              </h2>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {group.items.map(card)}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
+        <p className="border border-brand-border bg-brand-card p-10 text-center text-xs text-brand-textMuted">No products match.</p>
+      ) : view === 'list' ? listView : tilesView}
+
+      {qr && <QrCodeModal target={qr} onClose={() => setQr(null)} />}
     </div>
   );
 }

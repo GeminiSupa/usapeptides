@@ -206,12 +206,14 @@ export const RESOURCES: Record<string, ResourceConfig> = {
   customers: {
     table: 'customer_profiles',
     title: 'Customers',
-    blurb: 'People who have registered or ordered.',
-    select: 'id, email, full_name, institution, phone, marketing_opt_in, created_at',
+    blurb: 'People who have registered or ordered. Message them, give them a sign-in, or remove them.',
+    select: 'id, email, full_name, institution, phone, marketing_opt_in, user_id, created_at',
     orderBy: 'created_at',
-    searchable: ['email', 'full_name', 'institution'],
+    searchable: ['email', 'full_name', 'institution', 'phone'],
     editable: ['full_name', 'institution', 'phone', 'marketing_opt_in'],
-    deletable: false,
+    // Their orders stay (orders.customer_id is ON DELETE SET NULL) and still
+    // carry the email, name and address they were placed with.
+    deletable: true,
     createFields: [
       { name: 'email', label: 'Email', type: 'email', required: true },
       { name: 'full_name', label: 'Full name', type: 'text' },

@@ -4,17 +4,27 @@ import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useArticles } from '@/hooks/useArticles';
+import RichText from '@/components/RichText';
+import type { Article } from '@/types';
 import { ArrowLeft, Clock, User, Tag, Calendar, Share2, ShieldCheck } from 'lucide-react';
 
-interface ArticlePageProps {
-  params: {
-    slug: string;
-  };
+/** SEO-era fields the server page already fetched (0015). */
+export interface ArticleExtras {
+  faq?: { question: string; answer: string }[];
+  image_alt?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  keywords?: string[] | null;
+  canonical_url?: string | null;
+  og_image?: string | null;
+  noindex?: boolean | null;
 }
 
-export default function ArticleDetailClient({ slug }: { slug: string }) {
+export default function ArticleDetailClient({ slug, extras, initial }: { slug: string; extras?: ArticleExtras; initial?: Article }) {
   const { articles, loading } = useArticles();
-  const article = articles.find((a) => a.slug === slug);
+  // The server already fetched a published post, so its text is in the HTML
+  // search engines read; the hook only fills in the bundled starter articles.
+  const article = initial ?? articles.find((a) => a.slug === slug);
 
   if (!article) {
     if (loading) return <div className="shell py-10 text-sm text-brand-textMuted">Loading article...</div>;
@@ -51,7 +61,7 @@ export default function ArticleDetailClient({ slug }: { slug: string }) {
       <div className="aspect-video rounded-2xl overflow-hidden border border-brand-border">
         <img
           src={article.image}
-          alt={article.title}
+          alt={extras?.image_alt || article.title}
           className="w-full h-full object-cover"
         />
       </div>
@@ -62,9 +72,21 @@ export default function ArticleDetailClient({ slug }: { slug: string }) {
           {article.excerpt}
         </div>
 
-        <div className="whitespace-pre-line space-y-4">
-          {article.content}
-        </div>
+        <RichText text={article.content} />
+
+        {extras?.faq && extras.faq.length > 0 && (
+          <section className="border-t border-brand-border pt-6">
+            <h2 className="font-display text-lg font-extrabold uppercase tracking-[0.04em] text-brand-heading">Questions answered</h2>
+            <dl className="mt-4 space-y-4">
+              {extras.faq.map((f, i) => (
+                <div key={i} className="border border-brand-border bg-brand-card p-4">
+                  <dt className="font-semibold text-brand-heading">{f.question}</dt>
+                  <dd className="mt-1.5">{f.answer}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
       </div>
 
       {/* Tags */}

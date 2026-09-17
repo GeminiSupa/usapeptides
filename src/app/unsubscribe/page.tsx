@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MailX, Check } from 'lucide-react';
 
@@ -8,6 +8,16 @@ export default function UnsubscribePage() {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [message, setMessage] = useState('');
+
+  // The one-click link in a campaign email lands here already unsubscribed.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('done') === '1') setState('done');
+    if (params.get('invalid') === '1') {
+      setState('error');
+      setMessage('That unsubscribe link did not work. Enter your email address below instead.');
+    }
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

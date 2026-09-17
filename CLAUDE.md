@@ -67,7 +67,7 @@ something.
 ## Migrations
 
 Applied **by hand** in the Supabase SQL editor, in number order:
-`supabase/migrations/0001` … `0006`.
+`supabase/migrations/0001` … `0017`.
 
 - You cannot run DDL: `SUPABASE_DB_URL` is blank. Write the file, tell the owner
   to run it, then verify by querying the REST API.
@@ -77,8 +77,11 @@ Applied **by hand** in the Supabase SQL editor, in number order:
   Either degrade (read the older column set, hide the new fields) or return a
   message naming what to run. Never let the screen that would tell the owner to
   run the SQL be the screen that refuses to load.
-- Status at last check: 0001–0005 applied. **0006 was written but not confirmed
-  run** — check `docs/TODO.md`.
+- Status at last check (2026-09-17): 0001–0017 applied.
+- Unicode escape sequences (backslash, u, four hex digits) written through the
+  file tools arrive as the real characters. Build them with chr() in a script,
+  and re-test anything that escapes output: this once silently disabled the
+  JSON-LD script-tag escaping.
 
 ---
 

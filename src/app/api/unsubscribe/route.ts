@@ -25,12 +25,19 @@ export async function POST(req: Request) {
   const email = clip(body.email, 320).toLowerCase();
 
   try {
-    const { error } = await getSupabaseAdmin()
+    const db = getSupabaseAdmin();
+    const { error } = await db
       .from('newsletter_subscribers')
       .update({ is_subscribed: false, unsubscribed_at: new Date().toISOString() })
       .ilike('email', email);
 
     if (error) return serverError(error.message);
+
+    // Campaigns also mail customers and leads, so the address goes on the
+    // do-not-email list too. That table arrives with 0017; before it this
+    // step does nothing.
+    await db.from('email_suppressions').upsert({ email, reason: 'unsubscribed' }, { onConflict: 'email', ignoreDuplicates: true });
+    await db.from('customer_profiles').update({ marketing_opt_in: false }).eq('email', email);
 
     return ok({ unsubscribed: true });
   } catch (err) {

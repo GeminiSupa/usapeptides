@@ -45,7 +45,17 @@ export type AuditAction =
   | 'commission.void'
   | 'category.create'
   | 'category.update'
-  | 'category.delete';
+  | 'category.delete'
+  | 'product.import'
+  | 'customer.create'
+  | 'customer.delete'
+  | 'customer.login_invite'
+  | 'prospect.import'
+  | 'prospect.delete'
+  | 'campaign.send'
+  | 'campaign.test'
+  | 'campaign.delete'
+  | 'content.update';
 
 interface AuditEntry {
   action: AuditAction;

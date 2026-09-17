@@ -12,7 +12,7 @@ import { Upload, FileText, X, ExternalLink } from 'lucide-react';
  * the rest of the form.
  */
 
-export type UploadKind = 'image' | 'coa' | 'avatar';
+export type UploadKind = 'image' | 'coa' | 'avatar' | 'blog';
 
 interface Props {
   kind: UploadKind;
@@ -24,6 +24,7 @@ interface Props {
 const ACCEPT: Record<UploadKind, string> = {
   image: 'image/jpeg,image/png,image/webp,image/avif,image/gif,image/svg+xml',
   coa: 'application/pdf',
+  blog: 'image/jpeg,image/png,image/webp,image/avif,image/gif',
   // No SVG: a profile photo is shown to other staff, and an SVG can carry script.
   avatar: 'image/jpeg,image/png,image/webp,image/avif',
 };

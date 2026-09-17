@@ -3,12 +3,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Plus, Pencil, Trash2, KeyRound, ShieldCheck, ShieldOff, Crown, Clock,
-  UserCog, GitBranch, Handshake, RefreshCw,
+  UserCog, GitBranch, Handshake, RefreshCw, Users as UsersIcon, QrCode,
 } from 'lucide-react';
 import type { AdminProfile, ModuleDef } from '@/lib/permissions';
 import UserFormModal, { type Supervisor } from './UserFormModal';
 import PasswordModal from './PasswordModal';
 import AffiliatesTab from './AffiliatesTab';
+import CustomersPanel from './CustomersPanel';
+import QrCodesTab from './QrCodesTab';
+import type { UploadKind } from './UploadField';
 
 /**
  * The Users umbrella: internal team, sub-users, and outside affiliates.
@@ -20,17 +23,21 @@ import AffiliatesTab from './AffiliatesTab';
  *   Sub-users   a second level beneath a staff member. No dashboard beyond
  *               their own earnings, and capped at two levels deep
  *   Affiliates  outside partners. No login at all, only a referral code
+ *   Customers   clients of the shop. A sign-in for My account, never the dashboard
+ *   QR codes    printable codes for everyone's referral link
  *
  * Everything here is checked again server-side. Hiding a button is a courtesy,
  * not a control.
  */
 
-type Tab = 'team' | 'sub' | 'affiliates';
+type Tab = 'team' | 'sub' | 'affiliates' | 'customers' | 'qr';
 
 const TABS: { id: Tab; label: string; icon: typeof UserCog }[] = [
   { id: 'team',       label: 'Team',       icon: UserCog },
   { id: 'sub',        label: 'Sub-users',  icon: GitBranch },
   { id: 'affiliates', label: 'Affiliates', icon: Handshake },
+  { id: 'customers',  label: 'Customers',  icon: UsersIcon },
+  { id: 'qr',         label: 'QR codes',   icon: QrCode },
 ];
 
 interface UsersResponse {
@@ -51,6 +58,7 @@ interface Props {
   authedFetch: (path: string, init?: RequestInit) => Promise<Response>;
   /** True when the person viewing is an owner. */
   isOwner: boolean;
+  upload: (file: File, kind: UploadKind) => Promise<string>;
 }
 
 const pct = (v: unknown) => `${Number(v ?? 0)}%`;
@@ -60,7 +68,7 @@ const PERIOD_SHORT: Record<string, string> = {
   hourly: 'hr', weekly: 'wk', fortnightly: '2wk', monthly: 'mo', annual: 'yr',
 };
 
-export default function UsersPanel({ authedFetch, isOwner }: Props) {
+export default function UsersPanel({ authedFetch, isOwner, upload }: Props) {
   const [tab, setTab] = useState<Tab>('team');
   const [data, setData] = useState<UsersResponse | null>(null);
   const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
@@ -369,6 +377,10 @@ export default function UsersPanel({ authedFetch, isOwner }: Props) {
       {/* --------------------------------------------------------- content */}
       {tab === 'affiliates' ? (
         <AffiliatesTab authedFetch={authedFetch} />
+      ) : tab === 'customers' ? (
+        <CustomersPanel authedFetch={authedFetch} upload={upload} isAgent={false} />
+      ) : tab === 'qr' ? (
+        <QrCodesTab authedFetch={authedFetch} users={data?.users ?? []} />
       ) : loading && !data ? (
         <p className="text-xs text-brand-textMuted">Loading...</p>
       ) : tab === 'team' ? (

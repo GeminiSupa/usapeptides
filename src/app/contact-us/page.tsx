@@ -1,10 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Clock, Send, ShieldCheck } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, ShieldCheck, Loader2 } from 'lucide-react';
+import { useSiteContent } from '@/components/SiteContentProvider';
 
 export default function ContactUsPage() {
+  const { t } = useSiteContent();
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,23 +17,47 @@ export default function ContactUsPage() {
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Saved as an enquiry in the dashboard (Enquiries). It used to only show the
+  // thank-you message and send nothing.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSending(true); setSendError('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.orderNumber ? `${formData.subject} — order ${formData.orderNumber}` : formData.subject,
+          message: formData.message,
+        }),
+      });
+      if (!res.ok) {
+        const p = await res.json().catch(() => null);
+        throw new Error(p?.message ?? 'Your message could not be sent.');
+      }
+      setSubmitted(true);
+    } catch (err) {
+      setSendError(err instanceof Error ? `${err.message} Please email us instead.` : 'Your message could not be sent.');
+    } finally {
+      setSending(false);
+    }
   };
+  const phone = t('contact.phone');
 
   return (
     <div className="shell py-10 space-y-10">
       
       <div className="border-b border-brand-border pb-6">
         <div className="eyebrow mb-2.5">
-          Direct Laboratory Communication
+          {t('contactPage.eyebrow')}
         </div>
         <h1 className="page-title">
-          Contact USA Peptide Depot
+          {t('contactPage.title')}
         </h1>
         <p className="text-xs sm:text-sm text-brand-textMuted mt-2 max-w-2xl">
-          For technical HPLC inquiries, bulk institutional orders, or shipping assistance, our laboratory team responds within 24 business hours.
+          {t('contactPage.intro')}
         </p>
       </div>
 
@@ -45,17 +73,27 @@ export default function ContactUsPage() {
                 <Mail className="w-5 h-5 text-brand-accentGlow flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="text-brand-textMuted text-[10px] uppercase block">Email Address</span>
-                  <a href="mailto:info@usapeptides.com" className="text-brand-heading hover:text-brand-accentGlow font-semibold">
-                    info@usapeptides.com
+                  <a href={`mailto:${t('contact.email')}`} className="text-brand-heading hover:text-brand-accentGlow font-semibold">
+                    {t('contact.email')}
                   </a>
                 </div>
               </div>
+
+              {phone && (
+                <div className="flex items-start gap-3">
+                  <Phone className="w-5 h-5 text-brand-accentGlow flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-brand-textMuted text-[10px] uppercase block">Phone</span>
+                    <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} className="text-brand-heading hover:text-brand-accentGlow font-semibold">{phone}</a>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-brand-success flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="text-brand-textMuted text-[10px] uppercase block">Operations &amp; Fulfillment</span>
-                  <span className="text-brand-heading">United States Logistics &amp; Climate Storage Facility</span>
+                  <span className="whitespace-pre-line text-brand-heading">{t('contact.address')}</span>
                 </div>
               </div>
 
@@ -63,14 +101,14 @@ export default function ContactUsPage() {
                 <Clock className="w-5 h-5 text-brand-textMuted flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="text-brand-textMuted text-[10px] uppercase block">Hours of Operation</span>
-                  <span className="text-brand-heading">Monday – Friday: 8:00 AM – 6:00 PM EST</span>
+                  <span className="text-brand-heading">{t('contact.hours')}</span>
                 </div>
               </div>
             </div>
 
             <div className="pt-4 border-t border-brand-border text-[11px] text-brand-textMuted">
               <strong className="text-red-700 block mb-1">Compliance Policy:</strong>
-              We do not answer questions relating to human administration or medical advice. Inquiries must pertain to laboratory chemistry, in-vitro protocols, or orders.
+              {t('contactPage.policy')}
             </div>
           </div>
         </div>
@@ -159,11 +197,13 @@ export default function ContactUsPage() {
                   />
                 </div>
 
+                {sendError && <p className="border border-action/50 p-3 text-xs text-brand-body">{sendError}</p>}
                 <button
                   type="submit"
+                  disabled={sending}
                   className="w-full py-3.5 px-6 rounded-xl bg-brand-accent hover:bg-brand-accentHover text-brand-onAccent font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-2"
                 >
-                  <Send className="w-4 h-4" />
+                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   <span>Send Message to Laboratory Team</span>
                 </button>
               </form>

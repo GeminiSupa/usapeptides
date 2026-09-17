@@ -64,6 +64,19 @@ export const chatwootEnv = {
   webhookSecret: clean(process.env.CHATWOOT_WEBHOOK_SECRET),
 };
 
+/**
+ * Maps for the Prospector. All free OpenStreetMap services by default; each can
+ * be pointed at a paid or self-hosted mirror if the business outgrows the
+ * public servers' fair-use limits. No key is needed, so the feature is always on.
+ */
+export const mapsEnv = {
+  nominatimUrl: clean(process.env.NOMINATIM_BASE_URL) || 'https://nominatim.openstreetmap.org/search',
+  overpassUrls: (clean(process.env.OVERPASS_BASE_URL)
+    ? [clean(process.env.OVERPASS_BASE_URL)]
+    : ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://overpass.private.coffee/api/interpreter']),
+  tileUrl: clean(process.env.NEXT_PUBLIC_MAP_TILE_URL) || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+};
+
 /** Payment providers. None are wired until their credentials are supplied. */
 export const paymentEnv = {
   paypal: {

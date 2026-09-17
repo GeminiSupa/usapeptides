@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
+import CatalogueViewToggle, { useCatalogueView } from '@/components/CatalogueViewToggle';
 import { useCatalogue } from '@/hooks/useCatalogue';
 import { useCategory } from '@/hooks/useCategories';
 import { ArrowLeft, FlaskConical, ShieldCheck, ChevronRight } from 'lucide-react';
@@ -16,6 +17,10 @@ interface CategoryPageProps {
 
 export default function CategoryDetailClient({ slug }: { slug: string }) {
   const { category, loading } = useCategory(slug);
+  // Every hook runs before the early returns below, or React sees a different
+  // number of hooks once loading finishes and throws.
+  const { products } = useCatalogue();
+  const [view, setView] = useCatalogueView();
 
   if (loading) {
     return <div className="shell py-16 text-sm text-brand-textMuted">Loading category…</div>;
@@ -25,7 +30,6 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
     notFound();
   }
 
-  const { products } = useCatalogue();
   const categoryProducts = products.filter((p) => p.categorySlug === category.slug);
 
   return (
@@ -56,8 +60,9 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
 
       {/* Products Grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between text-xs text-brand-textMuted">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-brand-textMuted">
           <span>Available Compounds: <strong className="text-brand-heading font-mono">{categoryProducts.length}</strong></span>
+          <CatalogueViewToggle view={view} onChange={setView} />
           <Link href="/shop" className="text-brand-accentGlow hover:underline flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>All Categories</span>
@@ -72,9 +77,9 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className={view === 'row' ? 'space-y-3' : 'grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4'}>
             {categoryProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} layout={view} />
             ))}
           </div>
         )}

@@ -201,6 +201,43 @@
     border-radius: 3px;
   }
 
+  /* Dashboard: a smaller outline button, and the standard form field. */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 font-display uppercase
+           bg-brand-card text-brand-heading border border-brand-borderLight
+           px-3 py-2 transition-colors duration-150
+           hover:border-brand-accent hover:text-brand-accentGlow
+           disabled:cursor-not-allowed disabled:opacity-50;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    border-radius: 2px;
+  }
+
+  .btn-sm {
+    @apply px-3 py-2;
+  }
+
+  .field-label {
+    @apply mb-1.5 block font-display uppercase text-brand-textMuted;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+
+  .field-input {
+    @apply block min-h-10 w-full border border-brand-border bg-brand-dark px-3 py-2 text-sm text-brand-heading
+           placeholder-brand-textMuted focus:border-brand-accent focus:outline-none;
+    border-radius: 2px;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 font-display uppercase;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+  }
+
 
 
 }

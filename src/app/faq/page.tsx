@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { faqs } from '@/data/faqs';
+import { useSiteContent } from '@/components/SiteContentProvider';
+import { parseFaqs } from '@/lib/siteContent';
 import { ChevronDown, HelpCircle, Search } from 'lucide-react';
 
 export default function FAQPage() {
+  const { t } = useSiteContent();
+  const faqs = React.useMemo(() => parseFaqs(t('faq.items')), [t('faq.items')]); // eslint-disable-line react-hooks/exhaustive-deps
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('All');
@@ -25,13 +28,13 @@ export default function FAQPage() {
       
       <div className="border-b border-brand-border pb-6">
         <div className="eyebrow mb-2.5">
-          Support &amp; Answers
+          {t('faq.eyebrow')}
         </div>
         <h1 className="page-title">
-          Frequently Asked Questions
+          {t('faq.title')}
         </h1>
         <p className="text-xs sm:text-sm text-brand-textMuted mt-2">
-          Find answers regarding ordering, HPLC testing verification, domestic shipping, and laboratory peptide storage.
+          {t('faq.intro')}
         </p>
       </div>
 

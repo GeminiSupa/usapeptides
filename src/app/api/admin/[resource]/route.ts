@@ -5,6 +5,8 @@ import { featureUnavailable, supabaseEnv } from '@/lib/env';
 import { isSalesAgent } from '@/lib/permissions';
 import { generateCommissionsForOrder } from '@/lib/commissions';
 import { isCreditable } from '@/lib/attribution';
+import { writeAudit } from '@/lib/audit';
+import { removeCustomerLogin } from '@/lib/customerAccounts';
 import { ok, created, badRequest, notFound, serverError, readJson } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -448,8 +450,27 @@ export async function DELETE(req: Request, { params }: { params: { resource: str
   if (!id) return badRequest('An "id" is required.');
 
   try {
-    const { error } = await getSupabaseAdmin().from(config.table).delete().eq('id', id);
+    const db = getSupabaseAdmin();
+
+    // A customer's shop sign-in goes with them, or it would outlive the
+    // record and still open My account.
+    let customer: { email: string; user_id: string | null } | null = null;
+    if (params.resource === 'customers') {
+      const { data } = await db.from('customer_profiles').select('email, user_id').eq('id', id).maybeSingle();
+      if (!data) return notFound('That customer no longer exists.');
+      customer = data as { email: string; user_id: string | null };
+    }
+
+    const { error } = await db.from(config.table).delete().eq('id', id);
     if (error) return serverError(error.message);
+
+    if (customer) {
+      if (customer.user_id) {
+        const loginError = await removeCustomerLogin(db, customer.user_id, customer.email);
+        if (loginError) console.warn('[customers] sign-in not removed', loginError);
+      }
+      await writeAudit(auth.admin, { action: 'customer.delete', targetType: 'customer', targetId: id, targetLabel: customer.email });
+    }
     return ok({ deleted: true, id });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);

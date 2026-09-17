@@ -43,6 +43,13 @@ const KINDS = {
     types: new Set(['application/pdf']),
     label: 'a PDF certificate',
   },
+  // Blog and email pictures. No SVG: these are shown to the public and pasted
+  // into emails, and an SVG can carry script.
+  blog: {
+    folder: 'blog',
+    types: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']),
+    label: 'a JPG, PNG, WEBP, AVIF or GIF image',
+  },
   avatar: {
     folder: 'avatars',
     // No SVG or GIF: a profile photo is shown to other staff, and an SVG served
@@ -90,7 +97,7 @@ export async function POST(req: Request) {
   const kind = String(form.get('kind') ?? 'image') as Kind;
 
   if (!(file instanceof File)) return badRequest('No file was received.');
-  if (!(kind in KINDS)) return badRequest('Upload kind must be "image", "coa" or "avatar".');
+  if (!(kind in KINDS)) return badRequest('Upload kind must be "image", "coa", "blog" or "avatar".');
 
   if (kind !== 'avatar') {
     const needed = permissionsForPath(new URL(req.url).pathname);
@@ -151,6 +158,44 @@ export async function POST(req: Request) {
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);
   }
+}
+
+/**
+ * GET /api/admin/upload?kind=blog
+ *
+ * The picture library: files already uploaded to one folder, newest first, so
+ * a blog image can be reused or downloaded instead of uploaded again.
+ */
+export async function GET(req: Request) {
+  const unavailable = featureUnavailable('adminDatabase');
+  if (unavailable) return unavailable;
+
+  const auth = await requireAdmin(req);
+  if (!auth.ok) return auth.response;
+
+  const kind = String(new URL(req.url).searchParams.get('kind') ?? 'blog') as Kind;
+  if (!(kind in KINDS) || kind === 'avatar') return badRequest('Choose blog, image or coa.');
+
+  const db = getSupabaseAdmin();
+  const { data, error } = await db.storage.from(BUCKET).list(KINDS[kind].folder, {
+    limit: 500,
+    sortBy: { column: 'created_at', order: 'desc' },
+  });
+  if (error) return serverError(error.message);
+
+  const files = (data ?? [])
+    .filter((f) => f.name && !f.name.startsWith('.'))
+    .map((f) => {
+      const path = `${KINDS[kind].folder}/${f.name}`;
+      return {
+        name: f.name,
+        path,
+        url: db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl,
+        bytes: Number((f.metadata as Record<string, unknown> | null)?.size ?? 0),
+        createdAt: f.created_at ?? null,
+      };
+    });
+  return ok({ files });
 }
 
 // There is deliberately no DELETE. Replacing a file leaves the old one in

@@ -2,8 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import ProductCard from '@/components/ProductCard';
+import CatalogueViewToggle, { useCatalogueView } from '@/components/CatalogueViewToggle';
 import { useCatalogue } from '@/hooks/useCatalogue';
 import { useCategories } from '@/hooks/useCategories';
+import { useSiteContent } from '@/components/SiteContentProvider';
 import { 
   Filter, 
   Search, 
@@ -16,6 +18,7 @@ import {
 
 export default function ShopPage() {
   const categories = useCategories();
+  const { t } = useSiteContent();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'name'>('featured');
@@ -23,6 +26,7 @@ export default function ShopPage() {
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
 
   const { products } = useCatalogue();
+  const [view, setView] = useCatalogueView();
 
   const filteredProducts = useMemo(() => {
     return products
@@ -59,13 +63,13 @@ export default function ShopPage() {
       {/* Page Header */}
       <div className="border-b border-brand-border pb-6">
         <div className="eyebrow mb-2.5">
-          Catalog &amp; Reference Materials
+          {t('shop.eyebrow')}
         </div>
         <h1 className="page-title">
-          All Research Peptides
+          {t('shop.title')}
         </h1>
         <p className="text-xs sm:text-sm text-brand-textMuted mt-2 max-w-2xl leading-relaxed">
-          HPLC-verified lyophilized peptides for in-vitro research use. Bulk volume tiers calculated automatically with verified Certificate of Analysis available per batch.
+          {t('shop.intro')}
         </p>
       </div>
 
@@ -195,6 +199,7 @@ export default function ShopPage() {
                 <option value="price-high">Price: High to Low</option>
                 <option value="name">Product Name (A-Z)</option>
               </select>
+              <CatalogueViewToggle view={view} onChange={setView} />
             </div>
           </div>
 
@@ -218,9 +223,9 @@ export default function ShopPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
+            <div className={view === 'row' ? 'space-y-3' : 'grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3'}>
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} layout={view} />
               ))}
             </div>
           )}

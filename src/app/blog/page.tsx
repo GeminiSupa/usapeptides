@@ -3,22 +3,24 @@
 import React from 'react';
 import Link from 'next/link';
 import { useArticles } from '@/hooks/useArticles';
+import { useSiteContent } from '@/components/SiteContentProvider';
 import { FileText, ArrowRight, Clock, User, Sparkles } from 'lucide-react';
 
 export default function BlogIndexPage() {
   const { articles } = useArticles();
+  const { t } = useSiteContent();
   return (
     <div className="shell py-10 space-y-10">
       
       <div className="border-b border-brand-border pb-6">
         <div className="eyebrow mb-2.5">
-          Scientific Library &amp; COA Analysis
+          {t('blog.eyebrow')}
         </div>
         <h1 className="page-title">
-          Peptide Research &amp; Analytical Guides
+          {t('blog.title')}
         </h1>
         <p className="text-xs sm:text-sm text-brand-textMuted mt-2 max-w-2xl">
-          Explore laboratory protocols, HPLC chromatogram reading guides, receptor pathways, and peptide stability research.
+          {t('blog.intro')}
         </p>
       </div>
 

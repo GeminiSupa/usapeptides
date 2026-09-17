@@ -465,3 +465,77 @@ anything hardcoded or weak.
 - [x] TypeScript clean. Browser-verified home, shop and a product page at
       375x812: no horizontal overflow; header and bottom navigation fit; shop
       shows a usable two-column grid; narrow product assurances stack cleanly.
+
+## Owner feedback round (2026-09-17, evening)
+
+- [x] 0015, 0016 and 0017 run by the owner (2026-09-17). **Verified via REST:** all new
+      columns and tables present, `campaign_track` callable by the server only,
+      recipients hidden from the public key. Prospector (11) and blog/content (17)
+      checks re-run against them and pass; test rows deleted.
+
+- [x] **Products: import / export.** Export the whole catalogue as Excel, CSV or
+      a PDF price list; import CSV or Excel (old .xls is refused with a "save as
+      .xlsx" message; a PDF cannot be imported reliably and says so). Two-step
+      import: every row is checked on the server and shown as Add / Update /
+      Skip / Problem before anything is written. Matches by SKU then web
+      address; blank cells leave values alone; English and Spanish headings;
+      new categories created; photo links from other sites are not copied.
+      Blank template download. `/api/admin/products/import`.
+      **Verified: 17 API checks.** Test rows deleted.
+- [x] **Products: list / tiles view** in the dashboard (sortable list is the
+      default, choice remembered) and **grid / list view on the shop and
+      category pages**. QR code per product.
+- [x] Fixed: category page called a React hook after an early return; category
+      counts queried a column that does not exist (`is_live`) on every page.
+- [x] **Customers**: own screen with WhatsApp / email / call on every row,
+      one-click delete (removes their shop sign-in too; past orders kept),
+      orders / spend / last order, export. Sales agents: no delete, no
+      sign-ins. **Verified: 15 checks.**
+- [x] **Client accounts**: "Sign-in" on a customer sets a password for the
+      shop's My account page (Users > Customers is the same screen). My account
+      was fake (any password "worked"); it is now a real sign-in showing only
+      the customer's own orders (row-level security). A customer sign-in is
+      refused by the dashboard; a dashboard user's email cannot be given one.
+- [x] **Users > QR codes**: printable codes for every referral link plus any
+      page of the site; PNG / SVG / print.
+- [x] **Notifications**: separate tab removed; the bell opens a drop-down.
+- [x] **Navbar** labels no longer wrap onto two lines (checked 1024 / 1280px).
+- [x] **Storefront controls the website**: Website text & SEO, Blog,
+      Announcement & WhatsApp. Editable: contact details, social links, home
+      banner, page headings, full FAQ, footer, site-wide and per-page SEO,
+      share image, Google/Bing verification, AI-answer facts. Stored in
+      `site_settings.site_content` (no migration). The root layout now renders
+      on the server, so titles, descriptions and structured data are in the
+      HTML (Organization, FAQPage, BlogPosting, Product). Generated
+      `sitemap.xml` and `robots.txt` (dashboard hidden from search).
+      **Verified: 18 checks**, incl. unsafe links refused and a saved line
+      appearing on the page immediately, then reset.
+- [x] **Blog** inside Storefront: formatting toolbar, preview, picture library
+      (upload, reuse, download), per-post SEO and Q&A (needs 0015), publish
+      date scheduling. Posts render on the server.
+- [x] Contact form now saves to Enquiries (it only pretended to).
+- [x] **Prospector** (renamed): OpenStreetMap search (free, no Google fees),
+      own map with pins, "search this area", fit score weighted to research
+      buyers, pipeline with stages, owner, follow-up, notes timeline,
+      WhatsApp / email / call templates, copy to Leads, import / export.
+      **Verified:** live Boston search, 100 businesses in 11s; 11 pipeline
+      checks. Test rows deleted.
+- [x] **Campaigns** (Mailchimp-style): templates, block builder with live
+      desktop / mobile preview, audiences (subscribers, opted-in customers, all
+      customers, leads, everyone + engagement filters), test send, send now or
+      schedule, batched sending, signed open / click tracking, one-click
+      unsubscribe, do-not-email list, report with links and recipients. Own
+      editor instead of Unlayer (no extra account).
+      **Verified:** audience counts; forged click / unsubscribe links refused;
+      hostile HTML escaped. **Not verified: a real send** (no SMTP account).
+- [ ] **Owner to set in Vercel for sending:** `SMTP_HOST`, `SMTP_PORT`,
+      `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`; `EMAIL_LINK_SECRET` (any long
+      random string); `CRON_SECRET` for the daily scheduled-campaign check in
+      `vercel.json`. All as Secret. Then redeploy.
+- [ ] The owner said a picture of the products screen would follow; it did not
+      arrive.
+- [ ] Not checked while signed in to the real dashboard (a test session could
+      not be put in the browser). Screens were checked with sample data on a
+      temporary local page, since deleted; APIs against the live database.
+- [ ] `npm audit` flags the Next.js 14 version in use; the fixes are in newer
+      majors. Upgrade as its own piece of work.

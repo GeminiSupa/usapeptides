@@ -136,12 +136,12 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
         {/* Row 2 - primary navigation */}
         <nav className="hidden border-t border-brand-border lg:block">
-          <div className="shell flex items-center gap-1">
+          <div className="shell flex items-center gap-0">
             <div className="relative" onMouseLeave={() => setCategoryDropdownOpen(false)}>
               <button
                 onMouseEnter={() => setCategoryDropdownOpen(true)}
                 onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                className="flex items-center gap-1.5 px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-heading hover:text-brand-accentGlow"
+                className="flex items-center gap-1.5 whitespace-nowrap px-2 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.08em] xl:px-3 2xl:px-4 2xl:tracking-[0.12em] text-brand-heading hover:text-brand-accentGlow"
               >
                 <span>All Research Peptides</span>
                 <ChevronDown
@@ -174,7 +174,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors ${
+                  className={`whitespace-nowrap px-2 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.08em] xl:px-3 2xl:px-4 2xl:tracking-[0.12em] transition-colors ${
                     active ? 'text-brand-accentGlow' : 'text-brand-heading hover:text-brand-accentGlow'
                   }`}
                 >
@@ -185,7 +185,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
             <Link
               href="/calculator"
-              className="flex items-center gap-1.5 px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-heading hover:text-brand-accentGlow"
+              className="flex items-center gap-1.5 whitespace-nowrap px-2 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.08em] xl:px-3 2xl:px-4 2xl:tracking-[0.12em] text-brand-heading hover:text-brand-accentGlow"
             >
               <Calculator className="h-3.5 w-3.5" />
               <span>Calculator</span>
@@ -193,13 +193,13 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
             <Link
               href="/affiliates"
-              className="ml-auto px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted hover:text-brand-accentGlow"
+              className="ml-auto whitespace-nowrap px-2 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.08em] xl:px-3 2xl:px-4 2xl:tracking-[0.12em] text-brand-textMuted hover:text-brand-accentGlow"
             >
               Affiliate Portal
             </Link>
             <Link
               href="/admin/login"
-              className="flex items-center gap-1.5 border-l border-brand-border px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted hover:text-brand-accentGlow"
+              className="flex items-center gap-1.5 border-l border-brand-border whitespace-nowrap px-2 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.08em] xl:px-3 2xl:px-4 2xl:tracking-[0.12em] text-brand-textMuted hover:text-brand-accentGlow"
               title="Secure staff sign in"
             >
               <ShieldCheck className="h-3.5 w-3.5" /> Admin login
