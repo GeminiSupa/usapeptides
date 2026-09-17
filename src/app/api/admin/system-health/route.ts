@@ -12,6 +12,7 @@ export async function GET(req:Request){
   ['Users','admin_users','id,role,referral_code'],['Seller earnings','sales_commissions','id,status'],
   ['Articles','articles','id,is_published'],['Fulfilment','fulfillment_queue','id,stage'],
   ['CRM','crm_activity','id,subject_type'],['Notifications','admin_notifications','id,is_read'],
+  ['Notification read state','admin_notification_reads','admin_user_id,notification_id'],
   ['Categories','product_categories','id,name,slug,is_active'],
  ] as const;
  const database=[] as {name:string;table:string;ok:boolean;message:string}[];

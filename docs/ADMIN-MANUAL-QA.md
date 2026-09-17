@@ -1,7 +1,7 @@
 # USA Peptide Depot admin portal — manual QA
 
 Run this after deploying the current code and applying migrations `0009`,
-`0010`, and `0011`. Use test records prefixed with `zz.` so they are easy to find and
+`0010`, `0011`, and `0012`. Use test records prefixed with `zz.` so they are easy to find and
 remove. Do not use real card information; no payment processor is connected.
 
 ## 1. System and access
@@ -129,7 +129,23 @@ remove. Do not use real card information; no payment processor is connected.
    appears in **Abandoned carts**; mark it recovered and reload.
 4. Add/unsubscribe a `zz.` newsletter address and confirm the state persists.
 
-## 10. Security and audit
+## 10. Notifications
+
+1. Confirm the header bell shows the same unread count as the **Notifications**
+   tab and that both refresh without reloading the dashboard.
+2. Create a manual order. Confirm an automatic order alert appears after
+   refresh; click it and confirm it opens **Orders**.
+3. Submit the public contact form and add an unapproved test review. Confirm
+   enquiry and review alerts appear and open their correct sections.
+4. Move a product's stock from 5 or more to below 5. Confirm one low-stock alert
+   appears. Further changes while it remains below 5 must not create duplicates.
+5. Mark one alert read, then mark all read. Reload and confirm the state remains
+   correct for this administrator. Sign in as another permitted administrator
+   and confirm their read state is independent.
+6. Confirm the tab does not claim that in-app alerts were delivered through
+   email, WhatsApp, or Vercel logs.
+
+## 11. Security and audit
 
 1. Create a staff account with only Products permission. It must see Dashboard
    and Products only; direct API/navigation attempts to Users and Audit must be
@@ -144,7 +160,7 @@ remove. Do not use real card information; no payment processor is connected.
    Every request must be refused. A visible Admin login link must never weaken
    these server-side checks.
 
-## 11. Cleanup
+## 12. Cleanup
 
 Delete or deactivate every `zz.` test record created above. Keep audit rows;
 they are intentionally append-only. Confirm no test product remains public and

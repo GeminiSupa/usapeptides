@@ -16,6 +16,8 @@ import AnalyticsPanel from '@/components/admin/AnalyticsPanel';
 import SystemHealthPanel from '@/components/admin/SystemHealthPanel';
 import OrderDetailModal from '@/components/admin/OrderDetailModal';
 import CategoriesPanel from '@/components/admin/CategoriesPanel';
+import NotificationsPanel from '@/components/admin/NotificationsPanel';
+import NotificationBell from '@/components/admin/NotificationBell';
 import type { UploadKind } from '@/components/admin/UploadField';
 import { MODULES, type ModuleDef } from '@/lib/permissions';
 import {
@@ -78,7 +80,7 @@ const NOT_A_SECTION = new Set(['affiliates', 'my_team', 'my_link']);
  * not one: it has its own view but reads and writes through the generic
  * resource API, so it must keep a `resource`.
  */
-const CUSTOM = new Set(['home', 'analytics', 'storefront', 'users', 'audit', 'system', 'categories', 'my_earnings', 'commissions']);
+const CUSTOM = new Set(['home', 'analytics', 'storefront', 'users', 'audit', 'system', 'categories', 'notifications', 'my_earnings', 'commissions']);
 
 const STATUS_OPTIONS: Record<string, string[]> = {
   status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
@@ -552,6 +554,7 @@ export default function AdminPage() {
             )}
           </div>
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            {me.allowed.includes('notifications') && <NotificationBell authedFetch={authedFetch} onOpen={() => setSection('notifications')} />}
             {resource && (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
@@ -604,6 +607,9 @@ export default function AdminPage() {
 
         ) : active.id === 'categories' ? (
           <CategoriesPanel authedFetch={authedFetch} />
+
+        ) : active.id === 'notifications' ? (
+          <NotificationsPanel authedFetch={authedFetch} onNavigate={(next) => { if (me.allowed.includes(next)) setSection(next); }} />
 
         ) : active.id === 'storefront' ? (
           <StorefrontPanel authedFetch={authedFetch} />

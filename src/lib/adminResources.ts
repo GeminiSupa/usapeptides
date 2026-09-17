@@ -468,23 +468,6 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     },
   },
 
-  notifications: {
-    table: 'admin_notifications',
-    title: 'Notifications',
-    blurb: 'Internal alerts for your team.',
-    select: 'id, kind, title, body, link, is_read, created_at',
-    orderBy: 'created_at',
-    searchable: ['title', 'kind'],
-    editable: ['is_read'],
-    deletable: true,
-    createFields: [
-      { name: 'kind', label: 'Kind', type: 'select', options: ['order', 'inquiry', 'review', 'stock', 'system'] },
-      { name: 'title', label: 'Title', type: 'text', required: true },
-      { name: 'body', label: 'Body', type: 'textarea' },
-      { name: 'link', label: 'Link', type: 'text' },
-    ],
-  },
-
   team: {
     table: 'team_members',
     title: 'Team',

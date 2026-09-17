@@ -365,6 +365,13 @@ anything hardcoded or weak.
       editable product categories with storefront linkage. Production build and
       TypeScript pass. Category management requires
       `0011_product_categories.sql`; live/manual QA remains with the owner.
+- [~] Notifications rebuilt as an operational inbox matching the useful
+      PeptideCosta behaviour: automatic order/enquiry/review/low-stock alerts,
+      unread bell count, one-minute refresh, mark-one/mark-all read, and
+      click-through to the related dashboard section. Read state is private per
+      administrator after `0012_notification_center.sql`; external email and
+      WhatsApp delivery remain gated by their providers. TypeScript passes;
+      database and browser QA remain.
 
 ## Blocked — needs an account he has not opened
 - [!] Email (SMTP): no order confirmations, no enquiry notifications, campaigns
