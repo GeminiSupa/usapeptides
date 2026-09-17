@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, CartItem } from '@/types';
+import { track } from '@/lib/track';
 
 interface CartContextType {
   cart: CartItem[];
@@ -81,6 +82,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addToCart = (product: Product, quantity = 1) => {
+    track('add_to_cart', { slug: product.slug, qty: quantity, value: (product.salePrice ?? product.price) * quantity });
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.product.id === product.id);
       if (existing) {

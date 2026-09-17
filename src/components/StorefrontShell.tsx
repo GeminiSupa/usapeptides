@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
@@ -14,6 +14,7 @@ import ComplianceModal from '@/components/ComplianceModal';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import ChatwootWidget from '@/components/ChatwootWidget';
 import ReferralCapture from '@/components/ReferralCapture';
+import VisitorTracker from '@/components/VisitorTracker';
 
 /**
  * Everything around a storefront page that needs the browser: cart, wishlist,
@@ -45,6 +46,7 @@ export default function StorefrontShell({ children }: { children: React.ReactNod
                 dashboard: staff answer chats in Chatwoot, not here. */}
             <ChatwootWidget />
             <ReferralCapture />
+            <Suspense fallback={null}><VisitorTracker /></Suspense>
           </>
         )}
       </CartProvider>

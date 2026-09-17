@@ -21,6 +21,7 @@ import ProspectorPanel from '@/components/admin/ProspectorPanel';
 import CampaignsPanel from '@/components/admin/CampaignsPanel';
 import NotificationBell from '@/components/admin/NotificationBell';
 import DealsPanel from '@/components/admin/DealsPanel';
+import DashboardHome from '@/components/admin/insights/DashboardHome';
 import type { UploadKind } from '@/components/admin/UploadField';
 import { MODULES, type ModuleDef } from '@/lib/permissions';
 import {
@@ -145,7 +146,6 @@ export default function AdminPage() {
   const [me, setMe] = useState<Me | null>(null);
 
   const [section, setSection] = useState<string>('home');
-  const [summary, setSummary] = useState<any>(null);
   const [data, setData] = useState<RowsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
@@ -244,12 +244,7 @@ export default function AdminPage() {
     if (!token || !active) return;
     setLoading(true); setError('');
     try {
-      if (active.id === 'home') {
-        const res = await authedFetch('/api/admin/summary');
-        const p = await res.json();
-        if (!res.ok) throw new Error(p?.message ?? 'Could not load the dashboard.');
-        setSummary(p.data);
-      } else if (resource) {
+      if (resource) {
         const params = new URLSearchParams({ limit: '200' });
         if (query.trim()) params.set('q', query.trim());
         const res = await authedFetch(`/api/admin/${resource}?${params}`);
@@ -572,7 +567,7 @@ export default function AdminPage() {
                   className="min-h-11 w-full border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none sm:w-auto" />
               </div>
             )}
-            {((resource && !SELF_TOOLBAR.has(active.id)) || active.id === 'home') && (
+            {resource && !SELF_TOOLBAR.has(active.id) && (
               <button onClick={() => load()} title="Refresh"
                 className="border border-brand-borderLight p-2 text-brand-body hover:border-brand-accent hover:text-brand-accentGlow">
                 <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -633,75 +628,25 @@ export default function AdminPage() {
           <StorefrontHub authedFetch={authedFetch} upload={upload} initialTab="blog" />
 
         ) : active.id === 'home' ? (
-          summary ? (
-            <div className="space-y-8">
-              {me.role === 'sales_agent' && (
-                <div className="border border-brand-border bg-brand-card p-4">
-                  <div className="eyebrow">Your referral link</div>
-                  <p className="mt-2 break-all font-mono text-[0.8125rem] text-brand-heading">
-                    {me.referralCode && typeof window !== 'undefined'
-                      ? `${window.location.origin}/?ref=${me.referralCode}`
-                      : 'Being set up. Reload the page in a moment.'}
-                  </p>
-                  <p className="mt-1.5 text-[0.75rem] leading-relaxed text-brand-textMuted">
-                    A customer who buys through this link is yours, and so are all their later orders.
-                    Orders with no agent wait under Orders for somebody to claim them.
-                  </p>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-px border border-brand-border bg-brand-border md:grid-cols-3 xl:grid-cols-5">
-                {/* The API sends only the figures this person may see. */}
-                {([
-                  ['Revenue (30d)', 'revenue30', true],
-                  ['Orders (30d)', 'orders30'],
-                  ['Awaiting payment', 'pendingOrders'],
-                  ['Waiting to be claimed', 'unclaimedOrders'],
-                  ['Open enquiries', 'openInquiries'],
-                  ['Reviews to approve', 'pendingReviews'],
-                  ['Subscribers', 'subscribers'],
-                  ['Live carts', 'activeCarts'],
-                  ['Active products', 'products'],
-                  ['Low stock (<5)', 'lowStock'],
-                  ['Open leads', 'leadsOpen'],
-                ] as [string, string, boolean?][])
-                  .filter(([, key]) => summary.metrics[key] !== undefined)
-                  .map(([label, key, isMoney]) => (
-                    <div key={key} className="bg-brand-card p-4">
-                      <div className="eyebrow">{label}</div>
-                      <div className="mt-2 font-display text-xl font-black text-brand-heading">
-                        {isMoney ? money(summary.metrics[key]) : summary.metrics[key]}
-                      </div>
-                    </div>
-                  ))}
+          <DashboardHome
+            authedFetch={authedFetch}
+            allowed={me.allowed}
+            onNavigate={(next) => { if (me.allowed.includes(next) && !NOT_A_SECTION.has(next)) { setSection(next); setQuery(''); setError(''); } }}
+            agentLink={me.role === 'sales_agent' ? (
+              <div className="border border-brand-border bg-brand-card p-4">
+                <div className="eyebrow">Your referral link</div>
+                <p className="mt-2 break-all font-mono text-[0.8125rem] text-brand-heading">
+                  {me.referralCode && typeof window !== 'undefined'
+                    ? `${window.location.origin}/?ref=${me.referralCode}`
+                    : 'Being set up. Reload the page in a moment.'}
+                </p>
+                <p className="mt-1.5 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                  A customer who buys through this link is yours, and so are all their later orders.
+                  Orders with no agent wait under Orders for somebody to claim them.
+                </p>
               </div>
-
-              {Array.isArray(summary.recentOrders) && <div>
-                <h2 className="mb-3 font-display text-[0.9375rem] font-extrabold uppercase tracking-[0.08em] text-brand-heading">Latest orders</h2>
-                {summary.recentOrders.length === 0 ? (
-                  <p className="border border-brand-border bg-brand-card p-8 text-center text-xs text-brand-textMuted">No orders yet.</p>
-                ) : (
-                  <div className="overflow-x-auto border border-brand-border">
-                    <table className="w-full min-w-[36rem] text-left text-xs">
-                      <thead className="border-b border-brand-border bg-brand-card"><tr>
-                        {['Order', 'Email', 'Status', 'Total', 'Placed'].map((h) => (
-                          <th key={h} className="px-4 py-2.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">{h}</th>))}
-                      </tr></thead>
-                      <tbody>
-                        {summary.recentOrders.map((o: any) => (
-                          <tr key={o.order_number} className="border-b border-brand-border/60 last:border-b-0">
-                            <td className="px-4 py-2.5 font-mono text-[0.8125rem] text-brand-heading">{o.order_number}</td>
-                            <td className="px-4 py-2.5 text-brand-body">{o.email}</td>
-                            <td className="px-4 py-2.5"><span className="bg-brand-accent px-2 py-0.5 font-display text-[0.75rem] font-black uppercase text-brand-onAccent">{o.status}</span></td>
-                            <td className="px-4 py-2.5 font-mono text-brand-body">{money(o.grand_total)}</td>
-                            <td className="px-4 py-2.5 font-mono text-[0.8125rem] text-brand-textMuted">{new Date(o.created_at).toLocaleDateString()}</td>
-                          </tr>))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>}
-            </div>
-          ) : <p className="text-xs text-brand-textMuted">{loading ? 'Loading...' : 'No data.'}</p>
+            ) : undefined}
+          />
 
         ) : active.id === 'products' && data ? (
           <ProductsPanel

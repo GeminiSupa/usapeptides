@@ -45,6 +45,10 @@ export default function CheckoutPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Remembered in this browser so an unfinished cart can be followed up.
+    if (e.target.name === 'email') {
+      try { localStorage.setItem('upd_checkout_email', e.target.value.trim()); } catch { /* ignore */ }
+    }
   };
 
   /**

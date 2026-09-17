@@ -19,6 +19,8 @@ export const BUSINESS = {
   supportEmail: clean(process.env.ORDER_NOTIFICATION_FROM) || 'info@usapeptides.com',
   country: 'US',
   currency: 'USD',
+  /** The business day for dashboards ("today", "this week"). */
+  timezone: clean(process.env.NEXT_PUBLIC_BUSINESS_TIMEZONE) || 'America/New_York',
 } as const;
 
 /** Supabase — the only integration required for the backend to function. */

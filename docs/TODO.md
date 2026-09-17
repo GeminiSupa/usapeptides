@@ -543,3 +543,25 @@ anything hardcoded or weak.
 - [x] Pushed as `2d52def` to `testing` and `main` (fast-forward). **Verified live** on
       usapeptides-six.vercel.app: new robots.txt, sitemap, page titles; new admin API
       answers 401 without a login.
+
+## Dashboard vs Analytics rebuild (2026-09-17, night)
+
+- [x] Dashboard home = daily to-do list: period picker (today, yesterday, 7/30/90
+      days, this/last month, 12 months, all, custom), "Needs your attention"
+      list, headline numbers with an (i) explanation and change vs the period
+      before, sales and visitor charts. "Latest orders" table removed.
+- [x] Analytics = the report: same picker, sections (overview, sales, visitors &
+      sources, funnel, products, marketing, live now), export to Excel/CSV/PDF.
+      All definitions in `src/lib/kpis.ts`; engine `src/lib/analyticsEngine.ts`.
+- [x] Visitor tracking built (was none): `/api/track` + `VisitorTracker`. Visits,
+      source (search/social/email/AI/direct, UTM), device, browser, country /
+      region / city from Vercel headers (no IP stored), page and product views,
+      add to cart, checkout, purchase, live visitors.
+- [x] Fixed: carts were never saved, so Abandoned carts was always empty. The
+      tracker now saves them (keyed by visitor) and marks them recovered on
+      purchase; checkout email remembered for follow-up.
+- [ ] **Owner to run `0018_visitor_analytics.sql`.** Until then visitor numbers
+      are hidden and the page says so.
+- [x] Verified: both APIs return for every range (2–4s from here; Vercel is
+      nearer the database). Screens checked with sample data, page deleted.
+      Build clean. Not yet verified: real tracking rows (needs 0018).
