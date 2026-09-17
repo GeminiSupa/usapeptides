@@ -376,6 +376,11 @@ anything hardcoded or weak.
       order to a customer profile and creates or converts the matching lead,
       preserving agent ownership. It also backfills existing orders, so orders
       placed before the fix appear in Customers and Leads after migration.
+- [~] Deals rebuilt as a scheduled promotion engine: product multi-select,
+      minimum/maximum eligible unit counts, percentage or fixed-value discount,
+      automatic server-side checkout calculation, and optional storefront
+      banner copy that expires with the deal. Requires
+      `0014_deal_engine.sql`; browser/database QA remains.
 
 ## Blocked — needs an account he has not opened
 - [!] Email (SMTP): no order confirmations, no enquiry notifications, campaigns

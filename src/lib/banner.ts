@@ -12,6 +12,8 @@ export interface Banner {
   /** Optional destination. Anything that is not a safe link is dropped. */
   href?: string;
   isActive: boolean;
+  /** Scheduled deal banners disappear at this instant, even on an open page. */
+  expiresAt?: string;
 }
 
 /** Where the bar is allowed to send a visitor. */
@@ -47,6 +49,7 @@ export function normalizeBanner(raw: unknown, index: number): Banner | null {
     text,
     href: sanitizeBannerHref(b.href as string) || undefined,
     isActive: b.isActive !== false,
+    expiresAt: typeof b.endsAt === 'string' ? b.endsAt : typeof b.expiresAt === 'string' ? b.expiresAt : undefined,
   };
 }
 
@@ -55,4 +58,6 @@ export function normalizeBanners(value: unknown): Banner[] {
   return value.map(normalizeBanner).filter((b): b is Banner => b !== null).slice(0, 12);
 }
 
-export const activeBanners = (banners: Banner[]): Banner[] => banners.filter((b) => b.isActive);
+export const activeBanners = (banners: Banner[]): Banner[] => banners.filter((b) =>
+  b.isActive && (!b.expiresAt || new Date(b.expiresAt).getTime() > Date.now())
+);

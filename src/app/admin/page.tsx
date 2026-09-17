@@ -18,6 +18,7 @@ import OrderDetailModal from '@/components/admin/OrderDetailModal';
 import CategoriesPanel from '@/components/admin/CategoriesPanel';
 import NotificationsPanel from '@/components/admin/NotificationsPanel';
 import NotificationBell from '@/components/admin/NotificationBell';
+import DealsPanel from '@/components/admin/DealsPanel';
 import type { UploadKind } from '@/components/admin/UploadField';
 import { MODULES, type ModuleDef } from '@/lib/permissions';
 import {
@@ -80,7 +81,7 @@ const NOT_A_SECTION = new Set(['affiliates', 'my_team', 'my_link']);
  * not one: it has its own view but reads and writes through the generic
  * resource API, so it must keep a `resource`.
  */
-const CUSTOM = new Set(['home', 'analytics', 'storefront', 'users', 'audit', 'system', 'categories', 'notifications', 'my_earnings', 'commissions']);
+const CUSTOM = new Set(['home', 'analytics', 'storefront', 'users', 'audit', 'system', 'categories', 'deals', 'notifications', 'my_earnings', 'commissions']);
 
 const STATUS_OPTIONS: Record<string, string[]> = {
   status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
@@ -607,6 +608,9 @@ export default function AdminPage() {
 
         ) : active.id === 'categories' ? (
           <CategoriesPanel authedFetch={authedFetch} />
+
+        ) : active.id === 'deals' ? (
+          <DealsPanel authedFetch={authedFetch} />
 
         ) : active.id === 'notifications' ? (
           <NotificationsPanel authedFetch={authedFetch} onNavigate={(next) => { if (me.allowed.includes(next)) setSection(next); }} />

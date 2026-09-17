@@ -353,27 +353,6 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     ],
   },
 
-  deals: {
-    table: 'deals',
-    title: 'Deals',
-    blurb: 'Time-limited promotions and coupon codes.',
-    select:
-      'id, title, product_slug, discount_percent, coupon_code, starts_at, ends_at, is_active, created_at',
-    orderBy: 'created_at',
-    searchable: ['title', 'coupon_code', 'product_slug'],
-    editable: ['title', 'discount_percent', 'coupon_code', 'starts_at', 'ends_at', 'is_active'],
-    deletable: true,
-    createFields: [
-      { name: 'title', label: 'Title', type: 'text', required: true },
-      { name: 'product_slug', label: 'Product slug', type: 'text', help: 'blank = all products' },
-      { name: 'discount_percent', label: 'Discount %', type: 'number', required: true },
-      { name: 'coupon_code', label: 'Coupon code', type: 'text' },
-      { name: 'starts_at', label: 'Starts', type: 'date' },
-      { name: 'ends_at', label: 'Ends', type: 'date' },
-      { name: 'is_active', label: 'Active', type: 'boolean' },
-    ],
-  },
-
   affiliates: {
     table: 'affiliates',
     title: 'Affiliates',

@@ -14,6 +14,8 @@ export async function GET(req:Request){
   ['CRM','crm_activity','id,subject_type'],['Notifications','admin_notifications','id,is_read'],
   ['Notification read state','admin_notification_reads','admin_user_id,notification_id'],
   ['Order/customer CRM sync','orders','id,customer_id,referred_by'],
+  ['Deal engine','deals','id,discount_type,discount_value,min_quantity,max_quantity,banner_text'],
+  ['Deal products','deal_products','deal_id,product_id'],
   ['Categories','product_categories','id,name,slug,is_active'],
  ] as const;
  const database=[] as {name:string;table:string;ok:boolean;message:string}[];

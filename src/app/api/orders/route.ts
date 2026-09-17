@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { featureUnavailable, BUSINESS } from '@/lib/env';
 import { resolveOrderAttribution } from '@/lib/attribution';
 import { FLAT_SHIPPING, FREE_SHIPPING_THRESHOLD, roundMoney, tierDiscount } from '@/lib/checkout';
+import { bestDealDiscount } from '@/lib/dealPricing';
 import {
   ok,
   created,
@@ -130,8 +131,11 @@ export async function POST(req: Request) {
     }
 
     const merchandise = roundMoney(subtotal - discountTotal);
-    const shippingTotal = merchandise >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
-    const grandTotal = roundMoney(merchandise + shippingTotal);
+    const deal = await bestDealDiscount(db, lines);
+    if (deal) discountTotal = roundMoney(discountTotal + deal.amount);
+    const discountedMerchandise = roundMoney(subtotal - discountTotal);
+    const shippingTotal = discountedMerchandise >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
+    const grandTotal = roundMoney(discountedMerchandise + shippingTotal);
 
     const email = clip(body.email, 320).toLowerCase();
 
@@ -162,6 +166,7 @@ export async function POST(req: Request) {
         shipping_total: shippingTotal,
         grand_total: grandTotal,
         currency: BUSINESS.currency,
+        coupon_code: deal?.title ?? null,
         shipping_address: body.shippingAddress ?? null,
         payment_provider: PAYMENT_METHODS.has(String(body.paymentMethod)) ? String(body.paymentMethod) : null,
         compliance_ack: true,

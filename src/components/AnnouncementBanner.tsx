@@ -24,18 +24,24 @@ export default function AnnouncementBanner() {
     if (!supabase) return;
     let live = true;
 
-    supabase
+    const manual = supabase
       .from('site_settings')
       .select('value')
       .eq('id', 'announcement_banners')
       .maybeSingle()
-      .then(({ data, error }) => {
-        if (!live || error) return;
-        setBanners(activeBanners(normalizeBanners(data?.value)));
-      });
+      .then(({ data, error }) => error ? [] : activeBanners(normalizeBanners(data?.value)));
+    const deals = fetch('/api/deals').then((res) => res.ok ? res.json() : null).then((payload) => normalizeBanners(payload?.data?.banners));
+    Promise.all([manual,deals]).then(([saved,scheduled])=>{if(live)setBanners([...scheduled,...saved]);});
 
     return () => { live = false; };
   }, []);
+
+  useEffect(() => {
+    const expiries = banners.map((banner) => banner.expiresAt ? new Date(banner.expiresAt).getTime() : Infinity).filter((time) => Number.isFinite(time) && time > Date.now());
+    if (!expiries.length) return;
+    const timer = window.setTimeout(() => setBanners((current) => activeBanners(current)), Math.min(...expiries) - Date.now() + 50);
+    return () => window.clearTimeout(timer);
+  }, [banners]);
 
   if (banners.length === 0) return null;
 

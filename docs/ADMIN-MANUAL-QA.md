@@ -1,7 +1,7 @@
 # USA Peptide Depot admin portal — manual QA
 
 Run this after deploying the current code and applying migrations `0009`,
-`0010`, `0011`, `0012`, and `0013`. Use test records prefixed with `zz.` so they are easy to find and
+`0010` through `0014`. Use test records prefixed with `zz.` so they are easy to find and
 remove. Do not use real card information; no payment processor is connected.
 
 ## 1. System and access
@@ -124,13 +124,20 @@ remove. Do not use real card information; no payment processor is connected.
 
 ## 9. Marketing, reviews and carts
 
-1. Create a campaign draft and edit it. If email/Meta is not connected, no send
+1. In **Deals**, select two products, set a minimum and maximum combined unit
+   count, and test both percentage and fixed-dollar discounts. Confirm checkout
+   applies the best eligible deal server-side and applies nothing outside the
+   quantity range.
+2. Add deal banner wording and a short end time. Confirm it appears publicly
+   only while the deal is live and disappears automatically when the deal ends;
+   the checkout discount must end at the same time.
+3. Create a campaign draft and edit it. If email/Meta is not connected, no send
    action should pretend that delivery occurred.
-2. Add a test review, confirm it stays hidden until approved, approve it, then
+4. Add a test review, confirm it stays hidden until approved, approve it, then
    verify the public product page.
-3. Start a public cart with a test email and leave checkout. Confirm the cart
+5. Start a public cart with a test email and leave checkout. Confirm the cart
    appears in **Abandoned carts**; mark it recovered and reload.
-4. Add/unsubscribe a `zz.` newsletter address and confirm the state persists.
+6. Add/unsubscribe a `zz.` newsletter address and confirm the state persists.
 
 ## 10. Notifications
 
