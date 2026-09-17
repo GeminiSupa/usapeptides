@@ -107,6 +107,7 @@ interface RowsResponse {
   editable: string[];
   deletable: boolean;
   createFields: FieldDef[];
+  editFields: FieldDef[];
   columns: string[] | null;
   /** Present on orders and leads: who owns each row, and what the viewer may do about it. */
   ownership: {
@@ -764,7 +765,7 @@ export default function AdminPage() {
       {editorOpen && data && (
         <RecordEditor
           title={data.title.replace(/s$/, '')}
-          fields={data.createFields}
+          fields={editorRow ? data.editFields : data.createFields}
           initial={editorRow}
           editable={data.editable}
           busy={saveBusy}

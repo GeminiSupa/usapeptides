@@ -54,6 +54,12 @@ export interface ResourceConfig {
   statusColumn?: string;
   /** Fields offered by the "new record" form. Empty means create is disabled. */
   createFields: FieldDef[];
+  /**
+   * Fields shown by the editor when they differ from the create form.
+   * This is especially important for system-created records such as orders:
+   * they cannot be added by hand, but their workflow fields are editable.
+   */
+  editFields?: FieldDef[];
   /** Columns worth showing in the compact table, in order. */
   columns?: string[];
   /**
@@ -96,13 +102,19 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     title: 'Orders',
     blurb: 'Orders placed through the storefront. Change status and add tracking here.',
     select:
-      'id, order_number, email, full_name, institution, status, grand_total, currency, payment_provider, tracking_number, created_at',
+      'id, order_number, email, full_name, institution, status, grand_total, currency, payment_provider, payment_reference, tracking_number, notes, created_at',
     orderBy: 'created_at',
     searchable: ['order_number', 'email', 'full_name'],
     editable: ['status', 'tracking_number', 'notes', 'payment_reference'],
     deletable: false,
     statusColumn: 'status',
     createFields: [], // orders originate from checkout, never typed in by hand
+    editFields: [
+      { group: 'Workflow', name: 'status', label: 'Order status', type: 'select', options: STATUS.order },
+      { group: 'Workflow', name: 'tracking_number', label: 'Tracking number', type: 'text' },
+      { group: 'Payment', name: 'payment_reference', label: 'Payment reference', type: 'text' },
+      { group: 'Internal', name: 'notes', label: 'Internal notes', type: 'textarea' },
+    ],
     columns: ['order_number', 'email', 'status', 'grand_total', 'tracking_number', 'created_at'],
   },
 

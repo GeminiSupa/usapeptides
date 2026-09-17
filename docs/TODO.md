@@ -565,3 +565,10 @@ anything hardcoded or weak.
 - [x] Verified: both APIs return for every range (2–4s from here; Vercel is
       nearer the database). Screens checked with sample data, page deleted.
       Build clean. Not yet verified: real tracking rows (needs 0018).
+
+## Order editor fix (2026-09-17)
+
+- [x] Fixed the blank Edit order modal. System-created records now have
+      separate edit-form definitions from their intentionally empty create
+      forms. Orders expose status, tracking number, payment reference and
+      internal notes without enabling manual creation through the generic API.

@@ -149,6 +149,9 @@ export async function GET(req: Request, { params }: { params: { resource: string
           ? []
           : config.createFields.filter((f) => !AGENT_BLOCKED_COLUMNS.has(f.name))
         : createFields,
+      editFields: (config.editFields ?? createFields)
+        .filter((field) => config.editable.includes(field.name))
+        .filter((field) => !agent || !AGENT_BLOCKED_COLUMNS.has(field.name)),
       columns: config.columns ?? null,
       statusColumn: config.statusColumn ?? null,
       ownership: hasOwnership && own
