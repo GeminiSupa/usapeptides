@@ -294,7 +294,7 @@ function Section({ id, title, help, children }: { id: string; title: string; hel
 function SourcesTable({ rows }: { rows?: any[] }) {
   if (!rows?.length) return <p className="text-xs text-brand-textMuted">No visits yet.</p>;
   return (
-    <div className="max-h-80 overflow-auto">
+    <div className="max-h-80 overflow-auto pr-3">
       <table className="w-full min-w-[28rem] text-left text-xs">
         <thead className="sticky top-0 bg-brand-card text-brand-textMuted">
           <tr><th className="py-1.5">Source</th><th>Type</th><th className="text-right">Visits</th><th className="text-right">Orders</th><th className="text-right">Conversion</th><th className="text-right">Revenue</th></tr>
@@ -326,7 +326,7 @@ function ProductsTable({ rows, tracking }: { rows: any[]; tracking: boolean }) {
     </th>
   );
   return (
-    <div className="max-h-[32rem] overflow-auto">
+    <div className="max-h-[32rem] overflow-auto pr-3">
       <table className="w-full min-w-[40rem] text-left text-xs">
         <thead className="sticky top-0 bg-brand-card">
           <tr>
