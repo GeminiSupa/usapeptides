@@ -539,3 +539,7 @@ anything hardcoded or weak.
       temporary local page, since deleted; APIs against the live database.
 - [ ] `npm audit` flags the Next.js 14 version in use; the fixes are in newer
       majors. Upgrade as its own piece of work.
+
+- [x] Pushed as `2d52def` to `testing` and `main` (fast-forward). **Verified live** on
+      usapeptides-six.vercel.app: new robots.txt, sitemap, page titles; new admin API
+      answers 401 without a login.
