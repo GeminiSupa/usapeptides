@@ -17,6 +17,7 @@ interface Rule {
 
 const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/summary$/,                permissions: ['home'] },
+  { pattern: /^\/api\/admin\/analytics$/,              permissions: ['analytics'] },
   { pattern: /^\/api\/admin\/banners(?:\/|$)/,         permissions: ['storefront'] },
   { pattern: /^\/api\/admin\/whatsapp(?:\/|$)/,        permissions: ['storefront'] },
   { pattern: /^\/api\/admin\/upload(?:\/|$)/,          permissions: ['products', 'storefront', 'users'] },
@@ -26,6 +27,7 @@ const RULES: Rule[] = [
   // suspending and reassigning them is handled by the owner-only users route.
   { pattern: /^\/api\/admin\/sub-users(?:\/|$)/,       permissions: ['users', 'my_team'] },
   { pattern: /^\/api\/admin\/audit(?:\/|$)/,           permissions: ['audit'] },
+  { pattern: /^\/api\/admin\/system-health$/,           permissions: ['system'] },
   // Claiming and assigning. The route re-checks the specific section, and that
   // the caller is a sales agent or a super admin.
   { pattern: /^\/api\/admin\/claim$/,                  permissions: ['orders', 'leads'] },

@@ -11,13 +11,16 @@ import AuditPanel from '@/components/admin/AuditPanel';
 import SubUserHome from '@/components/admin/SubUserHome';
 import ProfileModal from '@/components/admin/ProfileModal';
 import ManualOrderModal from '@/components/admin/ManualOrderModal';
+import CommissionsPanel from '@/components/admin/CommissionsPanel';
+import AnalyticsPanel from '@/components/admin/AnalyticsPanel';
+import SystemHealthPanel from '@/components/admin/SystemHealthPanel';
 import type { UploadKind } from '@/components/admin/UploadField';
 import { MODULES, type ModuleDef } from '@/lib/permissions';
 import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
-  Pencil, Monitor, ScrollText, GitBranch, Wallet, Link2, ChevronDown, FileText,
+  Pencil, Monitor, ScrollText, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3,
 } from 'lucide-react';
 
 /**
@@ -54,6 +57,8 @@ const ICONS: Record<string, typeof LayoutDashboard> = {
   my_earnings: Wallet,
   my_link: Link2,
   articles: FileText,
+  analytics: BarChart3,
+  system: History,
 };
 
 /**
@@ -70,7 +75,7 @@ const NOT_A_SECTION = new Set(['affiliates', 'my_team', 'my_link']);
  * not one: it has its own view but reads and writes through the generic
  * resource API, so it must keep a `resource`.
  */
-const CUSTOM = new Set(['home', 'storefront', 'users', 'audit', 'my_earnings']);
+const CUSTOM = new Set(['home', 'analytics', 'storefront', 'users', 'audit', 'system', 'my_earnings', 'commissions']);
 
 const STATUS_OPTIONS: Record<string, string[]> = {
   status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
@@ -535,21 +540,21 @@ export default function AdminPage() {
         </nav>
       </aside>
 
-      <main className="min-w-0 flex-1 p-5 lg:p-8">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <main className="min-w-0 flex-1 p-3 sm:p-5 lg:p-8">
+        <div className="mb-6 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <div>
             <h1 className="page-title">{active.label}</h1>
             {data && resource && (
               <p className="mt-1.5 max-w-2xl text-[0.8125rem] leading-relaxed text-brand-textMuted">{data.blurb}</p>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             {resource && (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
                 <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()}
                   placeholder="Search..."
-                  className="border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none" />
+                  className="min-h-11 w-full border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none sm:w-auto" />
               </div>
             )}
             {(resource || active.id === 'home') && (
@@ -584,6 +589,15 @@ export default function AdminPage() {
 
         ) : active.id === 'my_earnings' ? (
           <SubUserHome authedFetch={authedFetch} me={me} />
+
+        ) : active.id === 'commissions' ? (
+          <CommissionsPanel authedFetch={authedFetch} />
+
+        ) : active.id === 'analytics' ? (
+          <AnalyticsPanel authedFetch={authedFetch} />
+
+        ) : active.id === 'system' ? (
+          <SystemHealthPanel authedFetch={authedFetch} />
 
         ) : active.id === 'storefront' ? (
           <StorefrontPanel authedFetch={authedFetch} />

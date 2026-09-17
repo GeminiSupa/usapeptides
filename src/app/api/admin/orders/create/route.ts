@@ -4,6 +4,7 @@ import { featureUnavailable, BUSINESS } from '@/lib/env';
 import { isSalesAgent } from '@/lib/permissions';
 import { FLAT_SHIPPING, FREE_SHIPPING_THRESHOLD, roundMoney, tierDiscount } from '@/lib/checkout';
 import { writeAudit } from '@/lib/audit';
+import { generateCommissionsForOrder } from '@/lib/commissions';
 import {
   badRequest,
   created,
@@ -173,6 +174,13 @@ export async function POST(req: Request) {
     if (itemsError) {
       await db.from('orders').delete().eq('id', order.id);
       return serverError(itemsError.message);
+    }
+
+    if (status === 'paid') {
+      const commissionError = await generateCommissionsForOrder(db, order.id);
+      if (commissionError) {
+        return serverError(`Order created, but commission generation failed: ${commissionError}`);
+      }
     }
 
     await writeAudit(auth.admin, {

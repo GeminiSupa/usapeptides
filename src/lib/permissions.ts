@@ -40,6 +40,7 @@ export interface ModuleDef {
 
 export const MODULES: ModuleDef[] = [
   { id: 'home',          label: 'Dashboard',       group: 'Overview', always: true },
+  { id: 'analytics',     label: 'Analytics',       group: 'Overview' },
 
   { id: 'orders',        label: 'Orders',          group: 'Selling' },
   { id: 'fulfillment',   label: 'Fulfillment',     group: 'Selling' },
@@ -74,6 +75,7 @@ export const MODULES: ModuleDef[] = [
   // grantable at all. Only an owner reaches it.
   { id: 'users',         label: 'Users',           group: 'Admin', ownerOnly: true },
   { id: 'audit',         label: 'Audit trail',     group: 'Admin', ownerOnly: true },
+  { id: 'system',        label: 'System health',   group: 'Admin', ownerOnly: true },
 
   { id: 'my_earnings',   label: 'My earnings',     group: 'Mine', subUserOnly: true },
   { id: 'my_link',       label: 'My link',         group: 'Mine', subUserOnly: true },
