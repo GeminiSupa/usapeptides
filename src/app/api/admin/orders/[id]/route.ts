@@ -33,15 +33,24 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     if (error) return serverError(error.message);
     if (!order) return notFound('No order with that id.');
 
-    const { data: items, error: itemsError } = await db
-      .from('order_items')
-      .select('id, product_slug, product_name, sku, unit_price, quantity, line_total, created_at')
-      .eq('order_id', params.id)
-      .order('created_at', { ascending: true });
+    const [itemsResult, fulfillmentResult, activityResult] = await Promise.all([
+      db.from('order_items')
+        .select('id, product_slug, product_name, sku, unit_price, quantity, line_total, created_at')
+        .eq('order_id', params.id).order('created_at', { ascending: true }),
+      db.from('fulfillment_queue')
+        .select('id, stage, assigned_to, notes, picked_at, packed_at, dispatched_at, created_at, updated_at')
+        .eq('order_id', params.id).maybeSingle(),
+      db.from('crm_activity')
+        .select('id, activity, body, actor, created_at')
+        .eq('subject_type', 'order').eq('subject_id', params.id)
+        .order('created_at', { ascending: false }),
+    ]);
 
-    if (itemsError) return serverError(itemsError.message);
+    if (itemsResult.error) return serverError(itemsResult.error.message);
+    if (fulfillmentResult.error && fulfillmentResult.error.code !== 'PGRST116') return serverError(fulfillmentResult.error.message);
+    if (activityResult.error) return serverError(activityResult.error.message);
 
-    return ok({ order, items: items ?? [] });
+    return ok({ order, items: itemsResult.data ?? [], fulfillment: fulfillmentResult.data ?? null, activity: activityResult.data ?? [] });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);
   }

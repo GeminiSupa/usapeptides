@@ -38,6 +38,7 @@ const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/orders(?:\/|$)/,          permissions: ['orders'] },
   { pattern: /^\/api\/admin\/fulfillment(?:\/|$)/,     permissions: ['fulfillment'] },
   { pattern: /^\/api\/admin\/products(?:\/|$)/,        permissions: ['products'] },
+  { pattern: /^\/api\/admin\/categories(?:\/|$)/,      permissions: ['categories', 'products'] },
   { pattern: /^\/api\/admin\/deals(?:\/|$)/,           permissions: ['deals'] },
   { pattern: /^\/api\/admin\/customers(?:\/|$)/,       permissions: ['customers'] },
   { pattern: /^\/api\/admin\/inquiries(?:\/|$)/,       permissions: ['inquiries'] },

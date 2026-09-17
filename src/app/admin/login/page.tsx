@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -11,6 +11,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,15 +62,16 @@ export default function AdminLoginPage() {
               placeholder="you@usapeptides.com"
               className="w-full border border-brand-border bg-brand-card px-3 py-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none"
             />
-            <input
-              required
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full border border-brand-border bg-brand-card px-3 py-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none"
-            />
+            <div className="relative">
+              <input required type={showPassword ? 'text' : 'password'} autoComplete="current-password"
+                value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password"
+                className="w-full border border-brand-border bg-brand-card px-3 py-3 pr-11 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none" />
+              <button type="button" onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-brand-textMuted hover:text-brand-heading">
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
 
             {error && <p className="text-[0.6875rem] text-brand-accentGlow">{error}</p>}
 

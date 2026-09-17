@@ -13,10 +13,11 @@ import {
   ChevronDown,
   User,
   Calculator,
+  ShieldCheck,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { categories } from '@/data/categories';
+import { useCategories } from '@/hooks/useCategories';
 
 interface HeaderProps {
   onOpenSearch: () => void;
@@ -33,6 +34,7 @@ const NAV = [
 ];
 
 export default function Header({ onOpenSearch }: HeaderProps) {
+  const categories = useCategories();
   const pathname = usePathname();
   const { totalItems, setIsCartOpen, subtotal } = useCart();
   const { wishlist } = useWishlist();
@@ -195,6 +197,13 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             >
               Affiliate Portal
             </Link>
+            <Link
+              href="/admin/login"
+              className="flex items-center gap-1.5 border-l border-brand-border px-4 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted hover:text-brand-accentGlow"
+              title="Secure staff sign in"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" /> Admin login
+            </Link>
           </div>
         </nav>
 
@@ -222,6 +231,12 @@ export default function Header({ onOpenSearch }: HeaderProps) {
                 className="py-3 font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading"
               >
                 Affiliate Portal
+              </Link>
+              <Link
+                href="/admin/login"
+                className="flex min-h-12 items-center gap-2 border-t border-brand-border/60 py-3 font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading"
+              >
+                <ShieldCheck className="h-4 w-4" /> Admin login
               </Link>
             </div>
 

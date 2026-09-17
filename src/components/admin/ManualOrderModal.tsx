@@ -123,7 +123,7 @@ export default function ManualOrderModal({ authedFetch, onCancel, onSaved }: Pro
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 p-4">
-      <form onSubmit={submit} className="mx-auto max-w-4xl border border-brand-border bg-brand-card text-xs text-brand-body shadow-2xl">
+      <form onSubmit={submit} className="mx-auto max-h-[calc(100dvh-2rem)] max-w-4xl overflow-y-auto border border-brand-border bg-brand-card text-xs text-brand-body [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
         <div className="flex items-center justify-between border-b border-brand-border px-5 py-4">
           <div>
             <h2 className="font-display text-lg font-black uppercase tracking-[0.08em] text-brand-heading">Manual order</h2>

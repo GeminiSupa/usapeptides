@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, FileText, X } from 'lucide-react';
 import { useCatalogue } from '@/hooks/useCatalogue';
-import { categories } from '@/data/categories';
+import { useCategories } from '@/hooks/useCategories';
 import { useCart } from '@/context/CartContext';
 
 /**
@@ -15,6 +15,7 @@ import { useCart } from '@/context/CartContext';
  * alongside compound name and CAS number.
  */
 export default function CoaDatabasePage() {
+  const categories = useCategories();
   const { setSelectedCOAProduct } = useCart();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');

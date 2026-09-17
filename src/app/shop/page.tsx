@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { useCatalogue } from '@/hooks/useCatalogue';
-import { categories } from '@/data/categories';
+import { useCategories } from '@/hooks/useCategories';
 import { 
   Filter, 
   Search, 
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function ShopPage() {
+  const categories = useCategories();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'name'>('featured');

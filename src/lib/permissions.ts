@@ -45,6 +45,7 @@ export const MODULES: ModuleDef[] = [
   { id: 'orders',        label: 'Orders',          group: 'Selling' },
   { id: 'fulfillment',   label: 'Fulfillment',     group: 'Selling' },
   { id: 'products',      label: 'Products',        group: 'Selling' },
+  { id: 'categories',    label: 'Categories',      group: 'Selling' },
   { id: 'deals',         label: 'Deals',           group: 'Selling' },
 
   { id: 'customers',     label: 'Customers',       group: 'People' },
@@ -75,7 +76,7 @@ export const MODULES: ModuleDef[] = [
   // grantable at all. Only an owner reaches it.
   { id: 'users',         label: 'Users',           group: 'Admin', ownerOnly: true },
   { id: 'audit',         label: 'Audit trail',     group: 'Admin', ownerOnly: true },
-  { id: 'system',        label: 'System health',   group: 'Admin', ownerOnly: true },
+  { id: 'system',        label: 'Setup status',    group: 'Admin', ownerOnly: true },
 
   { id: 'my_earnings',   label: 'My earnings',     group: 'Mine', subUserOnly: true },
   { id: 'my_link',       label: 'My link',         group: 'Mine', subUserOnly: true },

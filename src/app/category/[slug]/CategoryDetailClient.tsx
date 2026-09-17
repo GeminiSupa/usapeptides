@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import { useCatalogue } from '@/hooks/useCatalogue';
-import { categories } from '@/data/categories';
+import { useCategory } from '@/hooks/useCategories';
 import { ArrowLeft, FlaskConical, ShieldCheck, ChevronRight } from 'lucide-react';
 
 interface CategoryPageProps {
@@ -15,8 +15,11 @@ interface CategoryPageProps {
 }
 
 export default function CategoryDetailClient({ slug }: { slug: string }) {
-  const params = { slug };
-  const category = categories.find((c) => c.slug === params.slug);
+  const { category, loading } = useCategory(slug);
+
+  if (loading) {
+    return <div className="shell py-16 text-sm text-brand-textMuted">Loading category…</div>;
+  }
 
   if (!category) {
     notFound();

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { X, KeyRound } from 'lucide-react';
+import { X, KeyRound, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import UploadField, { type UploadKind } from './UploadField';
 
 /**
@@ -54,6 +54,7 @@ export default function ProfileModal({ authedFetch, upload, onCancel, onSaved }:
   const [pwError, setPwError] = useState('');
   const [pwFields, setPwFields] = useState<Record<string, string>>({});
   const [pwNotice, setPwNotice] = useState('');
+  const [visiblePassword, setVisiblePassword] = useState<'current' | 'next' | 'confirm' | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
@@ -96,7 +97,8 @@ export default function ProfileModal({ authedFetch, upload, onCancel, onSaved }:
       if (!res.ok) { setError(p?.message ?? 'Could not save.'); setFields(p?.fields ?? {}); return; }
       fill(p.data.profile);
       onSaved(p.data.profile);
-      setNotice('Saved.');
+      setNotice('Saved');
+      window.setTimeout(() => setNotice(''), 1800);
     } catch (err) {
       if ((err as Error).message !== 'denied') setError((err as Error).message);
     } finally {
@@ -128,8 +130,13 @@ export default function ProfileModal({ authedFetch, upload, onCancel, onSaved }:
   const tooShort = next.length > 0 && next.length < minPassword;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 py-8">
-      <div className="mx-auto w-full max-w-lg border border-brand-border bg-brand-card">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
+      <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto border border-brand-border bg-brand-card [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
+        {notice === 'Saved' && (
+          <div className="fixed right-5 top-5 z-[60] flex items-center gap-2 border border-whatsapp/50 bg-brand-card px-3 py-2 text-[0.75rem] font-semibold text-brand-heading animate-fadeIn">
+            <CheckCircle2 className="h-4 w-4 text-whatsapp" /> Saved
+          </div>
+        )}
         <div className="flex items-start justify-between border-b border-brand-border px-5 py-4">
           <div>
             <h2 className="font-display text-sm font-extrabold uppercase tracking-[0.1em] text-brand-heading">
@@ -187,7 +194,7 @@ export default function ProfileModal({ authedFetch, upload, onCancel, onSaved }:
               </p>
 
               {error && <p className="mt-4 text-[0.8125rem] text-brand-accentGlow">{error}</p>}
-              {notice && <p className="mt-4 text-[0.8125rem] text-whatsapp">{notice}</p>}
+              {notice && notice !== 'Saved' && <p className="mt-4 text-[0.8125rem] text-brand-textMuted">{notice}</p>}
 
               <button type="submit" disabled={busy} className="btn-primary mt-4 w-full disabled:opacity-60">
                 {busy ? 'Saving...' : 'Save changes'}
@@ -203,22 +210,22 @@ export default function ProfileModal({ authedFetch, upload, onCancel, onSaved }:
               <div className="space-y-4">
                 <label className="block">
                   <span className="eyebrow mb-1.5 block">Current password</span>
-                  <input type="password" autoComplete="current-password" value={current}
-                    onChange={(e) => setCurrent(e.target.value)} className={input} />
+                  <PasswordField value={current} onChange={setCurrent} visible={visiblePassword === 'current'}
+                    onToggle={() => setVisiblePassword(visiblePassword === 'current' ? null : 'current')} autoComplete="current-password" />
                   {fieldError(pwFields.current_password)}
                 </label>
 
                 <label className="block">
                   <span className="eyebrow mb-1.5 block">New password</span>
-                  <input type="password" autoComplete="new-password" value={next}
-                    onChange={(e) => setNext(e.target.value)} placeholder={`At least ${minPassword} characters`} className={input} />
+                  <PasswordField value={next} onChange={setNext} visible={visiblePassword === 'next'}
+                    onToggle={() => setVisiblePassword(visiblePassword === 'next' ? null : 'next')} autoComplete="new-password" placeholder={`At least ${minPassword} characters`} />
                   {fieldError(pwFields.new_password ?? (tooShort ? `${minPassword - next.length} more character${minPassword - next.length === 1 ? '' : 's'} needed.` : undefined))}
                 </label>
 
                 <label className="block">
                   <span className="eyebrow mb-1.5 block">New password again</span>
-                  <input type="password" autoComplete="new-password" value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)} className={input} />
+                  <PasswordField value={confirm} onChange={setConfirm} visible={visiblePassword === 'confirm'}
+                    onToggle={() => setVisiblePassword(visiblePassword === 'confirm' ? null : 'confirm')} autoComplete="new-password" />
                   {fieldError(pwFields.confirm)}
                 </label>
               </div>
@@ -237,6 +244,22 @@ export default function ProfileModal({ authedFetch, upload, onCancel, onSaved }:
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function PasswordField({ value, onChange, visible, onToggle, autoComplete, placeholder }: {
+  value: string; onChange: (value: string) => void; visible: boolean;
+  onToggle: () => void; autoComplete: string; placeholder?: string;
+}) {
+  return (
+    <div className="relative">
+      <input type={visible ? 'text' : 'password'} autoComplete={autoComplete} value={value}
+        onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className={`${input} pr-11`} />
+      <button type="button" onClick={onToggle} aria-label={visible ? 'Hide password' : 'Show password'}
+        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-brand-textMuted hover:text-brand-heading">
+        {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
     </div>
   );
 }

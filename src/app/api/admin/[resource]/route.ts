@@ -122,6 +122,15 @@ export async function GET(req: Request, { params }: { params: { resource: string
   const db = getSupabaseAdmin();
   const agent = isSalesAgent(auth.admin.profile);
   const own = OWNERSHIP[params.resource];
+  let createFields = config.createFields;
+  if (params.resource === 'products') {
+    const { data: categoryRows } = await db.from('product_categories').select('name').eq('is_active', true).order('sort_order').order('name');
+    if (categoryRows?.length) {
+      createFields = config.createFields.map((field) => field.name === 'category'
+        ? { ...field, options: categoryRows.map((category) => category.name) }
+        : field);
+    }
+  }
 
   const respond = (rows: unknown[], total: number, hasOwnership: boolean, people: { id: string; name: string }[]) =>
     ok({
@@ -137,7 +146,7 @@ export async function GET(req: Request, { params }: { params: { resource: string
         ? params.resource === 'customers'
           ? []
           : config.createFields.filter((f) => !AGENT_BLOCKED_COLUMNS.has(f.name))
-        : config.createFields,
+        : createFields,
       columns: config.columns ?? null,
       statusColumn: config.statusColumn ?? null,
       ownership: hasOwnership && own
@@ -220,13 +229,23 @@ export async function POST(req: Request, { params }: { params: { resource: strin
     return badRequest('A customer becomes yours when their order does. Claim the order instead.');
   }
 
+  let writeFields = config.createFields;
+  if (params.resource === 'products') {
+    const { data: categories } = await getSupabaseAdmin().from('product_categories').select('name').eq('is_active', true);
+    if (categories?.length) {
+      writeFields = config.createFields.map((field) => field.name === 'category'
+        ? { ...field, options: categories.map((category) => category.name) }
+        : field);
+    }
+  }
+
   const body = await readJson<Record<string, unknown>>(req);
   if (!body) return badRequest('Request body must be valid JSON.');
 
   const row: Record<string, unknown> = {};
   const fields: Record<string, string> = {};
 
-  for (const field of config.createFields) {
+  for (const field of writeFields) {
     if (agent && AGENT_BLOCKED_COLUMNS.has(field.name)) continue;
 
     const raw = body[field.name];
@@ -297,6 +316,10 @@ export async function POST(req: Request, { params }: { params: { resource: strin
   if (Object.keys(row).length === 0) return badRequest('Nothing to save.');
 
   const insert = config.derive ? config.derive(row) : row;
+  if (params.resource === 'products' && insert.category) {
+    const { data: category } = await getSupabaseAdmin().from('product_categories').select('slug').eq('name', String(insert.category)).maybeSingle();
+    if (category?.slug) insert.category_slug = category.slug;
+  }
 
   // A lead an agent types in is theirs.
   const own = OWNERSHIP[params.resource];
@@ -359,6 +382,10 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
 
   const update = config.deriveUpdate ? config.deriveUpdate(changes) : changes;
   const db = getSupabaseAdmin();
+  if (params.resource === 'products' && update.category) {
+    const { data: category } = await db.from('product_categories').select('slug').eq('name', String(update.category)).maybeSingle();
+    if (category?.slug) update.category_slug = category.slug;
+  }
   const own = OWNERSHIP[params.resource];
 
   try {

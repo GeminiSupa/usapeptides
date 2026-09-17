@@ -4,9 +4,10 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { categories } from '@/data/categories';
+import { useCategories } from '@/hooks/useCategories';
 
 export default function Footer() {
+  const categories = useCategories();
   return (
     <footer className="theme-navy mt-24 border-t border-brand-border bg-brand-dark text-brand-body">
       <div className="shell grid grid-cols-1 gap-10 py-16 md:grid-cols-2 lg:grid-cols-5">

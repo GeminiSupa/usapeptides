@@ -321,7 +321,7 @@ function AffiliateForm({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 py-10">
-      <div className="mx-auto w-full max-w-lg border border-brand-border bg-brand-card">
+      <div className="mx-auto max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto border border-brand-border bg-brand-card [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
         <div className="border-b border-brand-border px-5 py-4">
           <h2 className="font-display text-sm font-extrabold uppercase tracking-[0.1em] text-brand-heading">
             {editing ? 'Edit affiliate' : 'Add an affiliate'}

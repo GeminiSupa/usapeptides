@@ -15,7 +15,7 @@ import {
   Droplet,
   ArrowRight,
 } from 'lucide-react';
-import { categories } from '@/data/categories';
+import { useCategories } from '@/hooks/useCategories';
 
 /** One accent colour throughout — the icon carries shape, not hue. */
 const iconMap: Record<string, React.ElementType> = {
@@ -32,6 +32,7 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export default function CategoryNav() {
+  const categories = useCategories();
   return (
     <section className="border-y border-brand-border bg-brand-card/40">
       <div className="shell py-20">

@@ -42,7 +42,10 @@ export type AuditAction =
   | 'affiliate.code_regenerate'
   | 'commission.approve'
   | 'commission.settle'
-  | 'commission.void';
+  | 'commission.void'
+  | 'category.create'
+  | 'category.update'
+  | 'category.delete';
 
 interface AuditEntry {
   action: AuditAction;

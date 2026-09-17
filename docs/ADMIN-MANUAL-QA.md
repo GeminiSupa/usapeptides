@@ -1,35 +1,58 @@
 # USA Peptide Depot admin portal — manual QA
 
-Run this after deploying the current code and applying migrations `0009` and
-`0010`. Use test records prefixed with `zz.` so they are easy to find and
+Run this after deploying the current code and applying migrations `0009`,
+`0010`, and `0011`. Use test records prefixed with `zz.` so they are easy to find and
 remove. Do not use real card information; no payment processor is connected.
 
 ## 1. System and access
 
-1. Open `/admin/login` and sign in as a super admin.
-2. Open **System health**. Every database row must say `PASS`.
-3. Confirm unconfigured email, PayPal, card checkout or chat services say
+1. Confirm **Admin login** appears in the desktop header and mobile menu. Open
+   it and confirm it leads to `/admin/login` without signing anybody in.
+2. Enter a password and test the eye button repeatedly. It must only change
+   visibility; it must not clear or alter the password.
+3. Sign in as a super admin.
+4. Confirm the desktop dashboard sidebar has its own scrollbar and every item
+   remains reachable at short window heights.
+5. Open **Setup status**. Every database row must say `PASS`.
+6. Confirm the page clearly says it checks schema/configuration and does not
+   claim to show Vercel runtime or deployment logs.
+7. Confirm unconfigured email, PayPal, card checkout or chat services say
    `OFF`, not an application error.
-4. Open **My profile**, change the name or phone, save, reload, and confirm it
-   persisted. Change the password only if you are prepared to sign in again.
-5. Sign out and confirm `/admin` redirects to `/admin/login`.
+8. Open **My profile**, change the name or phone and save. A small branded
+   tick notification must say **Saved** and disappear automatically. Reload and
+   confirm the change persisted.
+9. Test all three password eye buttons in My profile and the password field in
+   user approval/reset dialogs.
+10. Resize the window so the profile dialog is taller than the screen. The
+    scrollbar must belong to the dialog and its Save button must be reachable.
+11. Sign out and confirm `/admin` redirects to `/admin/login`.
 
 ## 2. Products and inventory
 
-1. Open **Products** and create `zz. QA Peptide` with a unique slug, price,
+1. Open **Categories** and create `zz. QA Category`. Confirm the web address is
+   generated when omitted, then edit its name, description and sort position.
+2. Confirm the new category appears in the product editor and public category
+   navigation. Hide it and confirm it disappears publicly.
+3. Open **Products** and create `zz. QA Peptide` with a unique slug, price,
    stock `10`, category, image and COA PDF.
-2. Confirm it appears in its public category and product page when **Live** is
+4. Confirm it appears in its public category and product page when **Live** is
    enabled, and disappears when disabled.
-3. Change stock to `4`; confirm **Dashboard** and **Analytics** count it as low
-   stock.
-4. Try uploading a non-PDF as a COA and a file over 2 MB. Both must be refused.
+5. Change stock to `4` and click the visible **Save** button. Click **Refresh**
+   and confirm the value remains `4`; then confirm Dashboard and Analytics count
+   it as low stock.
+6. Open Edit, change a product field, and confirm the modal has its own attached
+   scrollbar plus a reachable **Save changes** button.
+7. Try uploading a non-PDF as a COA and a file over 2 MB. Both must be refused.
+8. Try deleting `zz. QA Category` while the product uses it. It must be refused.
+   Move the product, then confirm the empty category can be deleted.
 
 ## 3. Orders, stock and fulfilment
 
 1. In **Orders**, create a manual order for `zz.customer@example.com` with two
    units of the QA product, status `pending`.
-2. Expand **Detail** and verify the customer, address, line quantities, prices,
-   discount, shipping and total.
+2. Click **Detail**. It must open a separate scrollable popup, not expand the
+   orders table. Verify customer, address, line quantities, prices, discounts,
+   payment, attribution, notes, fulfilment, activity, shipping and totals.
 3. Return to **Products**. Stock must have fallen from `4` to `2`.
 4. Change the order to `paid`. Confirm one pending commission is generated if
    an agent owns it, and a row appears in **Fulfilment** at `queued`.
@@ -115,7 +138,11 @@ remove. Do not use real card information; no payment processor is connected.
 3. Confirm nobody can change their own role, status, permissions or supervisor.
 4. Confirm the last active super admin cannot be suspended, demoted or deleted.
 5. Open **Audit trail** and verify user, affiliate, claim, assignment,
-   commission and profile actions identify the actor without passwords.
+   commission, category and profile actions identify the actor without passwords.
+6. While signed out, request `/api/admin/products`, `/api/admin/categories`,
+   `/api/admin/users`, `/api/admin/audit`, and `/api/admin/system-health`.
+   Every request must be refused. A visible Admin login link must never weaken
+   these server-side checks.
 
 ## 11. Cleanup
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Pencil, FileText, FileX2, ImageOff, Plus, Trash2 } from 'lucide-react';
+import { Pencil, FileText, FileX2, ImageOff, Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { categories } from '@/data/categories';
 
 /**
@@ -20,17 +20,19 @@ interface Props {
   rows: Record<string, any>[];
   total: number;
   onEdit: (row: Record<string, any>) => void;
-  onPatch: (id: string, changes: Record<string, unknown>) => void;
+  onPatch: (id: string, changes: Record<string, unknown>) => Promise<void> | void;
   onDelete: (id: string) => void;
   onNew: () => void;
+  onRefresh: () => void;
 }
 
 const money = (n: unknown) => `$${Number(n ?? 0).toFixed(2)}`;
 
 const LOW_STOCK = 5;
 
-export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, onNew }: Props) {
+export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, onNew, onRefresh }: Props) {
   const [filter, setFilter] = useState('all');
+  const [stockDrafts, setStockDrafts] = useState<Record<string, number>>({});
 
   /** Categories that actually hold products, plus every one on offer. */
   const options = useMemo(() => {
@@ -111,19 +113,20 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
               <input
                 type="number"
                 min="0"
-                defaultValue={Number(p.stock_count ?? 0)}
-                onBlur={(e) => {
-                  const next = Number(e.target.value);
-                  if (Number.isFinite(next) && next !== Number(p.stock_count ?? 0)) {
-                    onPatch(p.id, { stock_count: next });
-                  }
-                }}
+                value={stockDrafts[p.id] ?? Number(p.stock_count ?? 0)}
+                onChange={(e) => setStockDrafts((prev) => ({ ...prev, [p.id]: Number(e.target.value) }))}
                 className={`w-16 border bg-brand-dark px-2 py-1 text-[0.8125rem] focus:outline-none ${
                   low
                     ? 'border-brand-accent text-brand-accentGlow'
                     : 'border-brand-border text-brand-heading focus:border-brand-accent'
                 }`}
               />
+              {stockDrafts[p.id] !== undefined && stockDrafts[p.id] !== Number(p.stock_count ?? 0) && (
+                <button onClick={async () => { await onPatch(p.id, { stock_count: stockDrafts[p.id] }); setStockDrafts((prev) => { const next = { ...prev }; delete next[p.id]; return next; }); }}
+                  className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 text-[0.6875rem] font-bold uppercase text-brand-heading hover:border-brand-accent">
+                  <Save className="h-3 w-3" /> Save
+                </button>
+              )}
               {low && <span className="eyebrow text-brand-accentGlow">low</span>}
             </div>
           </div>
@@ -194,6 +197,10 @@ export default function ProductsPanel({ rows, total, onEdit, onPatch, onDelete, 
           <span>{total} in the catalogue</span>
           {withoutImage > 0 && <span>{withoutImage} without a photo</span>}
           {withoutCoa > 0 && <span>{withoutCoa} without a certificate</span>}
+          <button
+            onClick={onRefresh}
+            className="inline-flex items-center gap-1.5 border border-brand-borderLight px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-body hover:border-brand-accent"
+          ><RefreshCw className="h-3 w-3" /> Refresh</button>
           <button
             onClick={onNew}
             className="inline-flex items-center gap-1.5 bg-brand-accent px-3 py-1.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"

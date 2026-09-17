@@ -358,6 +358,13 @@ anything hardcoded or weak.
       new-order notifications. Migration `0010_order_operations.sql` must be
       applied before the lifecycle automation is live. Manual QA checklist is
       in `docs/ADMIN-MANUAL-QA.md`.
+- [~] Admin QA feedback pass (2026-09-17): added a public Admin login link
+      without weakening server authorization; password visibility controls;
+      scrollable sidebar and dialogs; branded profile-save confirmation;
+      dedicated full order-detail dialog; explicit product Save/Refresh; and
+      editable product categories with storefront linkage. Production build and
+      TypeScript pass. Category management requires
+      `0011_product_categories.sql`; live/manual QA remains with the owner.
 
 ## Blocked — needs an account he has not opened
 - [!] Email (SMTP): no order confirmations, no enquiry notifications, campaigns

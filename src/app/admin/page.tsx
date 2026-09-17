@@ -14,6 +14,8 @@ import ManualOrderModal from '@/components/admin/ManualOrderModal';
 import CommissionsPanel from '@/components/admin/CommissionsPanel';
 import AnalyticsPanel from '@/components/admin/AnalyticsPanel';
 import SystemHealthPanel from '@/components/admin/SystemHealthPanel';
+import OrderDetailModal from '@/components/admin/OrderDetailModal';
+import CategoriesPanel from '@/components/admin/CategoriesPanel';
 import type { UploadKind } from '@/components/admin/UploadField';
 import { MODULES, type ModuleDef } from '@/lib/permissions';
 import {
@@ -59,6 +61,7 @@ const ICONS: Record<string, typeof LayoutDashboard> = {
   articles: FileText,
   analytics: BarChart3,
   system: History,
+  categories: Tag,
 };
 
 /**
@@ -75,7 +78,7 @@ const NOT_A_SECTION = new Set(['affiliates', 'my_team', 'my_link']);
  * not one: it has its own view but reads and writes through the generic
  * resource API, so it must keep a `resource`.
  */
-const CUSTOM = new Set(['home', 'analytics', 'storefront', 'users', 'audit', 'system', 'my_earnings', 'commissions']);
+const CUSTOM = new Set(['home', 'analytics', 'storefront', 'users', 'audit', 'system', 'categories', 'my_earnings', 'commissions']);
 
 const STATUS_OPTIONS: Record<string, string[]> = {
   status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
@@ -500,7 +503,7 @@ export default function AdminPage() {
   /* -------------------------------------------------------------- view --- */
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
-      <aside className="border-b border-brand-border bg-brand-card lg:w-56 lg:flex-shrink-0 lg:border-b-0 lg:border-r">
+      <aside className="border-b border-brand-border bg-brand-card lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:flex-shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
         <div className="border-b border-brand-border px-4 py-4">
           <div className="flex items-center justify-between">
             <span className="font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading">
@@ -525,7 +528,7 @@ export default function AdminPage() {
           </button>
         </div>
 
-        <nav className="flex overflow-x-auto lg:block lg:overflow-visible">
+        <nav className="flex overflow-x-auto lg:block lg:overflow-x-hidden">
           {sections.map((s) => {
             const Icon = ICONS[s.id] ?? Inbox;
             const on = s.id === section;
@@ -598,6 +601,9 @@ export default function AdminPage() {
 
         ) : active.id === 'system' ? (
           <SystemHealthPanel authedFetch={authedFetch} />
+
+        ) : active.id === 'categories' ? (
+          <CategoriesPanel authedFetch={authedFetch} />
 
         ) : active.id === 'storefront' ? (
           <StorefrontPanel authedFetch={authedFetch} />
@@ -682,6 +688,7 @@ export default function AdminPage() {
               onPatch={patch}
               onDelete={remove}
               onNew={() => openEditor(null)}
+              onRefresh={() => void load()}
             />
           ) : (
             <div className="border border-brand-border bg-brand-card p-12 text-center">
@@ -726,7 +733,7 @@ export default function AdminPage() {
                             {active.id === 'orders' && (
                               <button onClick={() => toggleOrderDetails(row)} title="Order detail"
                                 className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
-                                <ChevronDown className={`h-2.5 w-2.5 transition-transform ${expandedOrderId === row.id ? 'rotate-180' : ''}`} /> Detail
+                                <ChevronDown className="h-2.5 w-2.5 -rotate-90" /> Detail
                               </button>
                             )}
                             {data.editable.length > 0 && (
@@ -743,13 +750,6 @@ export default function AdminPage() {
                           </div>
                         </td>
                       </tr>
-                      {active.id === 'orders' && expandedOrderId === row.id && (
-                        <tr className="border-b border-brand-border/60 bg-brand-card/70">
-                          <td colSpan={visibleColumns(data).length + (data.ownership ? 2 : 1)} className="p-3 text-xs">
-                            {orderDetail(row)}
-                          </td>
-                        </tr>
-                      )}
                     </React.Fragment>
                   ))}
                 </tbody>
@@ -816,6 +816,16 @@ export default function AdminPage() {
           upload={upload}
           onCancel={() => setEditorRow(undefined)}
           onSubmit={save}
+        />
+      )}
+
+      {expandedOrderId && data && (
+        <OrderDetailModal
+          row={data.rows.find((row) => row.id === expandedOrderId) ?? { id: expandedOrderId }}
+          detail={orderDetails[expandedOrderId]}
+          error={orderDetailError}
+          onClose={() => setExpandedOrderId(null)}
+          onPatch={async (id, changes) => { await patch(id, changes); setOrderDetails((prev) => { const next = { ...prev }; delete next[id]; return next; }); setExpandedOrderId(null); }}
         />
       )}
     </div>
