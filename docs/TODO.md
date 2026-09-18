@@ -572,3 +572,23 @@ anything hardcoded or weak.
       separate edit-form definitions from their intentionally empty create
       forms. Orders expose status, tracking number, payment reference and
       internal notes without enabling manual creation through the generic API.
+
+## Analytics feedback pass (2026-09-19)
+
+- [x] Rebuilt Analytics exports as actual reports instead of one flattened
+      four-column table. Excel now has separate Overview, Sales, Traffic,
+      Clicks and taps, Products and Marketing sheets plus embedded charts; PDF
+      has branded section pages, charts and readable tables; CSV uses explicit
+      section and metric/value columns.
+- [x] Added privacy-safe click/tap tracking for storefront links and buttons.
+      Analytics now shows the most-used controls, pages with the most
+      interaction, mouse/touch/keyboard split, and a nine-zone page map. No
+      form values, screenshots or IP addresses are recorded. Interaction data
+      starts after deployment and still depends on migration 0018.
+- [x] Made charts more obvious in Analytics: existing revenue/visitor/order
+      time-series and bar/funnel charts remain, and device mix now has a clear
+      donut chart. Exported PDF and Excel reports include chart images.
+- [x] TypeScript and the production build pass. Static generation logged the
+      expected blocked-network fetch warnings in this sandbox, then completed
+      all 60 pages successfully. Browser QA of authenticated Analytics and the
+      downloaded files remains to be done after deployment with real data.

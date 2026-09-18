@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Download, Loader2, RefreshCw } from 'lucide-react';
-import { BarList, Card, Columns, Funnel, InfoTip, KpiGrid, LineChart, RangePicker, type RangeValue } from './insights/parts';
-import { KPI, formatKpi } from '@/lib/kpis';
-import { exportSheet, stamp, type SheetFormat } from '@/lib/sheetFiles';
+import { Download, Loader2, MousePointerClick, RefreshCw } from 'lucide-react';
+import { BarList, Card, Columns, DonutChart, Funnel, InfoTip, KpiGrid, LineChart, RangePicker, type RangeValue } from './insights/parts';
+import { formatKpi } from '@/lib/kpis';
+import { type SheetFormat } from '@/lib/sheetFiles';
+import { exportAnalyticsReport } from '@/lib/analyticsReport';
 
 /**
  * Analytics: how the business is doing over time, and why.
@@ -20,6 +21,7 @@ const SECTIONS = [
   { id: 'an-overview', label: 'Overview' },
   { id: 'an-sales', label: 'Sales' },
   { id: 'an-traffic', label: 'Visitors & sources' },
+  { id: 'an-interactions', label: 'Clicks & taps' },
   { id: 'an-funnel', label: 'Funnel' },
   { id: 'an-products', label: 'Products' },
   { id: 'an-marketing', label: 'Marketing' },
@@ -63,6 +65,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [menu, setMenu] = useState(false);
+  const [exporting, setExporting] = useState<SheetFormat | null>(null);
 
   const load = useCallback(async (r: RangeValue) => {
     setLoading(true); setError('');
@@ -97,25 +100,14 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
   const doExport = async (format: SheetFormat) => {
     setMenu(false);
     if (!data) return;
-    const rows: (string | number)[][] = [];
-    for (const [id, v] of Object.entries(kpis) as [string, { value: number | null; previous: number | null }][]) {
-      const def = KPI[id];
-      if (!def) continue;
-      rows.push(['Headline', def.label, formatKpi(v.value, def.format), v.previous === null ? '' : formatKpi(v.previous, def.format)]);
+    setExporting(format); setError('');
+    try {
+      await exportAnalyticsReport(format, data, period);
+    } catch (err) {
+      setError(`Could not create the ${format.toUpperCase()} report: ${(err as Error).message}`);
+    } finally {
+      setExporting(null);
     }
-    const table = (name: string, list?: { name: string; value: number }[]) => (list ?? []).forEach((r) => rows.push([name, r.name, r.value, '']));
-    table('Traffic source (visits)', (data.sources ?? []).map((s: any) => ({ name: `${s.name} (${s.medium})`, value: s.visits })));
-    table('Top pages (views)', data.topPages);
-    table('Devices (visits)', data.devices);
-    table('Cities (visits)', data.cities);
-    table('Sales by state ($)', data.salesByState);
-    (data.products ?? []).forEach((p: any) => rows.push(['Product', p.name, `${p.views} views · ${p.addToCarts} carts · ${p.units} sold`, `$${p.revenue}`]));
-    await exportSheet(format, {
-      filename: `analytics-${range.range}-${stamp()}`,
-      title: `Analytics — ${period}`,
-      headers: ['Section', 'Item', 'Value', `Before (${compare || 'n/a'})`],
-      rows,
-    }, `${period} · exported ${new Date().toLocaleString()}`);
   };
 
   return (
@@ -126,7 +118,10 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
         </button>
         <div className="relative">
-          <button type="button" className="btn-secondary" disabled={!data} onClick={() => setMenu((m) => !m)}><Download className="h-3.5 w-3.5" /> Export</button>
+          <button type="button" className="btn-secondary" disabled={!data || Boolean(exporting)} onClick={() => setMenu((m) => !m)}>
+            {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+            {exporting ? `Creating ${exporting.toUpperCase()}…` : 'Export report'}
+          </button>
           {menu && (
             <div className="absolute left-0 z-40 mt-1 w-40 border border-brand-border bg-brand-card py-1">
               {([['xlsx', 'Excel'], ['csv', 'CSV'], ['pdf', 'PDF report']] as const).map(([id, l]) => (
@@ -226,7 +221,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
                     <BarList rows={data.exitPages} labelFor={labelPage} empty="No visits yet." />
                   </Card>
                   <Card title="Devices" help="Phone, tablet or computer.">
-                    <BarList rows={data.devices} labelFor={(n) => n[0].toUpperCase() + n.slice(1)} />
+                    <DonutChart rows={data.devices} labelFor={(n) => n[0].toUpperCase() + n.slice(1)} centerLabel="Visits" />
                     <div className="mt-4"><BarList rows={data.newVsReturning} /></div>
                   </Card>
                   <Card title="Browsers" help="Which web browser visitors used.">
@@ -243,6 +238,28 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
                   </Card>
                   <Card title="Cities" help="Approximate city of each visit.">
                     <BarList rows={data.cities} empty="No location data yet." />
+                  </Card>
+                </div>
+              </Section>
+
+              <Section id="an-interactions" title="Clicks & taps" help="Privacy-safe interaction tracking for links and buttons. It never records what a customer types into a field.">
+                <div className="flex items-center gap-2 border border-brand-border bg-brand-card p-3 text-xs text-brand-body">
+                  <MousePointerClick className="h-4 w-4 flex-none text-brand-heading" />
+                  <strong className="font-display text-base text-brand-heading">{Number(data.interactionCount ?? 0).toLocaleString('en-US')}</strong>
+                  link and button interactions in this period. New interaction data starts collecting after this update is deployed.
+                </div>
+                <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                  <Card title="Most clicked controls" help="The exact link or button customers use most, grouped by page." className="lg:col-span-2">
+                    <InteractionsTable rows={data.topInteractions} labelPage={labelPage} />
+                  </Card>
+                  <Card title="Where on the page" help="The page is split into nine broad areas. This stays useful across phone and desktop sizes without recording screenshots.">
+                    <InteractionGrid rows={data.interactionZones} />
+                  </Card>
+                  <Card title="Pages with most interactions" help="Pages where customers clicked or tapped links and buttons most often.">
+                    <BarList rows={data.interactionPages} labelFor={labelPage} empty="No interactions collected yet." />
+                  </Card>
+                  <Card title="Mouse or touch" help="How the control was activated. Touch includes phone and tablet taps.">
+                    <BarList rows={data.interactionInputs} empty="No interactions collected yet." />
                   </Card>
                 </div>
               </Section>
@@ -316,6 +333,50 @@ function Section({ id, title, help, children }: { id: string; title: string; hel
 
 function PageNote({ children }: { children: React.ReactNode }) {
   return <p className="mb-3 text-[0.6875rem] leading-snug text-brand-textMuted">{children}</p>;
+}
+
+function InteractionsTable({ rows, labelPage }: { rows?: any[]; labelPage: (path: string) => string }) {
+  if (!rows?.length) return <p className="py-4 text-xs text-brand-textMuted">No clicks or taps collected yet.</p>;
+  const total = rows.reduce((sum, row) => sum + Number(row.value || 0), 0);
+  return (
+    <div className="max-h-80 overflow-auto pr-2">
+      <table className="w-full min-w-[34rem] text-left text-xs">
+        <thead className="sticky top-0 bg-brand-card text-brand-textMuted">
+          <tr><th className="py-1.5">Control</th><th>Page</th><th>Destination</th><th className="text-right">Clicks / taps</th></tr>
+        </thead>
+        <tbody>{rows.map((row, i) => (
+          <tr key={`${row.page}-${row.label}-${i}`} className="border-t border-brand-border/60">
+            <td className="max-w-[15rem] truncate py-1.5 font-semibold text-brand-heading" title={row.label}>{row.label}</td>
+            <td className="max-w-[14rem] truncate text-brand-body" title={labelPage(row.page)}>{labelPage(row.page)}</td>
+            <td className="max-w-[12rem] truncate text-brand-textMuted" title={row.href || ''}>{row.href || '—'}</td>
+            <td className="text-right font-mono text-brand-heading">{row.value}<span className="ml-1.5 text-brand-textMuted">{total ? Math.round((row.value / total) * 100) : 0}%</span></td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+}
+
+function InteractionGrid({ rows }: { rows?: { name: string; value: number }[] }) {
+  const map = new Map((rows ?? []).map((row) => [row.name, row.value]));
+  const zones = ['Top Left', 'Top Center', 'Top Right', 'Middle Left', 'Middle Center', 'Middle Right', 'Bottom Left', 'Bottom Center', 'Bottom Right'];
+  const max = Math.max(1, ...zones.map((zone) => map.get(zone) ?? 0));
+  const total = zones.reduce((sum, zone) => sum + (map.get(zone) ?? 0), 0);
+  if (!total) return <p className="py-4 text-xs text-brand-textMuted">No interactions collected yet.</p>;
+  return (
+    <div className="grid aspect-[4/3] grid-cols-3 gap-1 border border-brand-border bg-brand-dark p-1" aria-label="Interaction density by page area">
+      {zones.map((zone) => {
+        const value = map.get(zone) ?? 0;
+        const opacity = value ? 0.18 + (value / max) * 0.82 : 0;
+        return (
+          <div key={zone} className="flex flex-col items-center justify-center border border-brand-border bg-brand-card text-center" style={{ backgroundColor: value ? `rgb(31 66 51 / ${opacity})` : undefined }} title={`${zone}: ${value} interactions`}>
+            <span className={`text-[0.625rem] ${opacity > 0.55 ? 'text-cream' : 'text-brand-textMuted'}`}>{zone}</span>
+            <strong className={`font-mono text-xs ${opacity > 0.55 ? 'text-cream' : 'text-brand-heading'}`}>{value}</strong>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function SourcesTable({ rows }: { rows?: any[] }) {

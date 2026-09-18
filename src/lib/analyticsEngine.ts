@@ -301,11 +301,41 @@ export async function computeAnalytics(opts: EngineOptions) {
           { name: 'Returning visitors', value: cur.rows.filter((r) => r.is_returning).length },
         ];
 
-        const events = await pages((a, b) => within(db.from('analytics_events').select('event_name, path, product_slug, value'), 'created_at', w)
-          .in('event_name', ['page_view', 'product_view', 'checkout', 'add_to_cart']).range(a, b));
-        result.topPages = groupCount(events.rows.filter((e) => e.event_name !== 'add_to_cart'), (e) => String(e.path ?? '').split('?')[0]).slice(0, 20);
+        const [events, interactionEvents] = await Promise.all([
+          pages((a, b) => within(db.from('analytics_events').select('event_name, path, product_slug, value'), 'created_at', w)
+            .in('event_name', ['page_view', 'product_view', 'checkout', 'add_to_cart']).range(a, b)),
+          pages((a, b) => within(db.from('analytics_events').select('path, payload'), 'created_at', w)
+            .eq('event_name', 'interaction').range(a, b)),
+        ]);
+        result.topPages = groupCount(events.rows.filter((e) => ['page_view', 'product_view', 'checkout'].includes(e.event_name)), (e) => String(e.path ?? '').split('?')[0]).slice(0, 20);
         result.productViewsBySlug = groupCount(events.rows.filter((e) => e.event_name === 'product_view'), (e) => e.product_slug);
         result.addToCartBySlug = groupCount(events.rows.filter((e) => e.event_name === 'add_to_cart'), (e) => e.product_slug);
+
+        const interactions = interactionEvents.rows;
+        result.interactionPages = groupCount(interactions, (e) => String(e.path ?? '').split('?')[0]).slice(0, 15);
+        result.interactionZones = groupCount(interactions, (e) => {
+          const payload = e.payload && typeof e.payload === 'object' ? e.payload : {};
+          return String(payload.zone || 'Unknown');
+        });
+        result.interactionInputs = groupCount(interactions, (e) => {
+          const payload = e.payload && typeof e.payload === 'object' ? e.payload : {};
+          const input = String(payload.input || 'other');
+          return input === 'touch' ? 'Touch' : input === 'keyboard' ? 'Keyboard' : input === 'pen' ? 'Pen' : 'Mouse';
+        });
+        const targets = new Map<string, { label: string; page: string; href: string; element: string; value: number }>();
+        for (const event of interactions) {
+          const payload = event.payload && typeof event.payload === 'object' ? event.payload : {};
+          const page = String(event.path ?? '').split('?')[0] || '/';
+          const label = String(payload.label || payload.element || 'Unknown control').slice(0, 120);
+          const href = String(payload.href || '').slice(0, 200);
+          const element = String(payload.element || '').slice(0, 20);
+          const key = `${page}\n${label}\n${href}`;
+          const row = targets.get(key) ?? { label, page, href, element, value: 0 };
+          row.value += 1;
+          targets.set(key, row);
+        }
+        result.topInteractions = Array.from(targets.values()).sort((a, b) => b.value - a.value).slice(0, 30);
+        result.interactionCount = interactions.length;
       }
     }
   }

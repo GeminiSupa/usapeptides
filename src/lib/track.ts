@@ -41,7 +41,7 @@ export function sessionId() {
   }
 }
 
-export function track(type: 'page_view' | 'heartbeat' | 'add_to_cart' | 'cart', data: Record<string, unknown> = {}) {
+export function track(type: 'page_view' | 'heartbeat' | 'add_to_cart' | 'cart' | 'interaction', data: Record<string, unknown> = {}) {
   if (typeof window === 'undefined') return;
   if (location.pathname.startsWith('/admin')) return;
   const params = new URLSearchParams(location.search);

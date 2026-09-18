@@ -18,9 +18,10 @@ export const dynamic = 'force-dynamic';
  *   heartbeat     still here, every 30 seconds while the tab is visible
  *   add_to_cart   { slug, qty, value }
  *   cart          the whole cart, so abandoned carts can be followed up
+ *   interaction   a click/tap on a link or button (never a form value)
  */
 
-const EVENTS = new Set(['page_view', 'heartbeat', 'add_to_cart', 'cart']);
+const EVENTS = new Set(['page_view', 'heartbeat', 'add_to_cart', 'cart', 'interaction']);
 const ID = /^[A-Za-z0-9_-]{8,80}$/;
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lighthouse|pingdom|uptime|monitor|curl|wget|python|axios|node-fetch/i;
 
@@ -130,7 +131,14 @@ export async function POST(req: Request) {
       p_cart_value: cartValue,
     });
 
-    if (type === 'page_view' || type === 'add_to_cart') {
+    if (type === 'page_view' || type === 'add_to_cart' || type === 'interaction') {
+      const interaction = type === 'interaction' ? {
+        label: clip(body.label, 120),
+        element: clip(body.element, 20),
+        href: clip(body.href, 200),
+        input: ['mouse', 'touch', 'pen', 'keyboard'].includes(String(body.input)) ? String(body.input) : 'other',
+        zone: /^(Top|Middle|Bottom) (Left|Center|Right)$/.test(String(body.zone)) ? String(body.zone) : 'Unknown',
+      } : {};
       await db.from('analytics_events').insert({
         event_name: isProductView ? 'product_view' : isCheckout ? 'checkout' : type,
         session_id: sessionId,
@@ -139,7 +147,7 @@ export async function POST(req: Request) {
         referrer: type === 'page_view' ? clip(body.referrer, 500) || null : null,
         product_slug: productSlug || null,
         value: type === 'add_to_cart' && Number.isFinite(value) ? Math.round(value * 100) / 100 : null,
-        payload: { title: clip(body.title, 160), ...(type === 'add_to_cart' ? { qty } : {}) },
+        payload: { title: clip(body.title, 160), ...(type === 'add_to_cart' ? { qty } : {}), ...interaction },
       });
     }
 

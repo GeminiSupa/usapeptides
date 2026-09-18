@@ -319,6 +319,40 @@ export function Columns({ rows, labelFor, format = 'count' }: { rows?: { name: s
   );
 }
 
+/* ---------------------------------------------------------- Donut chart --- */
+
+export function DonutChart({ rows, labelFor, centerLabel = 'Total' }: {
+  rows?: { name: string; value: number }[]; labelFor?: (name: string) => string; centerLabel?: string;
+}) {
+  const list = (rows ?? []).filter((row) => row.value > 0);
+  const total = list.reduce((sum, row) => sum + row.value, 0);
+  if (!total) return <p className="py-4 text-xs text-brand-textMuted">Nothing yet.</p>;
+  let offset = 0;
+  return (
+    <div className="grid items-center gap-4 sm:grid-cols-[9rem_minmax(0,1fr)]">
+      <svg viewBox="0 0 120 120" className="mx-auto h-36 w-36" role="img" aria-label={`${centerLabel}: ${total.toLocaleString('en-US')}`}>
+        <circle cx="60" cy="60" r="43" fill="none" stroke="currentColor" strokeWidth="18" className="text-brand-dark" />
+        {list.map((row, index) => {
+          const length = (row.value / total) * 100;
+          const node = <circle key={row.name} cx="60" cy="60" r="43" fill="none" stroke="#1F4233" strokeOpacity={Math.max(.32, 1 - index * .14)} strokeWidth="18" pathLength="100" strokeDasharray={`${length} ${100 - length}`} strokeDashoffset={-offset} transform="rotate(-90 60 60)" />;
+          offset += length;
+          return node;
+        })}
+        <text x="60" y="57" textAnchor="middle" className="fill-brand-heading" fontSize="16" fontWeight="800">{total.toLocaleString('en-US')}</text>
+        <text x="60" y="72" textAnchor="middle" className="fill-brand-textMuted" fontSize="8">{centerLabel}</text>
+      </svg>
+      <div className="space-y-2">
+        {list.map((row, index) => (
+          <div key={row.name} className="flex items-center justify-between gap-3 text-xs">
+            <span className="flex min-w-0 items-center gap-2 text-brand-body"><span className="h-2.5 w-2.5 flex-none bg-forest" style={{ opacity: Math.max(.32, 1 - index * .14) }} /><span className="truncate">{labelFor ? labelFor(row.name) : row.name}</span></span>
+            <span className="font-mono text-brand-heading">{row.value.toLocaleString('en-US')} <span className="text-brand-textMuted">{Math.round((row.value / total) * 100)}%</span></span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Card({ title, help, children, className = '', action }: { title: string; help?: string; children: React.ReactNode; className?: string; action?: React.ReactNode }) {
   return (
     <section className={`border border-brand-border bg-brand-card p-4 ${className}`}>
