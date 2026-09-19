@@ -151,6 +151,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   name="firstName"
+                  autoComplete="given-name"
                   required
                   value={formData.firstName}
                   onChange={handleChange}
@@ -162,6 +163,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   name="lastName"
+                  autoComplete="family-name"
                   required
                   value={formData.lastName}
                   onChange={handleChange}
@@ -173,6 +175,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   name="institution"
+                  autoComplete="organization"
                   required
                   placeholder="e.g. BioResearch Labs LLC / University Chemistry Dept"
                   value={formData.institution}
@@ -185,6 +188,7 @@ export default function CheckoutPage() {
                 <input
                   type="email"
                   name="email"
+                  autoComplete="email"
                   required
                   value={formData.email}
                   onChange={handleChange}
@@ -196,6 +200,7 @@ export default function CheckoutPage() {
                 <input
                   type="tel"
                   name="phone"
+                  autoComplete="tel"
                   required
                   value={formData.phone}
                   onChange={handleChange}
@@ -218,6 +223,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   name="address"
+                  autoComplete="address-line1"
                   required
                   value={formData.address}
                   onChange={handleChange}
@@ -229,6 +235,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   name="city"
+                  autoComplete="address-level2"
                   required
                   value={formData.city}
                   onChange={handleChange}
@@ -240,6 +247,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   name="state"
+                  autoComplete="address-level1"
                   required
                   placeholder="e.g. CA, NY, TX"
                   value={formData.state}
@@ -252,6 +260,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   name="zip"
+                  autoComplete="postal-code"
                   required
                   value={formData.zip}
                   onChange={handleChange}
@@ -298,6 +307,8 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     name="cardNumber"
+                    autoComplete="cc-number"
+                    inputMode="numeric"
                     placeholder="4000 1234 5678 9010"
                     required
                     value={formData.cardNumber}
@@ -311,6 +322,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       name="cardExp"
+                      autoComplete="cc-exp"
                       placeholder="12/28"
                       required
                       value={formData.cardExp}
@@ -323,6 +335,8 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       name="cardCvc"
+                      autoComplete="cc-csc"
+                      inputMode="numeric"
                       placeholder="123"
                       required
                       value={formData.cardCvc}

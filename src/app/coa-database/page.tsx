@@ -101,7 +101,40 @@ export default function CoaDatabasePage() {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto border border-brand-border">
+        <>
+        {/* Phones: one card per lot instead of a table wider than the screen. */}
+        <ul className="space-y-2 md:hidden">
+          {rows.map((p) => (
+            <li key={p.id} className="border border-brand-border bg-brand-card p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <Link
+                    href={`/product/${p.slug}`}
+                    className="font-display text-xs font-extrabold text-brand-heading hover:text-brand-accentGlow"
+                  >
+                    {p.name}
+                  </Link>
+                  <span className="mt-0.5 block text-[0.625rem] text-brand-textMuted">{p.category}</span>
+                </div>
+                <span className="flex-none bg-brand-accent px-2 py-0.5 font-display text-[0.625rem] font-black text-brand-onAccent">
+                  {p.coa.purity}
+                </span>
+              </div>
+              <p className="mt-2 text-[0.6875rem] leading-relaxed text-brand-textMuted">
+                Lot <span className="font-mono text-brand-body">{p.coa.lotNumber}</span> · {p.coa.method} ·{' '}
+                {p.coa.lab} · <span className="font-mono">{p.coa.testDate}</span>
+              </p>
+              <button
+                onClick={() => setSelectedCOAProduct(p)}
+                className="mt-2 inline-flex min-h-10 w-full items-center justify-center gap-1.5 border border-brand-borderLight px-3 font-display text-[0.625rem] font-extrabold uppercase tracking-[0.1em] text-brand-heading transition-colors hover:border-brand-accent hover:text-brand-accentGlow"
+              >
+                <FileText className="h-3 w-3" />
+                View report
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden overflow-x-auto border border-brand-border md:block">
           <table className="w-full min-w-[52rem] border-collapse text-left">
             <thead>
               <tr className="border-b border-brand-border bg-brand-card">
@@ -159,6 +192,7 @@ export default function CoaDatabasePage() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <p className="text-[0.6875rem] leading-relaxed text-brand-textMuted">

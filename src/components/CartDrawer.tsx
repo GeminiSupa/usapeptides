@@ -133,8 +133,9 @@ export default function CartDrawer() {
                       </Link>
                       <button
                         onClick={() => removeFromCart(item.product.id)}
-                        className="text-brand-textMuted hover:text-red-600 p-1"
+                        className="-mr-2 -mt-2 flex h-10 w-10 flex-shrink-0 items-center justify-center text-brand-textMuted hover:text-red-600"
                         title="Remove item"
+                        aria-label="Remove item"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -151,7 +152,8 @@ export default function CartDrawer() {
                       <div className="flex items-center border border-brand-border rounded-lg bg-brand-darker overflow-hidden">
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                          className="px-2 py-1 text-brand-textMuted hover:text-brand-heading hover:bg-brand-card"
+                          aria-label="Decrease quantity"
+                          className="flex h-10 w-10 items-center justify-center text-brand-textMuted hover:text-brand-heading hover:bg-brand-card"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -160,7 +162,8 @@ export default function CartDrawer() {
                         </span>
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="px-2 py-1 text-brand-textMuted hover:text-brand-heading hover:bg-brand-card"
+                          aria-label="Increase quantity"
+                          className="flex h-10 w-10 items-center justify-center text-brand-textMuted hover:text-brand-heading hover:bg-brand-card"
                         >
                           <Plus className="w-3 h-3" />
                         </button>

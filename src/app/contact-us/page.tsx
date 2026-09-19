@@ -141,6 +141,7 @@ export default function ContactUsPage() {
                     <label className="text-xs text-brand-textMuted block mb-1">Your Name *</label>
                     <input
                       type="text"
+                      autoComplete="name"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -151,6 +152,7 @@ export default function ContactUsPage() {
                     <label className="text-xs text-brand-textMuted block mb-1">Email Address *</label>
                     <input
                       type="email"
+                      autoComplete="email"
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}

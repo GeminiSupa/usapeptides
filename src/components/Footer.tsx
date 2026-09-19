@@ -66,10 +66,10 @@ export default function Footer() {
         {/* Categories */}
         <div>
           <h4 className="eyebrow mb-4 text-brand-textMuted">Categories</h4>
-          <ul className="space-y-2.5 text-xs">
+          <ul className="space-y-0.5 text-xs sm:space-y-2.5">
             {categories.slice(0, 6).map((cat) => (
               <li key={cat.id}>
-                <Link href={`/category/${cat.slug}`} className="transition-colors hover:text-brand-accentGlow">
+                <Link href={`/category/${cat.slug}`} className="inline-block py-1.5 transition-colors hover:text-brand-accentGlow sm:py-0">
                   {cat.name}
                 </Link>
               </li>
@@ -80,7 +80,7 @@ export default function Footer() {
         {/* Navigation */}
         <div>
           <h4 className="eyebrow mb-4 text-brand-textMuted">Navigation</h4>
-          <ul className="space-y-2.5 text-xs">
+          <ul className="space-y-0.5 text-xs sm:space-y-2.5">
             {[
               { href: '/shop', label: 'All research peptides' },
               { href: '/coa-database', label: 'COA database' },
@@ -94,7 +94,7 @@ export default function Footer() {
               { href: '/affiliates', label: 'Affiliate portal' },
             ].map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="transition-colors hover:text-brand-accentGlow">
+                <Link href={item.href} className="inline-block py-1.5 transition-colors hover:text-brand-accentGlow sm:py-0">
                   {item.label}
                 </Link>
               </li>
@@ -159,7 +159,7 @@ export default function Footer() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="transition-colors hover:text-brand-accentGlow"
+                  className="inline-block py-2 transition-colors hover:text-brand-accentGlow sm:py-0"
                 >
                   {item.label}
                 </Link>

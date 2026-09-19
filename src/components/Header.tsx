@@ -91,7 +91,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
           <div className="ml-auto flex flex-shrink-0 items-center md:ml-0">
             <button
               onClick={onOpenSearch}
-              className="flex h-11 w-10 items-center justify-center text-brand-body hover:text-brand-heading md:hidden"
+              className="flex h-11 w-11 items-center justify-center text-brand-body hover:text-brand-heading md:hidden"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />

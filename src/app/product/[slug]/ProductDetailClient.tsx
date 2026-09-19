@@ -192,7 +192,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 <div className="flex items-center justify-between border border-brand-border bg-brand-dark sm:col-span-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-3 text-brand-textMuted transition-colors hover:text-brand-heading"
+                    className="flex min-h-11 min-w-11 items-center justify-center text-brand-textMuted transition-colors hover:text-brand-heading"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="h-4 w-4" />
@@ -200,7 +200,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                   <span className="font-mono text-sm font-bold text-brand-heading">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="p-3 text-brand-textMuted transition-colors hover:text-brand-heading"
+                    className="flex min-h-11 min-w-11 items-center justify-center text-brand-textMuted transition-colors hover:text-brand-heading"
                     aria-label="Increase quantity"
                   >
                     <Plus className="h-4 w-4" />
@@ -260,7 +260,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-shrink-0 border-b-2 pb-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors ${
+              className={`flex-shrink-0 border-b-2 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-colors ${
                 activeTab === tab.id
                   ? 'border-brand-accent text-brand-accentGlow'
                   : 'border-transparent text-brand-textMuted hover:text-brand-heading'

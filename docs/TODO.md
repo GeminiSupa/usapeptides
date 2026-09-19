@@ -44,6 +44,22 @@ something outside the code.
       bucket at a 2 MB cap.
 - [x] Full suite re-run after the migration: **38 passed, 0 failed.**
 
+## Storefront on mobile — 2026-09-20
+
+- [x] Form fields are 16px on phones so iPhone Safari no longer zooms the
+      page when a field is tapped (checkout, contact, sign-in, calculator,
+      newsletter). Checked on 20 pages at 375px.
+- [x] Micro-labels (10px, 0.625rem, 0.6875rem, eyebrows, chips) floor at
+      0.75rem on phones; they were 8.75-9.6px.
+- [x] Bigger tap targets: header search, product quantity +/-, product tabs,
+      wishlist hearts, cart drawer and cart page +/- and remove, footer links.
+- [x] COA database shows cards on phones instead of a sideways-scrolling table.
+- [x] Checkout and contact fields tell the phone what they are (autofill for
+      name, email, phone, address, card; number keypad for card and CVC).
+- [x] No storefront page is wider than the screen. Desktop unchanged.
+- [!] Owner: several product photos show "Peptides Costa Rica" on the vial
+      label. Replace them in Dashboard > Products.
+
 ## Dashboard on mobile — 2026-09-20
 
 - [x] Phones and tablets get a slim top bar (menu button, section name,

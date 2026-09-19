@@ -141,7 +141,8 @@ export default function CartPage() {
                       <div className="flex items-center border border-brand-border rounded-xl bg-brand-darker overflow-hidden">
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                          className="px-2.5 py-1.5 text-brand-textMuted hover:text-brand-heading"
+                          aria-label="Decrease quantity"
+                          className="flex h-10 w-10 items-center justify-center text-brand-textMuted hover:text-brand-heading"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -150,7 +151,8 @@ export default function CartPage() {
                         </span>
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="px-2.5 py-1.5 text-brand-textMuted hover:text-brand-heading"
+                          aria-label="Increase quantity"
+                          className="flex h-10 w-10 items-center justify-center text-brand-textMuted hover:text-brand-heading"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -168,8 +170,9 @@ export default function CartPage() {
 
                       <button
                         onClick={() => removeFromCart(item.product.id)}
-                        className="text-brand-textMuted hover:text-red-600 p-1.5"
+                        className="flex h-10 w-10 items-center justify-center text-brand-textMuted hover:text-red-600"
                         title="Remove"
+                        aria-label="Remove item"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

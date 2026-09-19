@@ -92,7 +92,7 @@ export default function ProductCard({ product, layout = 'tile' }: ProductCardPro
             <button
               onClick={() => toggleWishlist(product)}
               aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
-              className={`p-2 ${isFavorited ? 'text-brand-accentGlow' : 'text-brand-textMuted hover:text-brand-heading'}`}
+              className={`flex h-10 w-10 items-center justify-center ${isFavorited ? 'text-brand-accentGlow' : 'text-brand-textMuted hover:text-brand-heading'}`}
             >
               <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
             </button>
@@ -118,7 +118,7 @@ export default function ProductCard({ product, layout = 'tile' }: ProductCardPro
           toggleWishlist(product);
         }}
         aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
-        className={`absolute right-2 top-2 z-10 p-2 transition-colors ${
+        className={`absolute right-1 top-1 z-10 flex h-10 w-10 items-center justify-center transition-colors ${
           isFavorited ? 'text-brand-accentGlow' : 'text-brand-textMuted hover:text-brand-heading'
         }`}
       >

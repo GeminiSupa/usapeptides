@@ -242,6 +242,34 @@
 
 }
 
+/*
+ * Phones. Two problems the compact scale causes on a small touch screen:
+ *  - iOS Safari zooms the whole page when a field under 16px gets focus, so
+ *    every form field is 16px on a phone (the !important beats the text-xs
+ *    style utilities the fields carry for the desktop look).
+ *  - The 10px, 0.625rem and 0.6875rem micro-labels land at 8.75-10px on the
+ *    14px phone root, too small to read; they floor at 0.75rem there.
+ */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select {
+    min-height: 2.75rem;
+  }
+  .text-\[10px\],
+  .text-\[0\.625rem\],
+  .text-\[0\.6875rem\],
+  .eyebrow,
+  .field-label,
+  .chip {
+    font-size: 0.75rem;
+  }
+}
+
 /* Scrollbars in the brand palette: forest thumb on a cream track. */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: #f6f2e2; }
