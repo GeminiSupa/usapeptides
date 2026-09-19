@@ -31,7 +31,7 @@ export default function ShopPage() {
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
-        if (selectedCategory !== 'all' && p.categorySlug !== selectedCategory) {
+        if (selectedCategory !== 'all' && !(p.categorySlugs?.includes(selectedCategory) || p.categorySlug === selectedCategory)) {
           return false;
         }
         if (inStockOnly && !p.inStock) {
@@ -41,7 +41,7 @@ export default function ShopPage() {
           const q = searchQuery.toLowerCase();
           const matchName = p.name.toLowerCase().includes(q);
           const matchSku = p.sku.toLowerCase().includes(q);
-          const matchCat = p.category.toLowerCase().includes(q);
+          const matchCat = (p.categories ?? [p.category]).some((name) => name.toLowerCase().includes(q));
           const matchTag = p.tags.some((t) => t.toLowerCase().includes(q));
           if (!matchName && !matchSku && !matchCat && !matchTag) return false;
         }

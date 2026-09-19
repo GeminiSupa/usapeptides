@@ -66,6 +66,14 @@ export async function POST(req: Request) {
     if (me.is_superadmin) {
       const agentId = body.agent_id ? clip(body.agent_id, 60) : null;
 
+      if (resource === 'orders') {
+        const { data: order } = await db.from('orders').select('status, referred_by').eq('id', body.id).maybeSingle();
+        if (!order) return notFound('No such order.');
+        if (order.status === 'completed' && order.referred_by !== agentId) {
+          return badRequest('A completed order keeps its historical agent and commission. Change the customer owner for future orders instead.');
+        }
+      }
+
       if (agentId) {
         const { data: person, error } = await db
           .from('admin_users')
@@ -109,25 +117,31 @@ export async function POST(req: Request) {
       patch.agent_claimed_at = now;
     }
 
-    const { data, error } = await db
+    let claimQuery = db
       .from(target.table)
       .update(patch)
       .eq('id', body.id)
-      .is(target.column, null)
-      .select('id');
+      .is(target.column, null);
+    if (resource === 'orders') claimQuery = claimQuery.neq('status', 'completed');
+    const { data, error } = await claimQuery.select('id');
 
     if (error) return serverError(isMissingColumn(error) ? SETUP_MESSAGE : error.message);
 
     if (!data?.length) {
+      const select = resource === 'orders' ? 'referred_by, status' : 'owner_id';
       const { data: current } = await db
         .from(target.table)
-        .select(target.column)
+        .select(select)
         .eq('id', body.id)
         .maybeSingle();
 
       if (!current) return notFound(`No such ${target.label}.`);
 
-      const owner = (current as Record<string, string | null>)[target.column];
+      if (resource === 'orders' && (current as any).status === 'completed') {
+        return badRequest('A completed order cannot be claimed. A super admin must change its ownership.');
+      }
+
+      const owner = (current as any)[target.column] as string | null;
       if (owner === auth.admin.id) return ok({ id: body.id, owner, message: 'Already yours.' });
 
       // Deliberately no name: an agent has no business learning which colleague

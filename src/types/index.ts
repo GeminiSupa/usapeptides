@@ -4,6 +4,9 @@ export interface Product {
   slug: string;
   category: string;
   categorySlug: string;
+  /** Every storefront category this product appears in; categorySlug is primary. */
+  categorySlugs?: string[];
+  categories?: string[];
   price: number;
   salePrice?: number;
   inStock: boolean;

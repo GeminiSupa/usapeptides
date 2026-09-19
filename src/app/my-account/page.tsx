@@ -37,6 +37,7 @@ export default function MyAccountPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -50,7 +51,17 @@ export default function MyAccountPage() {
 
   useEffect(() => {
     if (!supabase) { setReady(true); return; }
-    supabase.auth.getSession().then(({ data }) => { setSession(data.session); setReady(true); });
+    const client = supabase;
+    client.auth.getSession().then(async ({ data }) => {
+      let next = data.session;
+      try {
+        const keep = localStorage.getItem('upd_customer_remember') !== '0';
+        const activeTab = sessionStorage.getItem('upd_customer_session_active') === '1';
+        if (next && !keep && !activeTab) { await client.auth.signOut(); next = null; }
+        if (next) sessionStorage.setItem('upd_customer_session_active', '1');
+      } catch { /* storage unavailable: keep Supabase's secure default */ }
+      setSession(next); setReady(true);
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -92,11 +103,16 @@ export default function MyAccountPage() {
         : authError.message);
       return;
     }
+    try {
+      localStorage.setItem('upd_customer_remember', remember ? '1' : '0');
+      sessionStorage.setItem('upd_customer_session_active', '1');
+    } catch { /* browser storage unavailable */ }
     setPassword('');
   };
 
   const signOut = async () => {
     await supabase?.auth.signOut();
+    try { localStorage.removeItem('upd_customer_remember'); sessionStorage.removeItem('upd_customer_session_active'); } catch { /* ignore */ }
     setProfile(null); setOrders([]);
   };
 
@@ -147,6 +163,10 @@ export default function MyAccountPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+            </label>
+            <label className="flex items-center gap-2 text-xs text-brand-body">
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 accent-forest" />
+              Keep me signed in on this browser
             </label>
             {error && <p className="border border-action/50 p-2.5 text-xs text-brand-body">{error}</p>}
             <button type="submit" disabled={busy} className="btn-primary w-full">
@@ -219,7 +239,7 @@ export default function MyAccountPage() {
                         <p className="text-xs text-brand-textMuted">{new Date(o.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="chip bg-brand-accent text-brand-onAccent">{o.status}</span>
+                        <span className="chip bg-brand-accent text-brand-onAccent">{o.status === 'completed' ? 'Order completed' : o.status}</span>
                         <span className="font-display text-sm font-bold text-brand-heading">{money(o.grand_total, o.currency)}</span>
                       </div>
                     </div>

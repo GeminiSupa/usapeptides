@@ -9,6 +9,12 @@
 const VISITOR_KEY = 'upd_vid';
 const SESSION_KEY = 'upd_sid';
 const IDLE_MS = 30 * 60_000;
+let customerAccessToken = '';
+
+/** Lets the tracker securely attach signed-in visits to a customer profile. */
+export function setTrackingCustomerToken(token?: string | null) {
+  customerAccessToken = String(token ?? '');
+}
 
 const newId = () => (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random().toString(36).slice(2)}`).replace(/[^A-Za-z0-9]/g, '');
 
@@ -48,7 +54,10 @@ export function track(type: 'page_view' | 'heartbeat' | 'add_to_cart' | 'cart' |
   try {
     fetch('/api/track', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(customerAccessToken ? { Authorization: `Bearer ${customerAccessToken}` } : {}),
+      },
       keepalive: true,
       body: JSON.stringify({
         type,

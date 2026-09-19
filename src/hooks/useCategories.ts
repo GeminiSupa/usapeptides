@@ -17,20 +17,31 @@ export function useCategories() {
   useEffect(() => {
     if (!supabase) return;
     void (async () => {
-      const [{ data, error }, { data: products }] = await Promise.all([
+      const [{ data, error }, { data: products }, memberships] = await Promise.all([
         supabase
           .from('product_categories')
           .select('id,name,slug,description')
           .eq('is_active', true)
           .order('sort_order')
           .order('name'),
-        supabase.from('products').select('category_slug').eq('is_active', true),
+        supabase.from('products').select('id,category_slug').eq('is_active', true),
+        supabase.from('product_category_assignments').select('product_id,category_id'),
       ]);
       if (error || !data?.length) return;
       const counts = new Map<string, number>();
-      for (const product of products ?? []) {
-        const slug = String(product.category_slug ?? '');
-        counts.set(slug, (counts.get(slug) ?? 0) + 1);
+      if (!memberships.error) {
+        const active = new Set((products ?? []).map((product) => product.id));
+        const slugById = new Map(data.map((category) => [category.id, category.slug]));
+        for (const membership of memberships.data ?? []) {
+          if (!active.has(membership.product_id)) continue;
+          const slug = slugById.get(membership.category_id);
+          if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1);
+        }
+      } else {
+        for (const product of products ?? []) {
+          const slug = String(product.category_slug ?? '');
+          counts.set(slug, (counts.get(slug) ?? 0) + 1);
+        }
       }
       setCategories(data.map((category) => toCategory(category, counts.get(category.slug) ?? 0)));
     })();

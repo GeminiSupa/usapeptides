@@ -31,6 +31,7 @@ const STATUS_COPY: Record<string, string> = {
   processing: 'Being prepared',
   shipped: 'In transit',
   delivered: 'Delivered',
+  completed: 'Order completed',
   cancelled: 'Cancelled',
   refunded: 'Refunded',
 };

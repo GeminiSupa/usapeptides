@@ -48,7 +48,28 @@ async function fetchCatalogue(): Promise<{ products: Product[]; source: Catalogu
     return { products: fallbackProducts, source: 'bundled' };
   }
 
-  return { products: mapDbProducts(data as unknown as DbProduct[]), source: 'database' };
+  const mapped = mapDbProducts(data as unknown as DbProduct[]);
+  const { data: memberships, error: membershipError } = await supabase
+    .from('product_category_assignments')
+    .select('product_id, product_categories(name,slug)');
+  if (membershipError) return { products: mapped, source: 'database' };
+
+  const byProduct = new Map<string, { names: string[]; slugs: string[] }>();
+  for (const membership of memberships ?? []) {
+    const category = (membership as any).product_categories;
+    if (!category?.slug) continue;
+    const entry = byProduct.get(membership.product_id) ?? { names: [], slugs: [] };
+    if (!entry.slugs.includes(category.slug)) entry.slugs.push(category.slug);
+    if (!entry.names.includes(category.name)) entry.names.push(category.name);
+    byProduct.set(membership.product_id, entry);
+  }
+  return {
+    products: mapped.map((product) => {
+      const assigned = byProduct.get(product.id);
+      return assigned ? { ...product, categorySlugs: assigned.slugs, categories: assigned.names } : product;
+    }),
+    source: 'database',
+  };
 }
 
 /** Drop the shared copy so the next read hits the database again. */

@@ -6,11 +6,59 @@ something outside the code.
 
 ## Migration status
 
+- [x] `supabase/migrations/0019_customer_ownership.sql` run and verified against
+      Supabase on 2026-09-19. It adds Order
+      completed, completion timestamps, durable customer ownership, legacy
+      ownership backfill, and atomic reassignment of open work.
 - [x] `supabase/migrations/0004_storefront.sql` run against the live project.
       Confirmed present: `site_settings`, `products.coa_url`,
       `products.sort_order`, `team_members.job_title`, and the `product-media`
       bucket at a 2 MB cap.
 - [x] Full suite re-run after the migration: **38 passed, 0 failed.**
+
+## Orders workflow — 2026-09-19
+
+- [~] Added the **Order completed** state. Commission is generated at
+      completion, and completed orders cannot be claimed or have their
+      historical agent silently changed.
+- [~] Sales agents see their own orders/customers plus unassigned incomplete
+      work, never another agent's customers. They can claim only unassigned,
+      incomplete orders.
+- [~] Returning customers keep the original agent who completed their first
+      owned order. A super admin can make a confirmed owner correction from
+      either the customer profile or the sales-agent profile; open work moves,
+      historical commission records do not.
+- [~] Replaced the separate order Edit action and instant-saving fields with
+      one editable Details screen. The Save changes button activates only when
+      the draft changes and opens a sensitive-change confirmation. Tracking
+      number, payment reference, notes, status and (super admin only) agent are
+      saved together.
+- [~] Customer profiles now include order/product history, linked page and
+      product-view history, CRM activity, and storefront sign-in status.
+      Customer sign-in already uses browser credential autocomplete; a Remember
+      me choice now controls whether the session survives closing the browser.
+- [ ] Do role-based browser QA against the live
+      database (super admin, two agents, unassigned customer, returning
+      customer, completed commission and tracking-number save).
+
+## Products and categories — 2026-09-19
+
+- [x] The standalone Fulfilment dashboard tab was retained after the owner
+      changed the request. Its operational data remains available there and
+      inside order details.
+- [~] Reworked Products into a clearer catalogue workspace with health cards,
+      larger product cards, stronger hierarchy, category labels, search,
+      filters and list/tile views.
+- [~] Categories can manage their products directly. Migration
+      `0020_product_category_assignments.sql` adds secondary category
+      memberships while preserving each product's existing primary category.
+      Assigning a product that already belongs elsewhere produces a specific
+      warning; the admin can go back or explicitly choose **Add anyway**.
+- [x] Migration `0020` run and its table/columns verified against Supabase on
+      2026-09-19.
+- [ ] Verify primary/secondary category membership
+      on the Categories screen, category storefront pages, Shop filters and
+      the COA database.
 
 ## Today's scope: products + team + storefront linkage
 
@@ -560,11 +608,11 @@ anything hardcoded or weak.
 - [x] Fixed: carts were never saved, so Abandoned carts was always empty. The
       tracker now saves them (keyed by visitor) and marks them recovered on
       purchase; checkout email remembered for follow-up.
-- [ ] **Owner to run `0018_visitor_analytics.sql`.** Until then visitor numbers
-      are hidden and the page says so.
+- [x] `0018_visitor_analytics.sql` run by the owner and its visitor-session
+      schema verified through Supabase on 2026-09-19.
 - [x] Verified: both APIs return for every range (2–4s from here; Vercel is
       nearer the database). Screens checked with sample data, page deleted.
-      Build clean. Not yet verified: real tracking rows (needs 0018).
+      Build clean. Real tracking rows begin accumulating after deployment.
 
 ## Order editor fix (2026-09-17)
 
@@ -584,7 +632,7 @@ anything hardcoded or weak.
       Analytics now shows the most-used controls, pages with the most
       interaction, mouse/touch/keyboard split, and a nine-zone page map. No
       form values, screenshots or IP addresses are recorded. Interaction data
-      starts after deployment and still depends on migration 0018.
+      starts after deployment; migration 0018 is now present.
 - [x] Made charts more obvious in Analytics: existing revenue/visitor/order
       time-series and bar/funnel charts remain, and device mix now has a clear
       donut chart. Exported PDF and Excel reports include chart images.

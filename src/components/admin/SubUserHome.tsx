@@ -126,7 +126,7 @@ export default function SubUserHome({ authedFetch, me }: Props) {
               Your earnings
             </h3>
             <p className="mt-2 text-[0.8125rem] leading-relaxed text-brand-textMuted">
-              {earningsError || (!earnings ? 'Loading earnings...' : 'Commission is recorded when an attributed order is marked paid.')}
+              {earningsError || (!earnings ? 'Loading earnings...' : 'Commission is recorded when an attributed order is marked Order completed.')}
             </p>
           </div>
         </div>

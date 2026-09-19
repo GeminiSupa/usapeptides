@@ -30,7 +30,7 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
     notFound();
   }
 
-  const categoryProducts = products.filter((p) => p.categorySlug === category.slug);
+  const categoryProducts = products.filter((p) => p.categorySlugs?.includes(category.slug) || p.categorySlug === category.slug);
 
   return (
     <div className="shell py-10 space-y-8">

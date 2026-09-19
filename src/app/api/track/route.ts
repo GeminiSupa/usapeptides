@@ -86,6 +86,16 @@ export async function POST(req: Request) {
   const db = getSupabaseAdmin();
 
   try {
+    let customerId: string | null = null;
+    const bearer = req.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
+    if (bearer) {
+      const { data: authData } = await db.auth.getUser(bearer);
+      if (authData.user) {
+        const { data: customer } = await db.from('customer_profiles').select('id').eq('user_id', authData.user.id).maybeSingle();
+        customerId = customer?.id ?? null;
+      }
+    }
+
     // First contact creates the visit.
     if (type === 'page_view') {
       const { data: existing } = await db.from('visitor_sessions').select('session_id').eq('session_id', sessionId).maybeSingle();
@@ -111,6 +121,13 @@ export async function POST(req: Request) {
           is_returning: (before ?? 0) > 0,
         });
       }
+    }
+
+    // A session may have started before sign-in. Attach it as soon as a valid
+    // customer token appears; the service-role client still verifies the JWT.
+    if (customerId) {
+      await db.from('visitor_sessions').update({ customer_id: customerId })
+        .eq('session_id', sessionId).eq('visitor_id', visitorId);
     }
 
     const productSlug = pathname.startsWith('/product/') ? clip(pathname.slice(9), 120) : type === 'add_to_cart' ? clip(body.slug, 120) : null;

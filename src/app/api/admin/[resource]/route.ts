@@ -76,10 +76,19 @@ const NOT_YOURS = 'You can only change records that are yours. Claim it first.';
  * than stored so a customer and their orders can never belong to two people.
  */
 async function agentCustomerEmails(db: ReturnType<typeof getSupabaseAdmin>, agentId: string): Promise<string[]> {
-  const { data } = await db.from('orders').select('email').eq('referred_by', agentId).limit(5000);
+  const { data } = await db.from('orders').select('email')
+    .or(`referred_by.eq.${agentId},and(referred_by.is.null,status.neq.completed)`).limit(5000);
   return Array.from(
     new Set((data ?? []).map((r: { email?: string }) => String(r.email ?? '').toLowerCase()).filter(Boolean))
   );
+}
+
+/** Customer ids visible to an agent after 0019: theirs plus not yet owned. */
+async function agentCustomerIds(db: ReturnType<typeof getSupabaseAdmin>, agentId: string): Promise<string[] | null> {
+  const { data, error } = await db.from('customer_profiles').select('id')
+    .or(`owner_id.is.null,owner_id.eq.${agentId}`).limit(5000);
+  if (error) return null; // pre-0019 fallback below
+  return (data ?? []).map((row: { id: string }) => row.id);
 }
 
 /** Who can be shown as, or assigned as, the owner of a record. */
@@ -167,9 +176,11 @@ export async function GET(req: Request, { params }: { params: { resource: string
 
   try {
     let emails: string[] | null = null;
+    let customerIds: string[] | null = null;
     if (agent && params.resource === 'customers') {
-      emails = await agentCustomerEmails(db, auth.admin.id);
-      if (emails.length === 0) return respond([], 0, false, []);
+      customerIds = await agentCustomerIds(db, auth.admin.id);
+      if (customerIds === null) emails = await agentCustomerEmails(db, auth.admin.id);
+      if (customerIds?.length === 0 || emails?.length === 0) return respond([], 0, false, []);
     }
 
     const build = (select: string) => {
@@ -190,9 +201,12 @@ export async function GET(req: Request, { params }: { params: { resource: string
 
       // A second or() is ANDed with the search above, not merged into it.
       if (agent && own) {
-        query = query.or(`${own.column}.is.null,${own.column}.eq.${auth.admin.id}`);
+        query = params.resource === 'orders'
+          ? query.or(`and(${own.column}.is.null,status.neq.completed),${own.column}.eq.${auth.admin.id}`)
+          : query.or(`${own.column}.is.null,${own.column}.eq.${auth.admin.id}`);
       }
       if (emails) query = query.in('email', emails);
+      if (customerIds) query = query.in('id', customerIds);
 
       return query;
     };
@@ -394,10 +408,20 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
   const own = OWNERSHIP[params.resource];
 
   try {
+    if (agent && params.resource === 'orders') {
+      const { data: current } = await db.from('orders').select('status, referred_by').eq('id', body.id).maybeSingle();
+      if (!current || current.referred_by !== auth.admin.id) return notFound(NOT_YOURS);
+      if (current.status === 'completed') return badRequest('A completed order is locked. Ask a super admin to make any correction.');
+    }
+
     if (agent && params.resource === 'customers') {
-      const { data: customer } = await db.from(config.table).select('email').eq('id', body.id).maybeSingle();
-      const emails = await agentCustomerEmails(db, auth.admin.id);
-      if (!customer || !emails.includes(String((customer as { email?: string }).email ?? '').toLowerCase())) {
+      const ownerResult = await db.from(config.table).select('email, owner_id').eq('id', body.id).maybeSingle();
+      const customer = ownerResult.error
+        ? (await db.from(config.table).select('email').eq('id', body.id).maybeSingle()).data
+        : ownerResult.data;
+      const owned = !ownerResult.error && customer && (customer as { owner_id?: string | null }).owner_id === auth.admin.id;
+      const emails = ownerResult.error ? await agentCustomerEmails(db, auth.admin.id) : [];
+      if (!customer || (!owned && !emails.includes(String((customer as { email?: string }).email ?? '').toLowerCase()))) {
         return notFound(NOT_YOURS);
       }
     }
@@ -411,13 +435,13 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
     if (error) return serverError(migrationHint(error) ?? error.message);
     if (!data) return notFound(agent && own ? NOT_YOURS : 'No row with that id.');
 
-    if (params.resource === 'orders' && update.status === 'paid') {
+    if (params.resource === 'orders' && update.status === 'completed') {
       const commissionError = await generateCommissionsForOrder(db, body.id);
       if (commissionError) {
         return serverError(
           /sales_commissions|schema cache|does not exist/i.test(commissionError)
-            ? 'The order was marked paid, but earnings need migration 0008_commissions.sql. Run it in Supabase, then mark the order paid again.'
-            : `The order was marked paid, but its commission could not be recorded: ${commissionError}`
+            ? 'The order was completed, but earnings need migration 0008_commissions.sql. Run it in Supabase, then save Order completed again.'
+            : `The order was completed, but its commission could not be recorded: ${commissionError}`
         );
       }
     }

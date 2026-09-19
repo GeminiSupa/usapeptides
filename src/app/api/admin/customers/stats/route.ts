@@ -30,7 +30,9 @@ export async function GET(req: Request) {
         .select('email, grand_total, status, created_at')
         .order('created_at', { ascending: false })
         .range(from, from + 999);
-      if (isSalesAgent(auth.admin.profile)) query = query.eq('referred_by', auth.admin.id);
+      if (isSalesAgent(auth.admin.profile)) {
+        query = query.or(`referred_by.eq.${auth.admin.id},and(referred_by.is.null,status.neq.completed)`);
+      }
 
       const { data, error } = await query;
       if (error) return serverError(error.message);

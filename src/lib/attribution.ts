@@ -10,13 +10,15 @@ import { normalizeReferralCode } from './referralCodes';
  * says an order is worth or who it belongs to. The browser may only pass the
  * referral code it was given in a link.
  *
- *   1. referral link    the code belongs to an active agent or sub-user
- *   2. customer history this email ordered before, and that order belongs to
- *                       somebody still active — the customer stays with them
- *   3. nothing          the order arrives unclaimed, for an agent to claim
+ *   1. customer owner   a completed first order permanently attached this
+ *                       customer to an active agent (0019)
+ *   2. referral link    for a customer who does not have an owner yet
+ *   3. legacy history   preserves ownership before 0019 is applied
+ *   4. nothing          the order arrives unclaimed, for an agent to claim
  *
- * The link wins over history, as in the reference project: a customer who
- * deliberately used a new agent's link is that agent's sale.
+ * A durable customer owner wins over a new referral link. This prevents a
+ * returning customer from being moved between agents without the explicit,
+ * confirmed super-admin reassignment workflow.
  *
  * Never throws and never blocks a sale. On a database that has not had
  * 0007_sales_agents.sql, every lookup below fails quietly and the order saves
@@ -51,6 +53,27 @@ export async function resolveOrderAttribution(
   { ref, email }: { ref?: unknown; email?: string | null }
 ): Promise<Attribution | null> {
   try {
+    const address = String(email ?? '').trim().toLowerCase();
+    let durableOwnershipReady = false;
+    if (address) {
+      const { data: customer, error: customerError } = await db
+        .from('customer_profiles')
+        .select('owner_id, owner_source')
+        .eq('email', address)
+        .maybeSingle();
+      durableOwnershipReady = !customerError;
+      if (customer?.owner_id) {
+        const { data: owner } = await db
+          .from('admin_users')
+          .select('id, role, tier, status')
+          .eq('id', customer.owner_id)
+          .maybeSingle();
+        if (isCreditable(owner)) {
+          return { referred_by: owner.id, affiliate_id: null, agent_source: 'customer_history', referral_code: null };
+        }
+      }
+    }
+
     const code = normalizeReferralCode(ref);
     if (code) {
       const { data: affiliate } = await db
@@ -80,7 +103,12 @@ export async function resolveOrderAttribution(
       }
     }
 
-    const address = String(email ?? '').trim().toLowerCase();
+    // Once migration 0019 is present, a null owner is a deliberate durable
+    // state. Do not let legacy order history silently restore an agent whom a
+    // super admin explicitly removed. A valid referral above may still own the
+    // new order and become the customer owner when that order is completed.
+    if (durableOwnershipReady) return null;
+
     if (address) {
       // Orders store the address lower-cased (see /api/orders), so eq is exact.
       const { data: first } = await db

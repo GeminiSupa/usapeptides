@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Copy, Download, KeyRound, Loader2, Mail, MessageCircle, Pencil, Phone, Plus, QrCode,
+  Copy, Download, History, KeyRound, Loader2, Mail, MessageCircle, Pencil, Phone, Plus, QrCode,
   RefreshCw, Search, Trash2, UserCheck, X,
 } from 'lucide-react';
 import RecordEditor, { type FieldDef } from './RecordEditor';
@@ -11,6 +11,7 @@ import type { UploadKind } from './UploadField';
 import { BUSINESS } from '@/lib/env';
 import { cleanWhatsAppNumber, isValidWhatsAppNumber } from '@/lib/whatsapp';
 import { exportSheet, stamp, type SheetFormat } from '@/lib/sheetFiles';
+import CustomerDetailModal from './CustomerDetailModal';
 
 /**
  * Customers: everyone who has ordered or been added by hand.
@@ -61,6 +62,7 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
   const [login, setLogin] = useState<Record<string, any> | null>(null);
   const [qr, setQr] = useState<QrTarget | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const load = useCallback(async (q = '') => {
     setLoading(true); setError('');
@@ -280,6 +282,10 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                         )}
+                        <button onClick={() => setDetailId(row.id)} title="Customer profile and history"
+                          className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
+                          <History className="h-3.5 w-3.5" />
+                        </button>
                         {meta.deletable && (
                           <button onClick={() => void remove(row)} title="Delete customer"
                             className={`${iconButton} border-brand-borderLight text-brand-textMuted hover:border-action hover:text-action`}>
@@ -324,6 +330,7 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
       )}
 
       {qr && <QrCodeModal target={qr} onClose={() => setQr(null)} />}
+      {detailId && <CustomerDetailModal customerId={detailId} authedFetch={authedFetch} isAgent={isAgent} onClose={() => setDetailId(null)} onChanged={() => void load(query)} />}
     </div>
   );
 }

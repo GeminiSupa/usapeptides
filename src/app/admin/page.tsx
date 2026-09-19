@@ -90,7 +90,7 @@ const CUSTOM = new Set(['home', 'articles', 'analytics', 'storefront', 'users', 
 const SELF_TOOLBAR = new Set(['products']);
 
 const STATUS_OPTIONS: Record<string, string[]> = {
-  status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
+  status_orders: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'],
   status_inquiries: ['new', 'open', 'answered', 'closed'],
   status_leads: ['new', 'working', 'qualified', 'lost', 'converted'],
   status_commissions: ['pending', 'approved', 'paid', 'void'],
@@ -262,14 +262,15 @@ export default function AdminPage() {
   useEffect(() => { void load(); /* eslint-disable-next-line */ }, [token, section, me]);
 
   const patch = async (id: string, changes: Record<string, unknown>) => {
-    if (!resource) return;
+    if (!resource) return false;
     try {
       const res = await authedFetch(`/api/admin/${resource}`, {
         method: 'PATCH', body: JSON.stringify({ id, changes }),
       });
-      if (!res.ok) { const p = await res.json().catch(() => null); setError(p?.message ?? 'Update failed.'); return; }
+      if (!res.ok) { const p = await res.json().catch(() => null); setError(p?.message ?? 'Update failed.'); return false; }
       void load();
-    } catch { /* surfaced */ }
+      return true;
+    } catch { return false; }
   };
 
   const remove = async (id: string) => {
@@ -284,7 +285,7 @@ export default function AdminPage() {
 
   /** Claim for yourself, or (super admin) assign to someone / clear with null. */
   const claim = async (id: string, agentId?: string | null) => {
-    if (!resource) return;
+    if (!resource) return false;
     setError('');
     try {
       const res = await authedFetch('/api/admin/claim', {
@@ -294,9 +295,30 @@ export default function AdminPage() {
       if (!res.ok) {
         const p = await res.json().catch(() => null);
         setError(p?.message ?? 'Could not claim that.');
+        return false;
       }
       void load();
-    } catch { /* surfaced */ }
+      return true;
+    } catch { return false; }
+  };
+
+  const saveOrderDetail = async (id: string, changes: Record<string, unknown>, ownerId?: string | null) => {
+    setError('');
+    try {
+      const res = await authedFetch(`/api/admin/orders/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ changes, confirmed: true, ...(ownerId !== undefined ? { owner_id: ownerId } : {}) }),
+      });
+      const p = await res.json().catch(() => null);
+      if (!res.ok) { setError(p?.message ?? 'Could not save the order.'); return false; }
+      setOrderDetails((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      setExpandedOrderId(null);
+      void load();
+      return true;
+    } catch {
+      setError('Could not save the order.');
+      return false;
+    }
   };
 
   const toggleOrderDetails = async (row: Record<string, any>) => {
@@ -421,17 +443,12 @@ export default function AdminPage() {
     const owner = (row[own.column] as string | null) ?? null;
 
     if (own.canAssign) {
-      return (
-        <select value={owner ?? ''} onChange={(e) => claim(row.id, e.target.value || null)}
-          className="border border-brand-border bg-brand-dark px-2 py-1 text-[0.8125rem] text-brand-heading focus:border-brand-accent focus:outline-none">
-          <option value="">Unclaimed</option>
-          {own.people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          {owner && !own.people.some((p) => p.id === owner) && <option value={owner}>Former agent</option>}
-        </select>
-      );
+      return owner
+        ? <span>{own.people.find((p) => p.id === owner)?.name ?? 'Former agent'}</span>
+        : <span className="text-brand-textMuted">Unassigned</span>;
     }
     if (!owner) {
-      return own.canClaim ? (
+      return own.canClaim && row.status !== 'completed' ? (
         <button onClick={() => claim(row.id)}
           className="bg-brand-accent px-2.5 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover">
           Claim
@@ -655,7 +672,7 @@ export default function AdminPage() {
             total={data.total}
             authedFetch={authedFetch}
             onEdit={(row) => openEditor(row)}
-            onPatch={patch}
+            onPatch={(id, changes) => { void patch(id, changes); }}
             onDelete={remove}
             onNew={() => openEditor(null)}
             onRefresh={() => void load()}
@@ -682,7 +699,7 @@ export default function AdminPage() {
                     <React.Fragment key={row.id}>
                       <tr className="border-b border-brand-border/60 last:border-b-0 hover:bg-brand-card">
                         {visibleColumns(data).map((k) => (
-                          <td key={k} className="whitespace-nowrap px-3 py-2.5 text-brand-body">{cell(row, k, data.editable)}</td>))}
+                          <td key={k} className="whitespace-nowrap px-3 py-2.5 text-brand-body">{cell(row, k, active.id === 'orders' ? [] : data.editable)}</td>))}
                         {data.ownership && (
                           <td className="whitespace-nowrap px-3 py-2.5 text-brand-body">{ownerCell(row, data.ownership)}</td>
                         )}
@@ -694,7 +711,7 @@ export default function AdminPage() {
                                 <ChevronDown className="h-2.5 w-2.5 -rotate-90" /> Detail
                               </button>
                             )}
-                            {data.editable.length > 0 && (
+                            {active.id !== 'orders' && data.editable.length > 0 && (
                               <button onClick={() => openEditor(row)} title="Edit"
                                 className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
                                 <Pencil className="h-2.5 w-2.5" /> Edit
@@ -713,9 +730,7 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-[0.75rem] leading-relaxed text-brand-textMuted">
-              Toggles and dropdowns save immediately. Edit opens the full record.
-            </p>
+            {active.id !== 'orders' && <p className="mt-3 text-[0.75rem] leading-relaxed text-brand-textMuted">Use Edit to review and save changes.</p>}
           </>
 
         ) : (
@@ -782,8 +797,9 @@ export default function AdminPage() {
           row={data.rows.find((row) => row.id === expandedOrderId) ?? { id: expandedOrderId }}
           detail={orderDetails[expandedOrderId]}
           error={orderDetailError}
+          ownership={data.ownership}
           onClose={() => setExpandedOrderId(null)}
-          onPatch={async (id, changes) => { await patch(id, changes); setOrderDetails((prev) => { const next = { ...prev }; delete next[id]; return next; }); setExpandedOrderId(null); }}
+          onSave={saveOrderDetail}
         />
       )}
     </div>

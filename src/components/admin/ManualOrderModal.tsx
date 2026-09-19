@@ -233,7 +233,7 @@ export default function ManualOrderModal({ authedFetch, onCancel, onSaved }: Pro
                 onChange={(e) => setFields((prev) => ({ ...prev, status: e.target.value }))}
                 className="w-full border border-brand-border bg-brand-dark px-3 py-2 text-brand-heading outline-none focus:border-brand-accent"
               >
-                {['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'].map((s) => <option key={s} value={s}>{s}</option>)}
+                {['pending', 'paid', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'].map((s) => <option key={s} value={s}>{s === 'completed' ? 'Order completed' : s}</option>)}
               </select>
             </label>
 

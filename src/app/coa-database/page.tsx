@@ -25,7 +25,7 @@ export default function CoaDatabasePage() {
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     return products
-      .filter((p) => (category === 'all' ? true : p.categorySlug === category))
+      .filter((p) => (category === 'all' ? true : p.categorySlugs?.includes(category) || p.categorySlug === category))
       .filter((p) => {
         if (!q) return true;
         return (

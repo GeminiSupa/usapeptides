@@ -23,7 +23,7 @@ export const KPIS: KpiDef[] = [
   { id: 'revenue', label: 'Revenue', format: 'money', section: 'orders',
     help: 'Money from orders placed in this period, not counting pending (unpaid), cancelled or refunded orders. Includes shipping, after discounts.' },
   { id: 'orders', label: 'Paid orders', format: 'count', section: 'orders',
-    help: 'Orders placed in this period that are paid or further along (processing, shipped, delivered). Unpaid and cancelled orders are not counted.' },
+    help: 'Orders placed in this period that are paid or further along (processing, shipped, delivered or completed). Unpaid and cancelled orders are not counted.' },
   { id: 'aov', label: 'Average order', format: 'money', section: 'orders',
     help: 'Revenue divided by paid orders — how much a typical customer spends per order.' },
   { id: 'pendingOrders', label: 'Awaiting payment', format: 'count', section: 'orders',

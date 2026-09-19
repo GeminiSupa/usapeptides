@@ -29,7 +29,7 @@ export interface EngineOptions {
   light?: boolean;
 }
 
-const PAID = new Set(['paid', 'processing', 'shipped', 'delivered']);
+const PAID = new Set(['paid', 'processing', 'shipped', 'delivered', 'completed']);
 const LOST = new Set(['cancelled', 'refunded']);
 const ROW_CAP = 20_000;
 const LIVE_MS = 5 * 60_000;

@@ -11,6 +11,7 @@ import PasswordModal from './PasswordModal';
 import AffiliatesTab from './AffiliatesTab';
 import CustomersPanel from './CustomersPanel';
 import QrCodesTab from './QrCodesTab';
+import AgentCustomersModal from './AgentCustomersModal';
 import type { UploadKind } from './UploadField';
 
 /**
@@ -81,6 +82,7 @@ export default function UsersPanel({ authedFetch, isOwner, upload }: Props) {
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState('');
+  const [customerAgentId, setCustomerAgentId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -281,6 +283,13 @@ export default function UsersPanel({ authedFetch, isOwner, upload }: Props) {
             >
               <Pencil className="h-2.5 w-2.5" /> Edit
             </button>
+
+            {(u as any).role === 'sales_agent' && (
+              <button onClick={() => setCustomerAgentId(u.id)}
+                className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
+                <UsersIcon className="h-2.5 w-2.5" /> Customers
+              </button>
+            )}
 
             {u.status === 'pending' ? (
               <button
@@ -486,6 +495,7 @@ export default function UsersPanel({ authedFetch, isOwner, upload }: Props) {
           onSubmit={submitSecret}
         />
       )}
+      {customerAgentId && <AgentCustomersModal agentId={customerAgentId} authedFetch={authedFetch} onClose={() => setCustomerAgentId(null)} />}
     </div>
   );
 }

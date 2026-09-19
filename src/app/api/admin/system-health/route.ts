@@ -14,9 +14,12 @@ export async function GET(req:Request){
   ['CRM','crm_activity','id,subject_type'],['Notifications','admin_notifications','id,is_read'],
   ['Notification read state','admin_notification_reads','admin_user_id,notification_id'],
   ['Order/customer CRM sync','orders','id,customer_id,referred_by'],
+  ['Customer ownership','customer_profiles','id,owner_id,owner_assigned_at,owner_source'],
+  ['Signed-in visit history','visitor_sessions','session_id,customer_id'],
   ['Deal engine','deals','id,discount_type,discount_value,min_quantity,max_quantity,banner_text'],
   ['Deal products','deal_products','deal_id,product_id'],
   ['Categories','product_categories','id,name,slug,is_active'],
+  ['Multi-category products','product_category_assignments','product_id,category_id,is_primary'],
  ] as const;
  const database=[] as {name:string;table:string;ok:boolean;message:string}[];
  for(const [name,table,select] of checks){const {error}=await db.from(table).select(select,{head:true,count:'exact'}).limit(1);database.push({name,table,ok:!error,message:error?.message??'Ready'});}

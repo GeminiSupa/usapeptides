@@ -22,7 +22,18 @@ export async function GET(req: Request) {
   const limit = Math.min(Number(url.searchParams.get('limit')) || 100, 200);
 
   try {
-    let query = getSupabaseAdmin()
+    const db = getSupabaseAdmin();
+    let categoryProductIds: string[] | null = null;
+    if (category) {
+      const { data: categoryRow } = await db.from('product_categories').select('id').eq('slug', category).maybeSingle();
+      if (categoryRow) {
+        const memberships = await db.from('product_category_assignments').select('product_id').eq('category_id', categoryRow.id);
+        if (!memberships.error) categoryProductIds = (memberships.data ?? []).map((row) => row.product_id);
+      }
+      if (categoryProductIds?.length === 0) return ok({ products: [], count: 0 });
+    }
+
+    let query = db
       .from('products')
       .select('*')
       .eq('is_active', true)
@@ -30,7 +41,8 @@ export async function GET(req: Request) {
       .order('name', { ascending: true })
       .limit(limit);
 
-    if (category) query = query.eq('category_slug', category);
+    if (categoryProductIds) query = query.in('id', categoryProductIds);
+    else if (category) query = query.eq('category_slug', category);
     if (featured === 'true') query = query.or('is_featured.eq.true,is_popular.eq.true');
     if (q && q.trim()) query = query.ilike('name', `%${q.trim()}%`);
 

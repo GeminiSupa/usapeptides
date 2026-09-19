@@ -50,19 +50,25 @@ never a super admin) who can be given only Orders, Customers, Leads and Recruit
 sellers. Inside those they see their own records plus unclaimed orders and
 leads, never a colleague's. They can be the parent of sub-users.
 
-How a sale becomes theirs, decided on the server:
+How a sale becomes theirs, decided on the server (with migration `0019`):
 
-1. the customer used their referral link;
-2. otherwise, the customer ordered before and that order is theirs — the
-   customer stays with their agent (only while the agent is still active);
+1. a returning customer's durable original owner is used while that person is
+   still active;
+2. an unowned customer can use an active agent's referral link;
 3. otherwise the order arrives unclaimed and an agent presses Claim. The write
    only succeeds while the order is still unclaimed, so two agents pressing at
    once cannot both win, and the loser is not told who did;
-4. a super admin can assign or clear any order or lead.
+4. completing the first owned order fixes that agent as the customer's original
+   owner and makes the commission due;
+5. only a super admin can change that original owner, from the customer or
+   sales-agent profile, through a separate confirmation. Open work follows the
+   new owner; completed orders and commission history stay unchanged.
 
 An agent cannot change who owns a record, edit an unclaimed or colleague's
-record, or delete anything. A customer's owner is never stored — it is read
-from their orders, so the two cannot disagree.
+record, claim a completed order, or delete anything. Agents see only their own
+customers and customers who are still unassigned. Customer ownership is stored
+on `customer_profiles`; the database synchronizes open orders and leads in the
+same transaction when a super admin corrects it.
 
 ---
 

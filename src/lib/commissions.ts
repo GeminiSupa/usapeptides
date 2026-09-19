@@ -5,8 +5,8 @@ import type { getSupabaseAdmin } from './supabaseAdmin';
 type Db = ReturnType<typeof getSupabaseAdmin>;
 
 /**
- * Create the money records for a paid order. Unique constraints make this safe
- * when two tabs mark the same order paid or a webhook retries.
+ * Create the money records for a completed order. Unique constraints make this
+ * safe when two tabs complete the same order or an API request retries.
  */
 export async function generateCommissionsForOrder(db: Db, orderId: string): Promise<string | null> {
   const { data: order, error } = await db
@@ -16,7 +16,7 @@ export async function generateCommissionsForOrder(db: Db, orderId: string): Prom
     .maybeSingle();
 
   if (error) return error.message;
-  if (!order || order.status !== 'paid') return null;
+  if (!order || order.status !== 'completed') return null;
 
   const total = Number(order.grand_total) || 0;
 

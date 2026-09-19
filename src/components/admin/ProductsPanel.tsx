@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ArrowDown, ArrowUp, FileText, FileX2, ImageOff, LayoutGrid, List, Pencil, Plus, QrCode,
+  AlertTriangle, ArrowDown, ArrowUp, Boxes, FileText, FileX2, ImageOff, LayoutGrid, List, Pencil, Plus, QrCode,
   RefreshCw, Save, Search, Trash2,
 } from 'lucide-react';
 import { categories } from '@/data/categories';
@@ -36,15 +36,16 @@ type SortKey = 'name' | 'category' | 'price' | 'stock_count';
 
 const money = (n: unknown) => `$${Number(n ?? 0).toFixed(2)}`;
 const LOW_STOCK = 5;
-const VIEW_KEY = 'admin.products.view';
+const VIEW_KEY = 'admin.products.view.v2';
 
 export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatch, onDelete, onNew, onRefresh }: Props) {
-  const [view, setView] = useState<View>('list');
+  const [view, setView] = useState<View>('tiles');
   const [filter, setFilter] = useState('all');
   const [text, setText] = useState('');
   const [sort, setSort] = useState<{ key: SortKey; asc: boolean }>({ key: 'name', asc: true });
   const [stockDrafts, setStockDrafts] = useState<Record<string, number>>({});
   const [qr, setQr] = useState<QrTarget | null>(null);
+  const [memberships, setMemberships] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     try {
@@ -52,6 +53,21 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
       if (saved === 'list' || saved === 'tiles') setView(saved);
     } catch { /* storage blocked: keep the default */ }
   }, []);
+
+  useEffect(() => {
+    let live = true;
+    void authedFetch('/api/admin/categories').then(async (response) => {
+      const payload = await response.json().catch(() => null);
+      if (!live || !response.ok) return;
+      const names = new Map<string, string>((payload.data.categories ?? []).map((category: any) => [category.id, category.name]));
+      const next: Record<string, string[]> = {};
+      for (const product of payload.data.products ?? []) next[product.id] = (product.category_ids ?? []).map((id: string) => names.get(id)).filter(Boolean);
+      setMemberships(next);
+    }).catch(() => undefined);
+    return () => { live = false; };
+  }, [authedFetch, rows]);
+
+  const productCategories = (product: Record<string, any>) => memberships[product.id]?.length ? memberships[product.id] : [String(product.category ?? 'Uncategorised')];
 
   const changeView = (next: View) => {
     setView(next);
@@ -61,20 +77,19 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
   const options = useMemo(() => {
     const counts = new Map<string, number>();
     for (const r of rows) {
-      const name = String(r.category ?? 'Uncategorised');
-      counts.set(name, (counts.get(name) ?? 0) + 1);
+      for (const name of productCategories(r)) counts.set(name, (counts.get(name) ?? 0) + 1);
     }
     const known = categories.map((c) => c.name);
     const extra = Array.from(counts.keys()).filter((c) => !known.includes(c));
     return [...known, ...extra].map((name) => ({ name, count: counts.get(name) ?? 0 })).filter((o) => o.count > 0);
-  }, [rows]);
+  }, [rows, memberships]);
 
   const visible = useMemo(() => {
     const q = text.trim().toLowerCase();
     const list = rows.filter((r) => {
-      if (filter !== 'all' && String(r.category ?? 'Uncategorised') !== filter) return false;
+      if (filter !== 'all' && !productCategories(r).includes(filter)) return false;
       if (!q) return true;
-      return [r.name, r.sku, r.slug, r.category].some((v) => String(v ?? '').toLowerCase().includes(q));
+      return [r.name, r.sku, r.slug, ...productCategories(r)].some((v) => String(v ?? '').toLowerCase().includes(q));
     });
     const dir = sort.asc ? 1 : -1;
     return [...list].sort((a, b) => {
@@ -83,14 +98,15 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
       if (key === 'stock_count') return (Number(a.stock_count ?? 0) - Number(b.stock_count ?? 0)) * dir;
       return String(a[key] ?? '').localeCompare(String(b[key] ?? '')) * dir;
     });
-  }, [rows, filter, text, sort]);
+  }, [rows, filter, text, sort, memberships]);
 
   const grouped = useMemo(() => {
     const byCategory = new Map<string, Record<string, any>[]>();
     for (const r of visible) {
-      const name = String(r.category ?? 'Uncategorised');
-      if (!byCategory.has(name)) byCategory.set(name, []);
-      byCategory.get(name)!.push(r);
+      for (const name of productCategories(r)) {
+        if (!byCategory.has(name)) byCategory.set(name, []);
+        byCategory.get(name)!.push(r);
+      }
     }
     const order = [...categories.map((c) => c.name), ...Array.from(byCategory.keys())];
     const seen = new Set<string>();
@@ -198,13 +214,15 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
   );
 
   const tile = (p: Record<string, any>) => (
-    <div key={p.id} className={`flex flex-col border bg-brand-card ${p.is_active ? 'border-brand-border' : 'border-dashed border-brand-borderLight opacity-75'}`}>
-      <div className="flex gap-3 p-3">
-        {thumb(p, 'h-20 w-20')}
-        <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 font-display text-[0.8125rem] font-extrabold leading-snug text-brand-heading" title={p.name}>{p.name}</p>
-          <p className="mt-0.5 truncate font-mono text-[0.6875rem] text-brand-textMuted">{p.sku || 'no SKU'}</p>
-          <div className="mt-1.5 text-sm">{price(p)}</div>
+    <article key={p.id} className={`group flex flex-col border bg-brand-card transition-colors hover:border-brand-borderLight ${p.is_active ? 'border-brand-border' : 'border-dashed border-brand-borderLight opacity-75'}`}>
+      <div className="flex flex-wrap gap-1 border-b border-brand-border px-3 py-2">{productCategories(p).slice(0, 2).map((name) => <span key={name} className="chip border border-brand-borderLight text-brand-textMuted">{name}</span>)}{productCategories(p).length > 2 && <span className="chip text-brand-textMuted">+{productCategories(p).length - 2}</span>}</div>
+      <div className="flex gap-4 p-4">
+        {thumb(p, 'h-28 w-28')}
+        <div className="min-w-0 flex-1 py-1">
+          <button onClick={() => onEdit(p)} className="line-clamp-2 text-left font-display text-sm font-black leading-snug text-brand-heading hover:text-brand-accentGlow" title={p.name}>{p.name}</button>
+          <p className="mt-1 truncate font-mono text-[0.6875rem] text-brand-textMuted">{p.sku || 'No SKU'} · /{p.slug}</p>
+          <div className="mt-3 text-base">{price(p)}</div>
+          <div className="mt-3">{coa(p)}</div>
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 border-t border-brand-border px-3 py-2">
@@ -216,7 +234,7 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
         {coa(p)}
         <div className="ml-auto">{actions(p)}</div>
       </div>
-    </div>
+    </article>
   );
 
   const sortHead = (key: SortKey, label: string, className = '') => (
@@ -261,7 +279,7 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
                   </div>
                 </div>
               </td>
-              <td className="max-w-[14rem] truncate px-3 py-2 text-brand-body" title={p.category}>{p.category || '—'}</td>
+              <td className="max-w-[18rem] px-3 py-3 text-brand-body"><div className="flex flex-wrap gap-1">{productCategories(p).map((name) => <span key={name} className="chip border border-brand-borderLight text-brand-textMuted">{name}</span>)}</div></td>
               <td className="px-3 py-2 text-right">{price(p)}</td>
               <td className="px-3 py-2">{stockBox(p)}</td>
               <td className="px-3 py-2">{toggles(p)}</td>
@@ -296,22 +314,24 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.75rem] text-brand-textMuted">
-          <span><strong className="text-brand-heading">{total}</strong> products</span>
-          {lowStock > 0 && <span className="text-action">{lowStock} low on stock</span>}
-          {withoutImage > 0 && <span>{withoutImage} without a photo</span>}
-          {withoutCoa > 0 && <span>{withoutCoa} without a certificate</span>}
-        </div>
+    <div className="space-y-5">
+      <section className="flex flex-wrap items-center justify-between gap-4 border border-brand-border bg-brand-card p-5">
+        <div><p className="eyebrow">Store catalogue</p><h2 className="mt-1 font-display text-lg font-black text-brand-heading">Products</h2><p className="mt-1 text-xs text-brand-textMuted">Manage pricing, inventory, visibility, certificates and product details.</p></div>
         <div className="flex flex-wrap items-center gap-2">
           <ProductImportExport authedFetch={authedFetch} onImported={onRefresh} />
           <button onClick={onRefresh} className="btn-secondary"><RefreshCw className="h-3.5 w-3.5" /> Refresh</button>
           <button onClick={onNew} className="btn-primary px-3 py-2"><Plus className="h-3.5 w-3.5" /> New product</button>
         </div>
+      </section>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Metric icon={Boxes} label="All products" value={total} />
+        <Metric icon={AlertTriangle} label="Low stock" value={lowStock} alert={lowStock > 0} />
+        <Metric icon={ImageOff} label="Missing photo" value={withoutImage} alert={withoutImage > 0} />
+        <Metric icon={FileX2} label="Missing certificate" value={withoutCoa} alert={withoutCoa > 0} />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 border border-brand-border bg-brand-card p-3">
+      <div className="flex flex-wrap items-center gap-3 border border-brand-border bg-brand-card p-4">
         <div className="relative min-w-[12rem] flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
           <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Find by name, SKU or category"
@@ -339,4 +359,8 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
       {qr && <QrCodeModal target={qr} onClose={() => setQr(null)} />}
     </div>
   );
+}
+
+function Metric({ icon: Icon, label, value, alert = false }: { icon: typeof Boxes; label: string; value: number; alert?: boolean }) {
+  return <div className="flex items-center gap-3 border border-brand-border bg-brand-card p-4"><span className={`flex h-9 w-9 items-center justify-center border ${alert ? 'border-action/60 text-action' : 'border-brand-borderLight text-brand-accentGlow'}`}><Icon className="h-4 w-4" /></span><div><p className="font-display text-xl font-black text-brand-heading">{value}</p><p className="text-[0.6875rem] uppercase tracking-[0.1em] text-brand-textMuted">{label}</p></div></div>;
 }

@@ -87,7 +87,7 @@ export function slugify(value: string): string {
 }
 
 const STATUS = {
-  order: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
+  order: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'],
   inquiry: ['new', 'open', 'answered', 'closed'],
   lead: ['new', 'working', 'qualified', 'lost', 'converted'],
   prospect: ['identified', 'contacted', 'meeting', 'proposal', 'won', 'lost'],

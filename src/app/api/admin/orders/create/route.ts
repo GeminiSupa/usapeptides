@@ -18,7 +18,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-const STATUSES = new Set(['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']);
+const STATUSES = new Set(['pending', 'paid', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded']);
 const PAYMENT_METHODS = new Set(['card', 'zelle', 'crypto', 'wire', 'manual']);
 
 interface IncomingItem {
@@ -169,7 +169,9 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (orderError) return serverError(orderError.message);
+    if (orderError) return serverError(/completed|order_status/i.test(orderError.message)
+      ? 'Order completed needs supabase/migrations/0019_customer_ownership.sql to be run in Supabase first.'
+      : orderError.message);
 
     const { error: itemsError } = await db
       .from('order_items')
@@ -180,7 +182,7 @@ export async function POST(req: Request) {
       return serverError(itemsError.message);
     }
 
-    if (status === 'paid') {
+    if (status === 'completed') {
       const commissionError = await generateCommissionsForOrder(db, order.id);
       if (commissionError) {
         return serverError(`Order created, but commission generation failed: ${commissionError}`);

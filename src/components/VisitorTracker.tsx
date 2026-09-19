@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { track } from '@/lib/track';
+import { supabase } from '@/lib/supabase';
+import { setTrackingCustomerToken, track } from '@/lib/track';
 
 /**
  * Reports page views, a heartbeat while the tab is open (for "on the site now"
@@ -14,6 +15,20 @@ export default function VisitorTracker() {
   const search = useSearchParams();
   const { cart, finalTotal } = useCart();
   const lastCart = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+    client.auth.getSession().then(({ data }) => {
+      setTrackingCustomerToken(data.session?.access_token);
+      if (data.session) track('heartbeat');
+    }).catch(() => undefined);
+    const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
+      setTrackingCustomerToken(session?.access_token);
+      if (session) track('heartbeat');
+    });
+    return () => { setTrackingCustomerToken(null); listener.subscription.unsubscribe(); };
+  }, []);
 
   useEffect(() => {
     track('page_view');
