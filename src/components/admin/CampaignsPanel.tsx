@@ -125,8 +125,8 @@ export default function CampaignsPanel({ authedFetch, upload }: { authedFetch: F
     <div className="space-y-4">
       {!emailReady && (
         <p className="border border-action/50 bg-brand-card p-3 text-xs text-brand-body">
-          <strong>Email is not connected yet.</strong> You can build and preview campaigns now. To send, add your mail account
-          (SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_FROM) in Vercel and redeploy.
+          <strong>Email is not connected yet.</strong> You can build and preview campaigns now. To send, add RESEND_API_KEY
+          and RESEND_FROM in Vercel and redeploy. SMTP remains available as a fallback.
         </p>
       )}
       {notice && <p className="border border-action/50 bg-brand-card p-3 text-xs text-brand-body">{notice}</p>}

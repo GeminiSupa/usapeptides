@@ -10,10 +10,9 @@ import { BUSINESS } from '@/lib/env';
 /**
  * My account.
  *
- * A real sign-in now: the shop's customers get a password from the business
- * (Dashboard > Customers > Sign-in). Row-level security in the database lets a
- * signed-in customer read only their own profile, orders and order lines, so
- * this page talks to Supabase directly with the public key.
+ * Customers can create and verify their own account, or an administrator can
+ * still create one from Dashboard > Customers. Row-level security lets a
+ * signed-in customer read only their own profile, orders and order lines.
  */
 
 interface Profile { id: string; email: string; full_name: string | null; institution: string | null; phone: string | null }
@@ -40,6 +39,12 @@ export default function MyAccountPage() {
   const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [mode, setMode] = useState<'signin' | 'register' | 'recover'>('signin');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -66,14 +71,68 @@ export default function MyAccountPage() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!supabase || typeof window === 'undefined') return;
+    const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const query = new URLSearchParams(window.location.search);
+    const params = fragment.has('token_hash') ? fragment : query;
+    const tokenHash = params.get('token_hash');
+    const type = params.get('type');
+    if (!tokenHash || (type !== 'signup' && type !== 'recovery')) return;
+
+    setBusy(true); setError(''); setNotice(type === 'signup' ? 'Verifying your email…' : 'Opening your secure password reset…');
+    supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(async ({ data, error: verifyError }) => {
+      if (verifyError || !data.session) {
+        setError('This secure link is invalid or has expired. Request a new one.');
+        setNotice(''); setBusy(false);
+        return;
+      }
+      if (type === 'signup') {
+        const response = await fetch('/api/customer/auth/complete', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${data.session.access_token}` },
+        });
+        if (!response.ok) {
+          const result = await response.json().catch(() => null) as { message?: string } | null;
+          setError(result?.message || 'Your email was verified, but the customer profile could not be linked.');
+        } else {
+          setNotice('Email verified. Your customer account is ready.');
+        }
+      } else {
+        setChanging(true);
+        setPasswordNotice('Choose a new password below.');
+        setNotice('Secure reset opened.');
+      }
+      window.history.replaceState({}, '', '/my-account');
+      setSession(data.session); setBusy(false);
+    }).catch(() => {
+      setError('Could not verify this secure link. Please try again.');
+      setNotice(''); setBusy(false);
+    });
+  }, []);
+
   const loadAccount = useCallback(async () => {
     if (!supabase || !session) return;
     setLoadingData(true);
-    const { data: p } = await supabase
+    let { data: p } = await supabase
       .from('customer_profiles')
       .select('id, email, full_name, institution, phone')
       .eq('user_id', session.user.id)
       .maybeSingle();
+    if (!p) {
+      const { data: current } = await supabase.auth.getSession();
+      if (current.session) {
+        await fetch('/api/customer/auth/complete', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${current.session.access_token}` },
+        });
+        const retry = await supabase.from('customer_profiles')
+          .select('id, email, full_name, institution, phone')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        p = retry.data;
+      }
+    }
     setProfile((p as Profile) ?? null);
     if (p) {
       const { data: o } = await supabase
@@ -110,6 +169,38 @@ export default function MyAccountPage() {
     setPassword('');
   };
 
+  const register = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); setNotice('');
+    if (password.length < MIN_PASSWORD) { setError(`Use at least ${MIN_PASSWORD} characters.`); return; }
+    if (password !== confirmPassword) { setError('The two passwords do not match.'); return; }
+    setBusy(true);
+    const response = await fetch('/api/customer/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), password, fullName, phone, marketingOptIn }),
+    });
+    const result = await response.json().catch(() => null) as { data?: { message?: string }; message?: string } | null;
+    setBusy(false);
+    if (!response.ok) { setError(result?.message || 'Could not create the account.'); return; }
+    setNotice(result?.data?.message || 'Check your email for the verification link.');
+    setPassword(''); setConfirmPassword('');
+  };
+
+  const recover = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); setNotice(''); setBusy(true);
+    const response = await fetch('/api/customer/auth/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim() }),
+    });
+    const result = await response.json().catch(() => null) as { message?: string } | null;
+    setBusy(false);
+    if (!response.ok) { setError(result?.message || 'Could not request the reset email.'); return; }
+    setNotice('If a customer account exists for that email, a secure reset link has been sent.');
+  };
+
   const signOut = async () => {
     await supabase?.auth.signOut();
     try { localStorage.removeItem('upd_customer_remember'); sessionStorage.removeItem('upd_customer_session_active'); } catch { /* ignore */ }
@@ -124,7 +215,7 @@ export default function MyAccountPage() {
     const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
     setBusy(false);
     setPasswordNotice(updateError ? updateError.message : 'Password changed.');
-    if (!updateError) { setNewPassword(''); setChanging(false); }
+    if (!updateError) { setNewPassword(''); setChanging(false); setNotice('Your password has been changed.'); }
   };
 
   return (
@@ -144,41 +235,102 @@ export default function MyAccountPage() {
             <div className="mx-auto flex h-12 w-12 items-center justify-center border border-brand-border bg-brand-darker text-brand-accentGlow">
               <User className="h-6 w-6" />
             </div>
-            <h2 className="text-lg font-bold text-brand-heading">Sign in</h2>
-            <p className="text-xs text-brand-textMuted">See your orders and tracking numbers.</p>
+            <h2 className="text-lg font-bold text-brand-heading">
+              {mode === 'signin' ? 'Sign in' : mode === 'register' ? 'Create account' : 'Reset password'}
+            </h2>
+            <p className="text-xs text-brand-textMuted">
+              {mode === 'signin' ? 'See your orders and tracking numbers.'
+                : mode === 'register' ? 'Your verified email links existing orders automatically.'
+                  : 'We will email you a secure password-reset link.'}
+            </p>
           </div>
 
-          <form onSubmit={signIn} className="space-y-4">
+          <div className="grid grid-cols-2 border border-brand-border">
+            <button type="button" onClick={() => { setMode('signin'); setError(''); setNotice(''); }}
+              className={`px-3 py-2 text-xs font-bold ${mode === 'signin' ? 'bg-brand-accent text-brand-onAccent' : 'bg-brand-dark text-brand-body'}`}>
+              Sign in
+            </button>
+            <button type="button" onClick={() => { setMode('register'); setError(''); setNotice(''); }}
+              className={`px-3 py-2 text-xs font-bold ${mode === 'register' ? 'bg-brand-accent text-brand-onAccent' : 'bg-brand-dark text-brand-body'}`}>
+              Create account
+            </button>
+          </div>
+
+          <form onSubmit={mode === 'register' ? register : mode === 'recover' ? recover : signIn} className="space-y-4">
+            {mode === 'register' && (
+              <>
+                <label className="block">
+                  <span className="mb-1 block text-xs text-brand-textMuted">Full name</span>
+                  <input required autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs text-brand-textMuted">Phone (optional)</span>
+                  <input type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
+                </label>
+              </>
+            )}
             <label className="block">
               <span className="mb-1 block text-xs text-brand-textMuted">Email</span>
               <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
             </label>
-            <label className="block">
-              <span className="mb-1 block text-xs text-brand-textMuted">Password</span>
-              <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} required autoComplete="current-password" value={password}
-                  onChange={(e) => setPassword(e.target.value)} className={`${inputClass} pr-10`} />
-                <button type="button" onClick={() => setShowPassword((s) => !s)} aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-brand-textMuted hover:text-brand-heading">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </label>
-            <label className="flex items-center gap-2 text-xs text-brand-body">
-              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 accent-forest" />
-              Keep me signed in on this browser
-            </label>
+            {mode !== 'recover' && (
+              <label className="block">
+                <span className="mb-1 block text-xs text-brand-textMuted">Password</span>
+                <div className="relative">
+                  <input type={showPassword ? 'text' : 'password'} required
+                    minLength={mode === 'register' ? MIN_PASSWORD : undefined}
+                    autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={password}
+                    onChange={(e) => setPassword(e.target.value)} className={`${inputClass} pr-10`} />
+                  <button type="button" onClick={() => setShowPassword((s) => !s)} aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-brand-textMuted hover:text-brand-heading">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </label>
+            )}
+            {mode === 'register' && (
+              <>
+                <label className="block">
+                  <span className="mb-1 block text-xs text-brand-textMuted">Confirm password</span>
+                  <input type="password" required minLength={MIN_PASSWORD} autoComplete="new-password" value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
+                </label>
+                <label className="flex items-start gap-2 text-xs text-brand-body">
+                  <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-0.5 h-4 w-4 accent-forest" />
+                  Email me product and research updates (optional)
+                </label>
+              </>
+            )}
+            {mode === 'signin' && (
+              <label className="flex items-center gap-2 text-xs text-brand-body">
+                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 accent-forest" />
+                Keep me signed in on this browser
+              </label>
+            )}
             {error && <p className="border border-action/50 p-2.5 text-xs text-brand-body">{error}</p>}
+            {notice && <p className="border border-brand-border bg-brand-darker p-2.5 text-xs text-brand-body">{notice}</p>}
             <button type="submit" disabled={busy} className="btn-primary w-full">
-              {busy && <Loader2 className="h-4 w-4 animate-spin" />} Sign in
+              {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+              {mode === 'signin' ? 'Sign in' : mode === 'register' ? 'Create account' : 'Email reset link'}
             </button>
           </form>
-          <p className="text-center text-[0.75rem] leading-relaxed text-brand-textMuted">
-            No account yet? Place an order, then <Link href="/contact-us" className="underline">contact us</Link> and we will set one up.
-          </p>
+          {mode === 'signin' && (
+            <button type="button" onClick={() => { setMode('recover'); setError(''); setNotice(''); }}
+              className="block w-full text-center text-xs text-brand-textMuted underline">
+              Forgot your password?
+            </button>
+          )}
+          {mode === 'recover' && (
+            <button type="button" onClick={() => { setMode('signin'); setError(''); setNotice(''); }}
+              className="block w-full text-center text-xs text-brand-textMuted underline">
+              Back to sign in
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-6">
+          {notice && <p className="border border-brand-border bg-brand-card p-3 text-xs text-brand-body">{notice}</p>}
+          {error && <p className="border border-action/50 bg-brand-card p-3 text-xs text-brand-body">{error}</p>}
           <div className="flex flex-wrap items-center justify-between gap-4 border border-brand-border bg-brand-card p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center bg-brand-accent text-brand-onAccent">

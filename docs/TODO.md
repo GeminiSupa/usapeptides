@@ -6,6 +6,10 @@ something outside the code.
 
 ## Migration status
 
+- [ ] `supabase/migrations/0021_customer_account_security.sql` must be run
+      before customer self-registration is deployed. It removes customers'
+      broad profile-update permission and adds durable, hashed signup/recovery
+      rate limits using keyed hashes for serverless deployments.
 - [x] `supabase/migrations/0019_customer_ownership.sql` run and verified against
       Supabase on 2026-09-19. It adds Order
       completed, completion timestamps, durable customer ownership, legacy
@@ -40,6 +44,31 @@ something outside the code.
 - [ ] Do role-based browser QA against the live
       database (super admin, two agents, unassigned customer, returning
       customer, completed commission and tracking-number save).
+
+## Customer accounts and email — 2026-09-19
+
+- [~] Resend HTTP API is integrated and a real delivery from
+      `notifications@usapeptidedepot.com` was accepted after the root domain
+      was verified. Vercel still needs a redeploy with the confirmed variables.
+- [~] Customers can create their own account, verify their address through a
+      one-use Resend link, sign in, and request a secure password-reset link.
+      A verified address links to its existing customer profile and order
+      history, or creates a new customer profile when the buyer has not ordered
+      yet. Dashboard-user addresses remain refused. Tokens are kept in the URL
+      fragment (out of request/referrer logs), responses do not reveal whether
+      an address exists, and provider/database errors are not exposed.
+- [~] Account security hardening is in code: migration `0021` removes the
+      over-broad customer profile UPDATE policy and provides atomic rate limits
+      keyed by HMAC-SHA-256 email/IP identifiers. Next.js is upgraded to the patched
+      15.5.24 maintenance release and its nested PostCSS is overridden to
+      8.5.28. Production audit has no high or critical advisories; the remaining
+      moderate ExcelJS/uuid advisory concerns UUID variants this project does
+      not call.
+- [x] Public contact phone set to `831-471-5559` in the shared defaults and the
+      live `site_content` record.
+- [ ] Browser-test signup, verification, recovery and existing-order linking
+      after deployment with a disposable customer address, then remove the
+      disposable user/profile.
 
 ## Products and categories — 2026-09-19
 
@@ -431,8 +460,9 @@ anything hardcoded or weak.
       `0014_deal_engine.sql`; browser/database QA remains.
 
 ## Blocked — needs an account he has not opened
-- [!] Email (SMTP): no order confirmations, no enquiry notifications, campaigns
-      can be drafted but not sent
+- [x] Resend API support is wired for campaign and account-email delivery, with
+      SMTP retained as a fallback. The owner added the variables locally and in
+      Vercel, verified the sending domain, and a real send was accepted.
 - [!] Payments: checkout collects the order but cannot take money. This is the
       real blocker to selling
 - [!] Meta / WhatsApp / Messenger campaigns
@@ -576,17 +606,19 @@ anything hardcoded or weak.
       editor instead of Unlayer (no extra account).
       **Verified:** audience counts; forged click / unsubscribe links refused;
       hostile HTML escaped. **Not verified: a real send** (no SMTP account).
-- [ ] **Owner to set in Vercel for sending:** `SMTP_HOST`, `SMTP_PORT`,
-      `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`; `EMAIL_LINK_SECRET` (any long
-      random string); `CRON_SECRET` for the daily scheduled-campaign check in
-      `vercel.json`. All as Secret. Then redeploy.
+- [ ] **Owner to set in Vercel for sending:** `RESEND_API_KEY`, `RESEND_FROM`;
+      `EMAIL_LINK_SECRET` (any long random string); `CRON_SECRET` for the daily
+      scheduled-campaign check in `vercel.json`. All as Secret. Then redeploy.
 - [ ] The owner said a picture of the products screen would follow; it did not
       arrive.
 - [ ] Not checked while signed in to the real dashboard (a test session could
       not be put in the browser). Screens were checked with sample data on a
       temporary local page, since deleted; APIs against the live database.
-- [ ] `npm audit` flags the Next.js 14 version in use; the fixes are in newer
-      majors. Upgrade as its own piece of work.
+- [x] Next.js upgraded from 14 to patched maintenance release 15.5.24. PostCSS
+      is pinned/overridden to 8.5.28. Production audit: 0 critical, 0 high, 2
+      moderate entries for one transitive ExcelJS/uuid advisory; the vulnerable
+      UUID v3/v5/v6 buffer API is not used by the project or ExcelJS's workbook
+      writer path.
 
 - [x] Pushed as `2d52def` to `testing` and `main` (fast-forward). **Verified live** on
       usapeptides-six.vercel.app: new robots.txt, sitemap, page titles; new admin API

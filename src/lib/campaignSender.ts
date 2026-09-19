@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import nodemailer, { type Transporter } from 'nodemailer';
-import { BUSINESS, features, smtpEnv, supabaseEnv } from './env';
+import { BUSINESS, features, resendEnv, smtpEnv, supabaseEnv } from './env';
 import { getSupabaseAdmin } from './supabaseAdmin';
 import { getSiteContent } from './siteContentServer';
 import {
@@ -140,7 +140,9 @@ export async function buildAudience(db: Db, audience: AudienceId, filter: Audien
 
 let transport: Transporter | null = null;
 function mailer() {
-  if (!features.email) throw new CampaignError('Email sending is not connected yet. Add SMTP_HOST, SMTP_USER and SMTP_PASS in Vercel, then redeploy.', 503);
+  if (!smtpEnv.host || !smtpEnv.user || !smtpEnv.pass) {
+    throw new CampaignError('SMTP is not configured for this deployment.', 503);
+  }
   transport ??= nodemailer.createTransport({
     host: smtpEnv.host,
     port: smtpEnv.port,
@@ -150,6 +152,58 @@ function mailer() {
     maxConnections: 1,
   });
   return transport;
+}
+
+interface OutgoingEmail {
+  from: string;
+  to: string;
+  replyTo?: string;
+  subject: string;
+  html: string;
+  text: string;
+  headers: Record<string, string>;
+}
+
+async function sendEmail(message: OutgoingEmail) {
+  if (!features.email) {
+    throw new CampaignError('Email sending is not connected yet. Add RESEND_API_KEY in Vercel, then redeploy.', 503);
+  }
+
+  if (resendEnv.apiKey) {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendEnv.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: message.from,
+        to: [message.to],
+        reply_to: message.replyTo,
+        subject: message.subject,
+        html: message.html,
+        text: message.text,
+        headers: message.headers,
+      }),
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => null) as { message?: string } | null;
+      throw new CampaignError(body?.message || `Resend rejected the email (${response.status}).`, 502);
+    }
+    return;
+  }
+
+  await mailer().sendMail({
+    from: message.from,
+    to: message.to,
+    replyTo: message.replyTo,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
+    headers: message.headers,
+  });
 }
 
 interface CampaignRow {
@@ -197,8 +251,9 @@ async function composeFor(c: CampaignRow, r: { id: string; email: string; name: 
 async function sendOne(c: CampaignRow, r: { id: string; email: string; name: string | null }, to = r.email) {
   const { subject, html, text, unsub, business } = await composeFor(c, r);
   const fromName = (c.from_name || business).replace(/["<>]/g, '');
-  await mailer().sendMail({
-    from: `"${fromName}" <${smtpEnv.from}>`,
+  const fromAddress = resendEnv.apiKey ? resendEnv.from : smtpEnv.from;
+  await sendEmail({
+    from: `"${fromName}" <${fromAddress}>`,
     to,
     replyTo: c.reply_to || undefined,
     subject,

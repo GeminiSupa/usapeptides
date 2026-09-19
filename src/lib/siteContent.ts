@@ -47,7 +47,7 @@ export const DEFAULT_CONTENT: Record<string, string> = {
   // Business and contact
   'business.name': NAME,
   'contact.email': BUSINESS.supportEmail,
-  'contact.phone': '',
+  'contact.phone': BUSINESS.supportPhone,
   'contact.address': 'United States Logistics & Climate Storage Facility',
   'contact.shipsFrom': 'United States',
   'contact.hours': 'Mon–Fri, 8:00am–6:00pm ET',

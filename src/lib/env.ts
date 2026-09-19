@@ -15,8 +15,9 @@ const clean = (v: string | undefined): string => (v ?? '').trim();
 export const BUSINESS = {
   name: 'USA Peptide Depot',
   legalName: 'USA Peptide Depot',
-  domain: clean(process.env.NEXT_PUBLIC_SITE_URL) || 'https://usapeptides-six.vercel.app',
-  supportEmail: clean(process.env.ORDER_NOTIFICATION_FROM) || 'info@usapeptides.com',
+  domain: clean(process.env.NEXT_PUBLIC_SITE_URL) || 'https://usapeptidedepot.com',
+  supportEmail: clean(process.env.ORDER_NOTIFICATION_FROM) || 'info@usapeptidedepot.com',
+  supportPhone: '831-471-5559',
   country: 'US',
   currency: 'USD',
   /** The business day for dashboards ("today", "this week"). */
@@ -42,6 +43,12 @@ export const smtpEnv = {
   pass: clean(process.env.SMTP_PASS),
   from: clean(process.env.SMTP_FROM) || BUSINESS.supportEmail,
   orderNotificationTo: clean(process.env.ORDER_NOTIFICATION_TO),
+};
+
+/** Resend HTTP API — preferred when an API key is supplied. Server-only. */
+export const resendEnv = {
+  apiKey: clean(process.env.RESEND_API_KEY),
+  from: clean(process.env.RESEND_FROM) || 'onboarding@resend.dev',
 };
 
 /**
@@ -96,7 +103,7 @@ export const paymentEnv = {
 export const features = {
   database: isSupabaseConfigured,
   adminDatabase: isSupabaseAdminConfigured,
-  email: Boolean(smtpEnv.host && smtpEnv.user && smtpEnv.pass),
+  email: Boolean(resendEnv.apiKey || (smtpEnv.host && smtpEnv.user && smtpEnv.pass)),
   paypal: Boolean(paymentEnv.paypal.clientId && paymentEnv.paypal.secret),
   cardCheckout: paymentEnv.cardCheckoutEnabled,
   liveChat: Boolean(chatwootEnv.baseUrl && chatwootEnv.websiteToken),
@@ -110,7 +117,7 @@ export type FeatureName = keyof typeof features;
 export const featureRequirements: Record<FeatureName, string[]> = {
   database: ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY'],
   adminDatabase: ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'],
-  email: ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'],
+  email: ['RESEND_API_KEY (preferred) or SMTP_HOST + SMTP_USER + SMTP_PASS'],
   paypal: ['NEXT_PUBLIC_PAYPAL_CLIENT_ID', 'PAYPAL_SECRET'],
   cardCheckout: ['NEXT_PUBLIC_ENABLE_CARD_CHECKOUT'],
   liveChat: ['NEXT_PUBLIC_CHATWOOT_BASE_URL', 'NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN'],
