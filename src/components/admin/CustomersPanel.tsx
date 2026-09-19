@@ -164,7 +164,58 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
 
   /* -------------------------------------------------------------- view --- */
 
-  const iconButton = 'inline-flex h-8 w-8 items-center justify-center border transition-colors';
+  const iconButton = 'inline-flex h-10 w-10 items-center justify-center border transition-colors md:h-8 md:w-8';
+
+  /** Contact and record actions; shared by the phone cards and the desktop table. */
+  const rowActions = (row: Record<string, any>, className = 'justify-end') => {
+    const wa = whatsappLink(row);
+    return (
+      <div className={`flex items-center gap-1 ${className}`}>
+        {wa ? (
+          <a href={wa} target="_blank" rel="noopener noreferrer" title={`WhatsApp ${row.phone}`}
+            className={`${iconButton} border-whatsapp bg-whatsapp text-whatsapp-ink hover:bg-whatsapp-hover`}>
+            <MessageCircle className="h-3.5 w-3.5" />
+          </a>
+        ) : (
+          <span title="No usable phone number" className={`${iconButton} cursor-not-allowed border-brand-border text-brand-border`}>
+            <MessageCircle className="h-3.5 w-3.5" />
+          </span>
+        )}
+        <a href={mailLink(row)} title={`Email ${row.email}`}
+          className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
+          <Mail className="h-3.5 w-3.5" />
+        </a>
+        {row.phone && (
+          <a href={`tel:${String(row.phone).replace(/[^\d+]/g, '')}`} title={`Call ${row.phone}`}
+            className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
+            <Phone className="h-3.5 w-3.5" />
+          </a>
+        )}
+        {!isAgent && (
+          <button onClick={() => setLogin(row)} title={row.user_id ? 'Reset sign-in password' : 'Give a sign-in'}
+            className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
+            <KeyRound className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {meta.editable.length > 0 && (
+          <button onClick={() => { setEditor(row); setSaveError(''); setFieldErrors({}); }} title="Edit"
+            className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
+        <button onClick={() => setDetailId(row.id)} title="Customer profile and history"
+          className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
+          <History className="h-3.5 w-3.5" />
+        </button>
+        {meta.deletable && (
+          <button onClick={() => void remove(row)} title="Delete customer"
+            className={`${iconButton} border-brand-borderLight text-brand-textMuted hover:border-action hover:text-action`}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -215,7 +266,31 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
           {loading ? 'Loading…' : query ? 'No customers match.' : 'No customers yet. They appear here when someone orders, or add one yourself.'}
         </p>
       ) : (
-        <div className="overflow-x-auto border border-brand-border bg-brand-card">
+        <>
+        {/* Phones: one card per customer instead of a table wider than the screen. */}
+        <ul className="space-y-2 md:hidden">
+          {rows.map((row) => {
+            const s = statFor(row);
+            return (
+              <li key={row.id} className="border border-brand-border bg-brand-card p-3">
+                <button onClick={() => setDetailId(row.id)} className="block w-full min-w-0 text-left">
+                  <p className="truncate font-semibold text-brand-heading">{row.full_name || '—'}</p>
+                  {row.institution && <p className="truncate text-[0.6875rem] text-brand-textMuted">{row.institution}</p>}
+                  <p className="mt-1 truncate text-xs text-brand-body">{row.email}</p>
+                  <p className="font-mono text-[0.6875rem] text-brand-textMuted">{row.phone || 'no phone'}</p>
+                </button>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 border-t border-brand-border/60 pt-2 text-[0.75rem] text-brand-textMuted">
+                  <span><strong className="font-mono text-brand-heading">{s.orders}</strong> orders</span>
+                  <span><strong className="font-mono text-brand-heading">{money(s.spent)}</strong> spent</span>
+                  <span>Last: {s.lastOrderAt ? new Date(s.lastOrderAt).toLocaleDateString() : '—'}</span>
+                  <span>Sign-in: {row.user_id ? 'Yes' : 'No'}</span>
+                </div>
+                {rowActions(row, 'mt-2 flex-wrap justify-start')}
+              </li>
+            );
+          })}
+        </ul>
+        <div className="hidden overflow-x-auto border border-brand-border bg-brand-card md:block">
           <table className="w-full min-w-[64rem] text-left text-xs">
             <thead className="border-b border-brand-border">
               <tr>
@@ -227,7 +302,6 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
             <tbody>
               {rows.map((row) => {
                 const s = statFor(row);
-                const wa = whatsappLink(row);
                 return (
                   <tr key={row.id} className="border-b border-brand-border/60 align-middle last:border-b-0 hover:bg-brand-dark">
                     <td className="px-3 py-2.5">
@@ -249,50 +323,7 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
                         : <span className="chip border border-brand-borderLight text-brand-textMuted">No</span>}
                     </td>
                     <td className="px-3 py-2.5">
-                      <div className="flex items-center justify-end gap-1">
-                        {wa ? (
-                          <a href={wa} target="_blank" rel="noopener noreferrer" title={`WhatsApp ${row.phone}`}
-                            className={`${iconButton} border-whatsapp bg-whatsapp text-whatsapp-ink hover:bg-whatsapp-hover`}>
-                            <MessageCircle className="h-3.5 w-3.5" />
-                          </a>
-                        ) : (
-                          <span title="No usable phone number" className={`${iconButton} cursor-not-allowed border-brand-border text-brand-border`}>
-                            <MessageCircle className="h-3.5 w-3.5" />
-                          </span>
-                        )}
-                        <a href={mailLink(row)} title={`Email ${row.email}`}
-                          className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
-                          <Mail className="h-3.5 w-3.5" />
-                        </a>
-                        {row.phone && (
-                          <a href={`tel:${String(row.phone).replace(/[^\d+]/g, '')}`} title={`Call ${row.phone}`}
-                            className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
-                            <Phone className="h-3.5 w-3.5" />
-                          </a>
-                        )}
-                        {!isAgent && (
-                          <button onClick={() => setLogin(row)} title={row.user_id ? 'Reset sign-in password' : 'Give a sign-in'}
-                            className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
-                            <KeyRound className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                        {meta.editable.length > 0 && (
-                          <button onClick={() => { setEditor(row); setSaveError(''); setFieldErrors({}); }} title="Edit"
-                            className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                        <button onClick={() => setDetailId(row.id)} title="Customer profile and history"
-                          className={`${iconButton} border-brand-borderLight text-brand-heading hover:border-brand-accent`}>
-                          <History className="h-3.5 w-3.5" />
-                        </button>
-                        {meta.deletable && (
-                          <button onClick={() => void remove(row)} title="Delete customer"
-                            className={`${iconButton} border-brand-borderLight text-brand-textMuted hover:border-action hover:text-action`}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </div>
+                      {rowActions(row)}
                     </td>
                   </tr>
                 );
@@ -300,6 +331,7 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {editor !== undefined && (

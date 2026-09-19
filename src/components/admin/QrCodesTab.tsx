@@ -125,7 +125,7 @@ export default function QrCodesTab({ authedFetch, users }: { authedFetch: Fetche
           Nobody has a referral code yet. Sales agents and sub-users get one automatically; add affiliates in the Affiliates tab.
         </p>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {people.map((p) => (
             <div key={p.key} className="flex gap-3 border border-brand-border bg-brand-card p-3">
               <Thumb url={linkFor(p)} onOpen={() => setOpen(targetFor(p))} />

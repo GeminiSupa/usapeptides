@@ -28,7 +28,7 @@ import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
-  Pencil, Monitor, ScrollText, MapPin, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3,
+  Pencil, Monitor, ScrollText, MapPin, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3, Menu, X,
 } from 'lucide-react';
 
 /**
@@ -135,6 +135,19 @@ interface Me {
   defaultModule: string;
 }
 
+/** True at the `lg` breakpoint and up, where the sidebar is always shown. */
+function useIsDesktop() {
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const sync = () => setDesktop(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  return desktop;
+}
+
 const money = (n: unknown) => `$${Number(n ?? 0).toFixed(2)}`;
 const prettify = (k: string) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -158,12 +171,25 @@ export default function AdminPage() {
   const [saveFieldErrors, setSaveFieldErrors] = useState<Record<string, string>>({});
 
   const [profileOpen, setProfileOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const isDesktop = useIsDesktop();
   const [manualOrderOpen, setManualOrderOpen] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<Record<string, any>>({});
   const [orderDetailError, setOrderDetailError] = useState('');
 
   const editorOpen = editorRow !== undefined;
+
+  // The menu drawer: Escape closes it, and the page behind must not scroll.
+  useEffect(() => {
+    if (!navOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setNavOpen(false); };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [navOpen]);
+  useEffect(() => { if (isDesktop) setNavOpen(false); }, [isDesktop]);
 
   useEffect(() => {
     if (!supabase) {
@@ -524,21 +550,50 @@ export default function AdminPage() {
     );
   };
 
+  const goTo = (next: string) => { setSection(next); setQuery(''); setError(''); setNavOpen(false); };
+
   /* -------------------------------------------------------------- view --- */
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
-      <aside className="border-b border-brand-border bg-brand-card lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:flex-shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
+      {/* Phone and tablet: one slim bar with a menu button. The full section
+          list opens as a drawer instead of a sideways-scrolling strip that
+          hid most sections off-screen. */}
+      <div className="sticky top-0 z-40 flex items-center gap-2 border-b border-brand-border bg-brand-card px-3 py-2 lg:hidden">
+        <button onClick={() => setNavOpen(true)} aria-label="Open menu" aria-expanded={navOpen}
+          className="flex min-h-11 min-w-11 items-center justify-center border border-brand-borderLight text-brand-heading">
+          <Menu className="h-5 w-5" />
+        </button>
+        <span className="min-w-0 flex-1 truncate font-display text-[0.8125rem] font-extrabold uppercase tracking-[0.1em] text-brand-heading">
+          {active.label}
+        </span>
+        {!isDesktop && me.allowed.includes('notifications') && <NotificationBell authedFetch={authedFetch} onNavigate={(next) => { if (me.allowed.includes(next) && !NOT_A_SECTION.has(next)) goTo(next); }} />}
+      </div>
+
+      {navOpen && (
+        <button aria-label="Close menu" onClick={() => setNavOpen(false)}
+          className="fixed inset-0 z-40 cursor-default bg-black/50 lg:hidden" />
+      )}
+
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,85vw)] overflow-y-auto border-r border-brand-border bg-brand-card transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-56 lg:flex-shrink-0 lg:translate-x-0 lg:transition-none ${navOpen ? 'translate-x-0' : '-translate-x-full'} [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]`}
+        aria-label="Dashboard sections">
         <div className="border-b border-brand-border px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="font-display text-xs font-extrabold uppercase tracking-[0.12em] text-brand-heading">
               Dashboard
             </span>
-            <button onClick={signOut} title="Sign out" className="text-brand-textMuted hover:text-brand-accentGlow">
-              <LogOut className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button onClick={signOut} title="Sign out" aria-label="Sign out"
+                className="flex min-h-10 min-w-10 items-center justify-center text-brand-textMuted hover:text-brand-accentGlow lg:min-h-0 lg:min-w-0">
+                <LogOut className="h-4 w-4" />
+              </button>
+              <button onClick={() => setNavOpen(false)} aria-label="Close menu"
+                className="flex min-h-10 min-w-10 items-center justify-center text-brand-textMuted hover:text-brand-accentGlow lg:hidden">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
           <button
-            onClick={() => setProfileOpen(true)}
+            onClick={() => { setProfileOpen(true); setNavOpen(false); }}
             title={`${me.email} — edit my profile`}
             className="mt-1.5 block w-full truncate text-left text-[0.75rem] text-brand-textMuted hover:text-brand-accentGlow"
           >
@@ -552,13 +607,13 @@ export default function AdminPage() {
           </button>
         </div>
 
-        <nav className="flex overflow-x-auto lg:block lg:overflow-x-hidden">
+        <nav className="pb-6 lg:pb-0">
           {sections.map((s) => {
             const Icon = ICONS[s.id] ?? Inbox;
             const on = s.id === section;
             return (
-              <button key={s.id} onClick={() => { setSection(s.id); setQuery(''); setError(''); }}
-                className={`flex flex-shrink-0 items-center gap-2.5 px-4 py-2.5 text-left font-display text-[0.8125rem] font-extrabold uppercase tracking-[0.1em] transition-colors lg:w-full ${
+              <button key={s.id} onClick={() => goTo(s.id)} aria-current={on ? 'page' : undefined}
+                className={`flex min-h-11 w-full items-center gap-2.5 px-4 py-2.5 text-left font-display text-[0.8125rem] font-extrabold uppercase tracking-[0.1em] transition-colors lg:min-h-0 ${
                   on ? 'bg-brand-accent text-brand-onAccent' : 'text-brand-body hover:text-brand-accentGlow'}`}>
                 <Icon className="h-3.5 w-3.5 flex-shrink-0" /><span>{s.label}</span>
               </button>
@@ -568,43 +623,55 @@ export default function AdminPage() {
       </aside>
 
       <main className="min-w-0 flex-1 p-3 sm:p-5 lg:p-8">
-        <div className="mb-6 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <div>
-            <h1 className="page-title">{active.label}</h1>
-            {data && resource && (
-              <p className="mt-1.5 max-w-2xl text-[0.8125rem] leading-relaxed text-brand-textMuted">{data.blurb}</p>
-            )}
-          </div>
-          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-            {me.allowed.includes('notifications') && <NotificationBell authedFetch={authedFetch} onNavigate={(next) => { if (me.allowed.includes(next) && !NOT_A_SECTION.has(next)) { setSection(next); setQuery(''); setError(''); } }} />}
-            {resource && !SELF_TOOLBAR.has(active.id) && (
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
-                <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()}
-                  placeholder="Search..."
-                  className="min-h-11 w-full border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none sm:w-auto" />
+        {(() => {
+          const showSearch = Boolean(resource && !SELF_TOOLBAR.has(active.id));
+          const showNew = canCreate && Boolean(resource) && active.id !== 'products';
+          const showManual = active.id === 'orders';
+          const showBell = isDesktop && me.allowed.includes('notifications');
+          const blurb = data && resource ? data.blurb : '';
+          // On a phone the slim top bar already names the section, so only a
+          // blurb or a toolbar earns this header any space.
+          if (!isDesktop && !blurb && !showSearch && !showNew && !showManual) return null;
+          return (
+            <div className="mb-5 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:mb-6">
+              <div className="min-w-0">
+                <h1 className="page-title hidden lg:block">{active.label}</h1>
+                {blurb && (
+                  <p className="max-w-2xl text-[0.8125rem] leading-relaxed text-brand-textMuted lg:mt-1.5">{blurb}</p>
+                )}
               </div>
-            )}
-            {resource && !SELF_TOOLBAR.has(active.id) && (
-              <button onClick={() => load()} title="Refresh"
-                className="border border-brand-borderLight p-2 text-brand-body hover:border-brand-accent hover:text-brand-accentGlow">
-                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-              </button>
-            )}
-            {canCreate && resource && active.id !== 'products' && (
-              <button onClick={() => openEditor(null)}
-                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover">
-                <Plus className="h-3.5 w-3.5" /> New
-              </button>
-            )}
-            {active.id === 'orders' && (
-              <button onClick={() => setManualOrderOpen(true)}
-                className="flex items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover">
-                <Plus className="h-3.5 w-3.5" /> Manual order
-              </button>
-            )}
-          </div>
-        </div>
+              <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                {showBell && <NotificationBell authedFetch={authedFetch} onNavigate={(next) => { if (me.allowed.includes(next) && !NOT_A_SECTION.has(next)) goTo(next); }} />}
+                {showSearch && (
+                  <div className="relative min-w-0 flex-1 sm:flex-none">
+                    <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
+                    <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()}
+                      placeholder="Search..." enterKeyHint="search" type="search"
+                      className="min-h-11 w-full border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-base text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none sm:w-auto sm:text-xs" />
+                  </div>
+                )}
+                {showSearch && (
+                  <button onClick={() => load()} title="Refresh" aria-label="Refresh"
+                    className="flex min-h-11 min-w-11 items-center justify-center border border-brand-borderLight text-brand-body hover:border-brand-accent hover:text-brand-accentGlow">
+                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  </button>
+                )}
+                {showNew && (
+                  <button onClick={() => openEditor(null)}
+                    className="flex min-h-11 items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover">
+                    <Plus className="h-3.5 w-3.5" /> New
+                  </button>
+                )}
+                {showManual && (
+                  <button onClick={() => setManualOrderOpen(true)}
+                    className="flex min-h-11 items-center gap-1.5 bg-brand-accent px-3 py-2 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover">
+                    <Plus className="h-3.5 w-3.5" /> Manual order
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {error && <div className="mb-5 border border-brand-accent/50 bg-brand-card p-4 text-xs leading-relaxed text-brand-body">{error}</div>}
 
@@ -684,7 +751,56 @@ export default function AdminPage() {
             <p className="mb-3 text-[0.8125rem] uppercase tracking-[0.12em] text-brand-textMuted">
               {data.rows.length} of {data.total}
             </p>
-            <div className="overflow-x-auto border border-brand-border">
+            {/* Phones: one card per record, label beside value, instead of a
+                table that needs sideways scrolling. */}
+            <ul className="space-y-2 md:hidden">
+              {data.rows.map((row) => {
+                const cols = visibleColumns(data);
+                const editable = active.id === 'orders' ? [] : data.editable;
+                return (
+                  <li key={row.id} className="border border-brand-border bg-brand-card">
+                    <dl className="divide-y divide-brand-border/60">
+                      {cols.map((k) => (
+                        <div key={k} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                          <dt className="flex-shrink-0 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-brand-textMuted">{prettify(k)}</dt>
+                          <dd className="min-w-0 text-right text-brand-body">{cell(row, k, editable)}</dd>
+                        </div>
+                      ))}
+                      {data.ownership && (
+                        <div className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                          <dt className="font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-brand-textMuted">Agent</dt>
+                          <dd className="text-right text-brand-body">{ownerCell(row, data.ownership)}</dd>
+                        </div>
+                      )}
+                    </dl>
+                    {(active.id === 'orders' || data.editable.length > 0 || data.deletable) && (
+                      <div className="flex items-center gap-2 border-t border-brand-border px-3 py-2">
+                        {active.id === 'orders' && (
+                          <button onClick={() => toggleOrderDetails(row)}
+                            className="inline-flex min-h-10 flex-1 items-center justify-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
+                            <ChevronDown className="h-3 w-3 -rotate-90" /> Details
+                          </button>
+                        )}
+                        {active.id !== 'orders' && data.editable.length > 0 && (
+                          <button onClick={() => openEditor(row)}
+                            className="inline-flex min-h-10 flex-1 items-center justify-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
+                            <Pencil className="h-3 w-3" /> Edit
+                          </button>
+                        )}
+                        {data.deletable && (
+                          <button onClick={() => remove(row.id)} aria-label="Delete"
+                            className="flex min-h-10 min-w-10 items-center justify-center border border-brand-borderLight text-brand-textMuted">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="hidden overflow-x-auto border border-brand-border md:block">
               <table className="w-full text-left text-xs">
                 <thead className="border-b border-brand-border bg-brand-card"><tr>
                   {visibleColumns(data).map((k) => (

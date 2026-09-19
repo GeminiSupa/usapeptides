@@ -63,7 +63,7 @@ export default function CustomerDetailModal({ customerId, authedFetch, isAgent, 
           <div className="space-y-5 p-5">
             {error && <p className="border border-action/50 p-3 text-xs text-brand-body">{error}</p>}
             {!data.ownershipReady && <p className="border border-action/50 bg-brand-dark p-3 text-xs text-brand-body">Customer ownership needs <strong>supabase/migrations/0019_customer_ownership.sql</strong>. History still works, but the original sales agent cannot be changed until it is run.</p>}
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <Section title="Contact"><Info label="Email" value={data.customer.email}/><Info label="Phone" value={data.customer.phone}/><Info label="Institution" value={data.customer.institution}/><Info label="Customer since" value={data.customer.created_at ? new Date(data.customer.created_at).toLocaleDateString() : null}/><Info label="Shop sign-in" value={data.customer.user_id ? 'Enabled' : 'Not enabled'}/></Section>
               <Section title="Original sales agent">
                 {isAgent ? <Info label="Owner" value={data.customer.owner_id ? 'You' : 'Unassigned'} /> : (
@@ -77,7 +77,7 @@ export default function CustomerDetailModal({ customerId, authedFetch, isAgent, 
               {data.orders.length === 0 ? <p className="text-brand-textMuted">No visible orders.</p> : <div className="space-y-3">{data.orders.map((order: any) => <div key={order.id} className="border-t border-brand-border pt-3 first:border-t-0 first:pt-0"><div className="flex flex-wrap items-center justify-between gap-2"><div><strong className="font-mono text-brand-heading">{order.order_number}</strong><span className="ml-2 capitalize text-brand-textMuted">{order.status === 'completed' ? 'Order completed' : order.status}</span></div><span className="font-mono text-brand-heading">{money(order.grand_total)}</span></div><p className="mt-1 text-[0.6875rem] text-brand-textMuted">{new Date(order.created_at).toLocaleString()}{order.tracking_number ? ` · Tracking ${order.tracking_number}` : ''}</p><ul className="mt-2 space-y-1">{order.items.map((item: any) => <li key={item.id} className="flex justify-between gap-3"><span>{item.product_name} × {item.quantity}</span><span className="font-mono">{money(item.line_total)}</span></li>)}</ul></div>)}</div>}
             </Section>
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <Section title="Pages and products viewed">
                 {pageHistory.length === 0 ? <p className="text-brand-textMuted">No browsing history is linked yet. A visit is linked when it leads to an order.</p> : <div className="max-h-80 overflow-auto">{pageHistory.slice(0, 200).map((entry, index) => <div key={`${entry.when}-${index}`} className="flex justify-between gap-3 border-t border-brand-border py-2 first:border-t-0"><div><p className="break-all text-brand-heading">{entry.path}</p><p className="capitalize text-[0.6875rem] text-brand-textMuted">{entry.action.replace(/_/g, ' ')}</p></div><span className="whitespace-nowrap font-mono text-[0.6875rem] text-brand-textMuted">{new Date(entry.when).toLocaleString()}</span></div>)}</div>}
               </Section>

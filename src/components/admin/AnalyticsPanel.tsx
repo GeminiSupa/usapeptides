@@ -112,7 +112,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
 
   return (
     <div className="space-y-5">
-      <div className="sticky top-0 z-30 -mx-3 flex flex-wrap items-center gap-2 border-b border-brand-border bg-brand-dark/95 px-3 py-2 backdrop-blur sm:-mx-5 sm:px-5 lg:-mx-8 lg:px-8">
+      <div className="relative z-30 -mx-3 flex flex-wrap items-center gap-2 border-b lg:sticky lg:top-0 border-brand-border bg-brand-dark/95 px-3 py-2 backdrop-blur sm:-mx-5 sm:px-5 lg:-mx-8 lg:px-8">
         <RangePicker value={range} onChange={setRange} />
         <button type="button" onClick={() => void load(range)} title="Refresh" className="btn-secondary">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -139,7 +139,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
 
       <p className="text-[0.75rem] text-brand-textMuted">
         Showing <strong className="text-brand-heading">{period || '…'}</strong>{compare && <>, compared with {compare}</>}.
-        The Dashboard is your daily to-do list; this page is the report. Hover any <span aria-hidden="true">ⓘ</span> for a plain-English explanation.
+        The Dashboard is your daily to-do list; this page is the report. Tap or hover any <span aria-hidden="true">ⓘ</span> for a plain-English explanation.
       </p>
 
       {error && <p className="border border-action/50 bg-brand-card p-3 text-xs text-brand-body">{error}</p>}
@@ -155,7 +155,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
 
           <Section id="an-overview" title="Overview">
             <KpiGrid ids={OVERVIEW} kpis={kpis} compareLabel={compare} noDelta={noDelta} />
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               {data.salesSeries && (
                 <Card title="Revenue over time" help="Revenue from paid orders in each part of the period. The dashed grey line is the period before.">
                   <LineChart points={data.salesSeries.map((p: any) => ({ key: p.key, value: p.revenue, previous: p.previous }))} bucket={data.window.bucket} format="money" currentLabel="Revenue" previousLabel="Period before" />
@@ -172,7 +172,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
           {data.salesSeries && (
             <Section id="an-sales" title="Sales">
               <KpiGrid ids={SALES} kpis={kpis} compareLabel={compare} noDelta={noDelta} />
-              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 <Card title="Orders over time" help="Paid orders in each part of the period.">
                   <LineChart points={data.salesSeries.map((p: any) => ({ key: p.key, value: p.orders }))} bucket={data.window.bucket} format="count" currentLabel="Paid orders" height={180} />
                 </Card>
@@ -201,7 +201,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
             <>
               <Section id="an-traffic" title="Visitors & sources">
                 <KpiGrid ids={TRAFFIC} kpis={kpis} compareLabel={compare} noDelta={noDelta} />
-                <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                   <Card title="How people found you" help="The kind of place each visit came from. 'Direct' means the address was typed, bookmarked, or the source was hidden by the app.">
                     <BarList rows={data.channels} labelFor={(n) => MEDIUM[n] ?? n} empty="No visits yet." />
                   </Card>
@@ -248,7 +248,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
                   <strong className="font-display text-base text-brand-heading">{Number(data.interactionCount ?? 0).toLocaleString('en-US')}</strong>
                   link and button interactions in this period. New interaction data starts collecting after this update is deployed.
                 </div>
-                <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                   <Card title="Most clicked controls" help="The exact link or button customers use most, grouped by page." className="lg:col-span-2">
                     <InteractionsTable rows={data.topInteractions} labelPage={labelPage} />
                   </Card>
@@ -283,7 +283,7 @@ export default function AnalyticsPanel({ authedFetch }: { authedFetch: Fetcher }
 
           <Section id="an-marketing" title="Marketing & sales team">
             <KpiGrid ids={MARKETING} kpis={kpis} compareLabel={compare} noDelta={noDelta} />
-            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
               {data.leadSources && (
                 <Card title="Where leads come from" help="New leads in the period by source (contact form, chat, prospector, manual…).">
                   <BarList rows={data.leadSources} empty="No leads in this period." />

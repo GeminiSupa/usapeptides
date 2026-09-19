@@ -77,7 +77,7 @@ export default function SiteContentEditor({ authedFetch, upload }: Props) {
   if (loading) return <p className="flex items-center gap-2 text-xs text-brand-textMuted"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading website text…</p>;
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[13rem_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[13rem_minmax(0,1fr)]">
       <nav className="flex gap-1 overflow-x-auto lg:flex-col" aria-label="Website sections">
         {CONTENT_SECTIONS.map((s) => (
           <button key={s.id} onClick={() => setSection(s.id)}

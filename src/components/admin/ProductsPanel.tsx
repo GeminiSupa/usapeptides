@@ -337,11 +337,11 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
           <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Find by name, SKU or category"
             className="field-input pl-8" />
         </div>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Category" className="field-input w-auto max-w-xs">
+        <select value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Category" className="field-input w-full sm:w-auto sm:max-w-xs">
           <option value="all">All categories ({rows.length})</option>
           {options.map((o) => <option key={o.name} value={o.name}>{o.name} ({o.count})</option>)}
         </select>
-        <div className="flex border border-brand-borderLight" role="group" aria-label="Layout">
+        <div className="hidden border border-brand-borderLight md:flex" role="group" aria-label="Layout">
           {([['list', List, 'List'], ['tiles', LayoutGrid, 'Tiles']] as const).map(([id, Icon, label]) => (
             <button key={id} onClick={() => changeView(id)} aria-pressed={view === id} title={`${label} view`}
               className={`flex items-center gap-1.5 px-3 py-2 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] ${
@@ -354,7 +354,10 @@ export default function ProductsPanel({ rows, total, authedFetch, onEdit, onPatc
 
       {visible.length === 0 ? (
         <p className="border border-brand-border bg-brand-card p-10 text-center text-xs text-brand-textMuted">No products match.</p>
-      ) : view === 'list' ? listView : tilesView}
+      ) : view === 'list' ? (
+        // The list is a wide table; phones always get the tiles.
+        <><div className="md:hidden">{tilesView}</div><div className="hidden md:block">{listView}</div></>
+      ) : tilesView}
 
       {qr && <QrCodeModal target={qr} onClose={() => setQr(null)} />}
     </div>

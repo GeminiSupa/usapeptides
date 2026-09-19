@@ -201,7 +201,7 @@ export default function ProductImportExport({ authedFetch, onImported }: { authe
             </div>
 
             <div className="space-y-5 p-5">
-              <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto]">
                 <div className="space-y-2 text-[0.8125rem] leading-relaxed text-brand-body">
                   <p>
                     Pick a <strong>CSV</strong> or <strong>Excel (.xlsx)</strong> file with one product per row. We read
