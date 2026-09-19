@@ -36,6 +36,7 @@ export default function MyAccountPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -79,6 +80,7 @@ export default function MyAccountPage() {
     const tokenHash = params.get('token_hash');
     const type = params.get('type');
     if (!tokenHash || (type !== 'signup' && type !== 'recovery')) return;
+    window.history.replaceState({}, '', '/my-account');
 
     setBusy(true); setError(''); setNotice(type === 'signup' ? 'Verifying your email…' : 'Opening your secure password reset…');
     supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(async ({ data, error: verifyError }) => {
@@ -158,7 +160,7 @@ export default function MyAccountPage() {
     setBusy(false);
     if (authError) {
       setError(/invalid/i.test(authError.message)
-        ? 'That email and password do not match. Ask us to reset your password if you have forgotten it.'
+        ? 'Incorrect email or password. Try again, or select “Reset password” below.'
         : authError.message);
       return;
     }
@@ -172,6 +174,8 @@ export default function MyAccountPage() {
   const register = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setNotice('');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError('Enter a valid email address.'); return; }
+    if (fullName.trim().length < 2) { setError('Enter your full name.'); return; }
     if (password.length < MIN_PASSWORD) { setError(`Use at least ${MIN_PASSWORD} characters.`); return; }
     if (password !== confirmPassword) { setError('The two passwords do not match.'); return; }
     setBusy(true);
@@ -179,7 +183,8 @@ export default function MyAccountPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.trim(), password, fullName, phone, marketingOptIn }),
-    });
+    }).catch(() => null);
+    if (!response) { setBusy(false); setError('Unable to connect. Please try again.'); return; }
     const result = await response.json().catch(() => null) as { data?: { message?: string }; message?: string } | null;
     setBusy(false);
     if (!response.ok) { setError(result?.message || 'Could not create the account.'); return; }
@@ -194,7 +199,8 @@ export default function MyAccountPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.trim() }),
-    });
+    }).catch(() => null);
+    if (!response) { setBusy(false); setError('Unable to connect. Please try again.'); return; }
     const result = await response.json().catch(() => null) as { message?: string } | null;
     setBusy(false);
     if (!response.ok) { setError(result?.message || 'Could not request the reset email.'); return; }
@@ -256,7 +262,7 @@ export default function MyAccountPage() {
             </button>
           </div>
 
-          <form onSubmit={mode === 'register' ? register : mode === 'recover' ? recover : signIn} className="space-y-4">
+          <form noValidate onSubmit={mode === 'register' ? register : mode === 'recover' ? recover : signIn} className="space-y-4">
             {mode === 'register' && (
               <>
                 <label className="block">
@@ -286,14 +292,22 @@ export default function MyAccountPage() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {mode === 'register' && <span className="mt-1 block text-xs text-brand-textMuted">Use at least {MIN_PASSWORD} characters.</span>}
               </label>
             )}
             {mode === 'register' && (
               <>
                 <label className="block">
                   <span className="mb-1 block text-xs text-brand-textMuted">Confirm password</span>
-                  <input type="password" required minLength={MIN_PASSWORD} autoComplete="new-password" value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
+                  <div className="relative">
+                    <input type={showConfirmPassword ? 'text' : 'password'} required minLength={MIN_PASSWORD} autoComplete="new-password" value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)} className={`${inputClass} pr-10`} />
+                    <button type="button" aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'} aria-pressed={showConfirmPassword}
+                      onClick={() => setShowConfirmPassword((visible) => !visible)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-brand-textMuted hover:text-brand-heading">
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </label>
                 <label className="flex items-start gap-2 text-xs text-brand-body">
                   <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-0.5 h-4 w-4 accent-forest" />
@@ -317,7 +331,7 @@ export default function MyAccountPage() {
           {mode === 'signin' && (
             <button type="button" onClick={() => { setMode('recover'); setError(''); setNotice(''); }}
               className="block w-full text-center text-xs text-brand-textMuted underline">
-              Forgot your password?
+              Reset password
             </button>
           )}
           {mode === 'recover' && (

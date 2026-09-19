@@ -6,6 +6,30 @@ something outside the code.
 
 ## Migration status
 
+- [x] Owner ran 0021; service-role table/RPC checks returned 200 and anonymous
+      access returned 401 on 2026-09-19.
+
+## Customer account follow-up — 2026-09-20
+
+- [x] Work isolated on `codex/customer-account-flow`. Added independent
+      confirm-password visibility, visible 12-character requirement, clearer
+      sign-in/reset wording and network-failure feedback.
+- [x] Supabase lookup found no Auth user for the reported test address. The
+      screenshot password is below the minimum, which blocks signup before
+      sending. Resend delivery-history reads are unavailable with the current
+      sending-only key; delivery is not confirmed.
+- [x] Signup retries no longer delete Auth users. Profile linking explicitly
+      requires verified email, fails closed on staff lookup errors, and only
+      claims profiles still unlinked at update time. Repeated completion does
+      not overwrite a linked customer's details or marketing consent.
+- [ ] Verify delivery and complete signup/reset end-to-end with a permitted
+      test mailbox after branch review/deployment. No claim of inbox delivery
+      or complete security certification is made by these code checks.
+- [x] Live disposable-account checks: signup retry issues a fresh link for the
+      same account; customer A can read its own profile but cannot read B's;
+      direct profile UPDATE is denied. All test records removed. TypeScript
+      passes.
+
 - [ ] `supabase/migrations/0021_customer_account_security.sql` must be run
       before customer self-registration is deployed. It removes customers'
       broad profile-update permission and adds durable, hashed signup/recovery

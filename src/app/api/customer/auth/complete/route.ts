@@ -11,9 +11,11 @@ export async function POST(req: Request) {
   const user = auth.user;
   const email = user?.email?.trim().toLowerCase();
   if (authError || !user || !email) return Response.json({ error: 'unauthorized', message: 'Sign in again.' }, { status: 401 });
+  if (!user.email_confirmed_at) return Response.json({ error: 'forbidden', message: 'Verify your email before opening your account.' }, { status: 403 });
 
   const staffByUser = await db.from('admin_users').select('id').eq('user_id', user.id).maybeSingle();
   const staffByEmail = await db.from('admin_users').select('id').eq('email', email).maybeSingle();
+  if (staffByUser.error || staffByEmail.error) return Response.json({ error: 'unavailable', message: 'Account setup is temporarily unavailable.' }, { status: 503 });
   if (staffByUser.data || staffByEmail.data) {
     return Response.json({ error: 'forbidden', message: 'Dashboard accounts cannot be used as customer accounts.' }, { status: 403 });
   }
@@ -24,18 +26,20 @@ export async function POST(req: Request) {
   if (existing?.user_id && existing.user_id !== user.id) {
     return Response.json({ error: 'conflict', message: 'This customer record is linked to another account.' }, { status: 409 });
   }
+  if (existing?.user_id === user.id) return Response.json({ data: { customerId: existing.id, linked: true } });
 
   const metadata = user.user_metadata ?? {};
   const fullName = String(metadata.full_name ?? '').trim().slice(0, 160) || null;
   const phone = String(metadata.phone ?? '').trim().slice(0, 50) || null;
   if (existing) {
-    const { error } = await db.from('customer_profiles').update({
+    const { data: linked, error } = await db.from('customer_profiles').update({
       user_id: user.id,
       full_name: fullName || existing.full_name,
       phone: phone || existing.phone,
       marketing_opt_in: Boolean(metadata.marketing_opt_in),
-    }).eq('id', existing.id);
+    }).eq('id', existing.id).is('user_id', null).select('id').maybeSingle();
     if (error) return Response.json({ error: 'server_error', message: 'Could not finish setting up this account.' }, { status: 500 });
+    if (!linked) return Response.json({ error: 'conflict', message: 'Account setup changed. Please sign in again.' }, { status: 409 });
     return Response.json({ data: { customerId: existing.id, linked: true } });
   }
 

@@ -18,8 +18,9 @@ export async function POST(req: Request) {
   }
 
   const db = getSupabaseAdmin();
-  const { data: profile } = await db.from('customer_profiles').select('id, user_id').eq('email', email).maybeSingle();
-  const { data: staff } = await db.from('admin_users').select('id').eq('email', email).maybeSingle();
+  const { data: profile, error: profileError } = await db.from('customer_profiles').select('id, user_id').eq('email', email).maybeSingle();
+  const { data: staff, error: staffError } = await db.from('admin_users').select('id').eq('email', email).maybeSingle();
+  if (profileError || staffError) return Response.json({ message: 'Password reset is temporarily unavailable. Please try again.' }, { status: 503 });
   if (!profile?.user_id || staff) return ok({ sent: true });
 
   const { data, error } = await db.auth.admin.generateLink({ type: 'recovery', email });

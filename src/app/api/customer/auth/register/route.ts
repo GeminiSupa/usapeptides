@@ -37,7 +37,8 @@ export async function POST(req: Request) {
   }
 
   const db = getSupabaseAdmin();
-  const { data: staff } = await db.from('admin_users').select('id').eq('email', email).maybeSingle();
+  const { data: staff, error: staffError } = await db.from('admin_users').select('id').eq('email', email).maybeSingle();
+  if (staffError) return serverError('Account registration is temporarily unavailable. Please try again.');
   const generic = 'If this address can be registered, a verification email has been sent. Existing customers can sign in or reset their password.';
   if (staff) return ok({ sent: true, message: generic });
 
@@ -50,10 +51,6 @@ export async function POST(req: Request) {
     const existing = await findUser(email);
     if (existing?.email_confirmed_at) {
       return ok({ sent: true, message: generic });
-    }
-    if (existing) {
-      const { error: deleteError } = await db.auth.admin.deleteUser(existing.id);
-      if (deleteError) throw deleteError;
     }
 
     const { data, error } = await db.auth.admin.generateLink({
@@ -71,7 +68,6 @@ export async function POST(req: Request) {
         url: customerAuthLink(req, data.properties.hashed_token, 'signup'),
       });
     } catch (emailError) {
-      await db.auth.admin.deleteUser(data.user.id).catch(() => undefined);
       throw emailError;
     }
 
