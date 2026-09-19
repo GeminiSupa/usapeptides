@@ -121,6 +121,18 @@ export default function CampaignsPanel({ authedFetch, upload }: { authedFetch: F
       onEdit={(id) => setView({ kind: 'builder', id })} />;
   }
 
+  const campaignActions = (c: Campaign, editable: boolean) => {
+    const btn = 'flex min-h-10 min-w-10 items-center justify-center text-brand-textMuted md:min-h-0 md:min-w-0 md:p-1.5';
+    return (
+      <>
+        {c.status !== 'draft' && <button title="Report" aria-label="Report" onClick={() => setView({ kind: 'report', id: c.id })} className={`${btn} hover:text-brand-heading`}><BarChart3 className="h-3.5 w-3.5" /></button>}
+        {editable && <button title="Edit" aria-label="Edit" onClick={() => setView({ kind: 'builder', id: c.id })} className={`${btn} hover:text-brand-heading`}><Pencil className="h-3.5 w-3.5" /></button>}
+        <button title="Duplicate" aria-label="Duplicate" onClick={() => void duplicate(c)} className={`${btn} hover:text-brand-heading`}><Copy className="h-3.5 w-3.5" /></button>
+        {c.status !== 'sending' && <button title="Delete" aria-label="Delete" onClick={() => void remove(c)} className={`${btn} hover:text-action`}><Trash2 className="h-3.5 w-3.5" /></button>}
+      </>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {!emailReady && (
@@ -158,7 +170,32 @@ export default function CampaignsPanel({ authedFetch, upload }: { authedFetch: F
           <p className="mt-1 text-xs text-brand-textMuted">Start from a template — announcement, product spotlight, offer or newsletter.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto border border-brand-border bg-brand-card">
+        <>
+        {/* Phones: one card per campaign. */}
+        <ul className="space-y-2 md:hidden">
+          {campaigns.map((c) => {
+            const editable = ['draft', 'scheduled', 'paused'].includes(c.status);
+            return (
+              <li key={c.id} className="border border-brand-border bg-brand-card p-3 text-xs">
+                <div className="flex items-start justify-between gap-3">
+                  <button onClick={() => setView(editable ? { kind: 'builder', id: c.id } : { kind: 'report', id: c.id })} className="min-w-0 text-left">
+                    <span className="block truncate font-semibold text-brand-heading">{c.name}</span>
+                    <span className="block truncate text-[0.6875rem] text-brand-textMuted">{c.subject || 'No subject yet'}</span>
+                  </button>
+                  <span className={`chip flex-none ${STATUS_CHIP[c.status] ?? STATUS_CHIP.draft}`}>{CAMPAIGN_STATUS_LABEL[c.status] ?? c.status}</span>
+                </div>
+                <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.6875rem] text-brand-textMuted">
+                  <span>{c.recipient_count || 0} recipients</span>
+                  <span>Opens {pct(c.open_count, c.sent_count)}</span>
+                  <span>Clicks {pct(c.click_count, c.sent_count)}</span>
+                  <span>Unsubscribed {c.unsubscribe_count || 0}</span>
+                </p>
+                <div className="mt-2 flex gap-1 border-t border-brand-border/60 pt-1">{campaignActions(c, editable)}</div>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="hidden overflow-x-auto border border-brand-border bg-brand-card md:block">
           <table className="w-full min-w-[52rem] text-left text-xs">
             <thead className="border-b border-brand-border">
               <tr>{['Campaign', 'Status', 'Recipients', 'Opens', 'Clicks', 'Unsubscribed', ''].map((h) => (
@@ -188,12 +225,7 @@ export default function CampaignsPanel({ authedFetch, upload }: { authedFetch: F
                     <td className="px-3 py-2.5 font-mono">{pct(c.click_count, c.sent_count)}</td>
                     <td className="px-3 py-2.5 font-mono">{c.unsubscribe_count || 0}</td>
                     <td className="px-3 py-2.5">
-                      <div className="flex justify-end gap-1">
-                        {c.status !== 'draft' && <button title="Report" onClick={() => setView({ kind: 'report', id: c.id })} className="p-1.5 text-brand-textMuted hover:text-brand-heading"><BarChart3 className="h-3.5 w-3.5" /></button>}
-                        {editable && <button title="Edit" onClick={() => setView({ kind: 'builder', id: c.id })} className="p-1.5 text-brand-textMuted hover:text-brand-heading"><Pencil className="h-3.5 w-3.5" /></button>}
-                        <button title="Duplicate" onClick={() => void duplicate(c)} className="p-1.5 text-brand-textMuted hover:text-brand-heading"><Copy className="h-3.5 w-3.5" /></button>
-                        {c.status !== 'sending' && <button title="Delete" onClick={() => void remove(c)} className="p-1.5 text-brand-textMuted hover:text-action"><Trash2 className="h-3.5 w-3.5" /></button>}
-                      </div>
+                      <div className="flex justify-end gap-1">{campaignActions(c, editable)}</div>
                     </td>
                   </tr>
                 );
@@ -201,6 +233,7 @@ export default function CampaignsPanel({ authedFetch, upload }: { authedFetch: F
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
@@ -344,7 +377,7 @@ function TemplatePicker({ onPick, onBack }: { onPick: (tpl: (typeof EMAIL_TEMPLA
     <div className="space-y-4">
       <button className="btn-secondary" onClick={onBack}><ArrowLeft className="h-3.5 w-3.5" /> Campaigns</button>
       <h2 className="font-display text-sm font-extrabold uppercase tracking-[0.08em] text-brand-heading">Pick a starting point</h2>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {EMAIL_TEMPLATES.map((tpl) => (
           <button key={tpl.id} disabled={Boolean(busy)} onClick={() => { setBusy(tpl.id); onPick(tpl); }}
             className="border border-brand-border bg-brand-card p-4 text-left transition-colors hover:border-brand-accent disabled:opacity-60">
@@ -376,7 +409,7 @@ function SetupStep({ draft, update, business }: { draft: Draft; update: (p: Part
         <span className="field-label">Preview text</span>
         <input className="field-input" value={draft.preview_text} onChange={(e) => update({ preview_text: e.target.value })} placeholder="The grey line shown after the subject" />
       </label>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="field-label">From name</span>
           <input className="field-input" value={draft.from_name} onChange={(e) => update({ from_name: e.target.value })} placeholder={business} />
@@ -414,9 +447,9 @@ function AudienceStep({ draft, update, authedFetch }: { draft: Draft; update: (p
   }, [draft.audience, draft.audience_filter, authedFetch]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="space-y-4">
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {AUDIENCES.map((a) => (
             <button key={a.id} type="button" onClick={() => update({ audience: a.id })}
               className={`flex items-start gap-3 border p-3 text-left ${draft.audience === a.id ? 'border-brand-accent bg-brand-card' : 'border-brand-border bg-brand-card hover:border-brand-borderLight'}`}>
@@ -494,7 +527,7 @@ function DesignStep({ draft, update, upload }: { draft: Draft; update: (p: Parti
   const sel = blocks.find((b) => b.id === selected) ?? null;
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
       <div className="space-y-3">
         <div className="border border-brand-border bg-brand-card p-3">
           <p className="field-label">Add a block</p>
@@ -672,7 +705,7 @@ function SendStep({ draft, authedFetch, emailReady, goto, ensureSaved, onSent, o
   };
 
   return (
-    <div className="grid max-w-4xl gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 max-w-4xl gap-4 lg:grid-cols-2">
       <div className="space-y-2 border border-brand-border bg-brand-card p-4">
         <p className="field-label">Checklist</p>
         {checks.map(([ok, label, target]) => (
@@ -827,7 +860,7 @@ function Report({ id, authedFetch, onBack, onEdit }: { id: string; authedFetch: 
         ))}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[20rem_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[20rem_minmax(0,1fr)]">
         <div className="border border-brand-border bg-brand-card p-3">
           <p className="field-label">Most clicked links</p>
           {data.links.length === 0 ? <p className="text-xs text-brand-textMuted">No clicks yet.</p> : (

@@ -44,6 +44,23 @@ something outside the code.
       bucket at a 2 MB cap.
 - [x] Full suite re-run after the migration: **38 passed, 0 failed.**
 
+## Dashboard on mobile — 2026-09-20
+
+- [x] Phones and tablets get a slim top bar (menu button, section name,
+      notification bell). The section list opens as a slide-out drawer instead
+      of a sideways-scrolling strip that hid most sections. Checked at 375px
+      and 390px wide.
+- [x] Orders, Enquiries, Leads and the other generic lists, plus Customers,
+      Commissions, Campaigns and Audit trail, show one card per record on
+      phones instead of wide tables. Products always uses tiles on phones.
+- [x] Fixed pages that spilled sideways: Categories (long names) and
+      Analytics (report cards stretched to fit their tables). Every responsive
+      grid in the dashboard now has a shrinkable single column on phones.
+- [x] The Analytics toolbar is sticky on desktop only. The help text now
+      says "tap or hover" for the ⓘ icons.
+- [x] Desktop layout checked at 1280px and is unchanged. Type-check is clean.
+- [ ] Not yet deployed. Check on a real phone after deploy.
+
 ## Orders workflow — 2026-09-19
 
 - [~] Added the **Order completed** state. Commission is generated at

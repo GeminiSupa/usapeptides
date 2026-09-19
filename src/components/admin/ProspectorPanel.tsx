@@ -294,7 +294,7 @@ export default function ProspectorPanel({ authedFetch, me }: { authedFetch: Fetc
 
       {tab === 'find' && (
         <form onSubmit={(e) => { e.preventDefault(); void runSearch(); }} className="space-y-3 border border-brand-border bg-brand-card p-3">
-          <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_1fr_auto]">
             <label className="block">
               <span className="field-label">Kind of business</span>
               <input list="prospect-kinds" value={query} onChange={(e) => setQuery(e.target.value)} className="field-input" placeholder="e.g. research labs, universities" />
@@ -376,7 +376,7 @@ export default function ProspectorPanel({ authedFetch, me }: { authedFetch: Fetc
         </div>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         {/* list */}
         <div className="flex max-h-[70vh] min-h-[22rem] flex-col border border-brand-border bg-brand-card">
           {tab === 'find' ? (

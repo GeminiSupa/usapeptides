@@ -236,7 +236,7 @@ function PostEditor({ initial, seoReady, authedFetch, upload, onClose, onSaved }
         {error && <p className="m-4 border border-action/50 p-3 text-xs text-brand-body">{error}</p>}
 
         {tab === 'write' && (
-          <div className="grid gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_17rem]">
+          <div className="grid grid-cols-1 gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_17rem]">
             <div className="space-y-4">
               <label className="block">
                 <span className="field-label">Title</span>
@@ -336,7 +336,7 @@ function PostEditor({ initial, seoReady, authedFetch, upload, onClose, onSaved }
               description={a.meta_description || a.excerpt}
               url={`${origin.replace(/^https?:\/\//, '')} › blog › ${a.slug || '…'}`}
             />
-            <fieldset disabled={!seoReady} className="grid gap-4 disabled:opacity-60 md:grid-cols-2">
+            <fieldset disabled={!seoReady} className="grid grid-cols-1 gap-4 disabled:opacity-60 md:grid-cols-2">
               <label className="block md:col-span-2">
                 <span className="field-label">Google title <span className="normal-case">({(a.meta_title ?? '').length}/60, blank = post title)</span></span>
                 <input className="field-input" value={a.meta_title ?? ''} onChange={(e) => set({ meta_title: e.target.value })} />

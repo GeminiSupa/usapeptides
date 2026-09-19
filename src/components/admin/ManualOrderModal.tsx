@@ -134,11 +134,11 @@ export default function ManualOrderModal({ authedFetch, onCancel, onSaved }: Pro
           </button>
         </div>
 
-        <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="grid grid-cols-1 gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
           <div className="space-y-5">
             {error && <div className="border border-brand-accent/60 bg-brand-dark p-3 leading-relaxed text-brand-heading">{error}</div>}
 
-            <section className="grid gap-3 md:grid-cols-2">
+            <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {[
                 ['email', 'Email', 'email', true],
                 ['fullName', 'Full name', 'text', false],
@@ -173,7 +173,7 @@ export default function ManualOrderModal({ authedFetch, onCancel, onSaved }: Pro
               {lines.map((line, index) => {
                 const product = bySlug.get(line.slug);
                 return (
-                  <div key={index} className="grid gap-2 border border-brand-border bg-brand-dark p-3 md:grid-cols-[1fr_6rem_auto]">
+                  <div key={index} className="grid grid-cols-1 gap-2 border border-brand-border bg-brand-dark p-3 md:grid-cols-[1fr_6rem_auto]">
                     <select
                       value={line.slug}
                       required
@@ -209,7 +209,7 @@ export default function ManualOrderModal({ authedFetch, onCancel, onSaved }: Pro
               })}
             </section>
 
-            <section className="grid gap-3 md:grid-cols-2">
+            <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {Object.keys(blankAddress).map((key) => (
                 <label key={key} className="space-y-1">
                   <span className="font-display text-[0.6875rem] font-black uppercase tracking-[0.12em] text-brand-textMuted">

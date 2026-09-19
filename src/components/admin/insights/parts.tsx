@@ -66,11 +66,13 @@ export function Delta({ value, previous, lowerIsBetter, compareLabel }: { value:
   const good = flat ? null : up !== Boolean(lowerIsBetter);
   const Icon = flat ? Minus : up ? ArrowUpRight : ArrowDownRight;
   return (
-    <span className={`inline-flex items-center gap-0.5 text-[0.6875rem] font-bold ${good === null ? 'text-brand-textMuted' : good ? 'text-forest-600' : 'text-action'}`}
+    // Plain inline text, not a flex row: in a narrow card the words wrap as a
+    // sentence instead of being squeezed into separate columns.
+    <span className={`text-[0.6875rem] font-bold leading-snug ${good === null ? 'text-brand-textMuted' : good ? 'text-forest-600' : 'text-action'}`}
       title={`Was ${previous.toLocaleString('en-US')} ${compareLabel}`}>
-      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-      {flat ? 'no change' : `${up ? '+' : ''}${c}%`}
-      <span className="font-normal text-brand-textMuted">&nbsp;vs {compareLabel}</span>
+      <span className="whitespace-nowrap"><Icon className="mr-0.5 inline h-3.5 w-3.5 align-[-0.2em]" aria-hidden="true" />
+        {flat ? 'no change' : `${up ? '+' : ''}${c}%`}</span>
+      <span className="font-normal text-brand-textMuted"> vs {compareLabel}</span>
     </span>
   );
 }
@@ -82,7 +84,7 @@ export function KpiTile({ id, data, compareLabel, onClick, hideDelta }: {
   if (!def || !data) return null;
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag onClick={onClick} className={`flex min-w-0 flex-col items-start gap-1 border border-brand-border bg-brand-card p-4 text-left ${onClick ? 'hover:bg-brand-cardHover' : ''}`}>
+    <Tag onClick={onClick} className={`flex min-w-0 flex-col items-start gap-1 border border-brand-border bg-brand-card p-3 text-left sm:p-4 ${onClick ? 'hover:bg-brand-cardHover' : ''}`}>
       <span className="flex items-center gap-1">
         <span className="eyebrow">{def.label}</span>
         <InfoTip text={def.help} label={`What "${def.label}" means`} />
@@ -329,7 +331,7 @@ export function DonutChart({ rows, labelFor, centerLabel = 'Total' }: {
   if (!total) return <p className="py-4 text-xs text-brand-textMuted">Nothing yet.</p>;
   let offset = 0;
   return (
-    <div className="grid items-center gap-4 sm:grid-cols-[9rem_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[9rem_minmax(0,1fr)]">
       <svg viewBox="0 0 120 120" className="mx-auto h-36 w-36" role="img" aria-label={`${centerLabel}: ${total.toLocaleString('en-US')}`}>
         <circle cx="60" cy="60" r="43" fill="none" stroke="currentColor" strokeWidth="18" className="text-brand-dark" />
         {list.map((row, index) => {

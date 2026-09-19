@@ -137,7 +137,22 @@ export default function AuditPanel({ authedFetch }: Props) {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto border border-brand-border">
+        <>
+        <ul className="space-y-2 md:hidden">
+          {entries.map((e) => (
+            <li key={e.id} className="border border-brand-border bg-brand-card p-3 text-xs">
+              <p className="text-brand-heading">
+                {ACTION_LABEL[e.action] ?? e.action}
+                {e.target_label && <span className="ml-1 break-all font-mono text-[0.75rem] text-brand-body">{e.target_label}</span>}
+              </p>
+              <p className="mt-1 break-all font-mono text-[0.6875rem] text-brand-textMuted">
+                {new Date(e.created_at).toLocaleString()} · {e.actor_email ?? '—'}
+              </p>
+              {describe(e.detail) && <p className="mt-1.5 text-[0.75rem] leading-relaxed text-brand-textMuted">{describe(e.detail)}</p>}
+            </li>
+          ))}
+        </ul>
+        <div className="hidden overflow-x-auto border border-brand-border md:block">
           <table className="w-full min-w-[48rem] text-left text-xs">
             <thead className="border-b border-brand-border bg-brand-card">
               <tr>
@@ -171,6 +186,7 @@ export default function AuditPanel({ authedFetch }: Props) {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );

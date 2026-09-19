@@ -74,7 +74,7 @@ export default function DashboardHome({ authedFetch, allowed, onNavigate, agentL
         </button>
         <p className="text-[0.75rem] text-brand-textMuted">
           Numbers below are for <strong className="text-brand-heading">{periodText}</strong>
-          {compareLabel && <> and compared with {compareLabel}</>}. Hover the <span aria-hidden="true">ⓘ</span> on any number to see what it means.
+          {compareLabel && <> and compared with {compareLabel}</>}. Tap or hover the <span aria-hidden="true">ⓘ</span> on any number to see what it means.
         </p>
         {allowed.includes('analytics') && (
           <button type="button" onClick={() => onNavigate('analytics')} className="btn-secondary ml-auto">
@@ -91,7 +91,7 @@ export default function DashboardHome({ authedFetch, allowed, onNavigate, agentL
           {/* To do */}
           <Card title="Needs your attention" help="Things waiting for someone right now, whatever date they came in. Click one to open it.">
             {data.attention?.length ? (
-              <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {data.attention.map((a: any) => (
                   <li key={a.id}>
                     <button type="button" onClick={() => onNavigate(a.section)}
@@ -114,7 +114,7 @@ export default function DashboardHome({ authedFetch, allowed, onNavigate, agentL
             <p className="text-[0.75rem] text-brand-textMuted">Visitor numbers start once migration 0018_visitor_analytics.sql has been run.</p>
           )}
 
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             {data.salesSeries && (
               <Card title="Sales" help="Revenue from paid orders in each part of the period. The dashed grey line is the same length of time just before, for comparison.">
                 <LineChart points={data.salesSeries.map((p: any) => ({ key: p.key, value: p.revenue, previous: p.previous }))}

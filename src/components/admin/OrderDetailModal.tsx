@@ -72,14 +72,14 @@ export default function OrderDetailModal({ row, detail, error, ownership, onClos
         </header>
 
         {error ? <p className="m-5 border border-brand-accent/50 p-4 text-xs">{error}</p> : !detail ? <p className="p-8 text-center text-xs text-brand-textMuted">Loading complete order details...</p> : (
-          <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="grid grid-cols-1 gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
             <div className="space-y-5">
               {!canEdit && <p className="border border-brand-border bg-brand-dark p-3 text-xs text-brand-textMuted">Claim this unassigned order before editing it.</p>}
               {saveError && <p className="border border-action/50 p-3 text-xs text-brand-body">{saveError}</p>}
               <Section title="Items">
                 {items.length === 0 ? <p className="text-brand-textMuted">No line items found.</p> : items.map((item) => <div key={item.id} className="grid grid-cols-[1fr_auto_auto] gap-4 border-t border-brand-border py-3 text-xs first:border-t-0"><div><strong className="text-brand-heading">{item.product_name}</strong><p className="mt-1 font-mono text-brand-textMuted">{item.sku || item.product_slug} · {money(item.unit_price)} each</p></div><span className="font-mono">× {item.quantity}</span><strong className="font-mono text-brand-heading">{money(item.line_total)}</strong></div>)}
               </Section>
-              <div className="grid gap-5 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <Section title="Customer"><Info label="Name" value={order.full_name}/><Info label="Email" value={order.email}/><Info label="Phone" value={order.phone}/><Info label="Institution" value={order.institution}/></Section>
                 <Section title="Shipping address">{address ? Object.entries(address).filter(([, value]) => value).map(([key, value]) => <Info key={key} label={key.replace(/_/g, ' ')} value={String(value)}/>) : <p className="text-brand-textMuted">No address recorded.</p>}</Section>
               </div>
