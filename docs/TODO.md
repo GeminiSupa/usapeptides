@@ -9,6 +9,34 @@ something outside the code.
 - [x] Owner ran 0021; service-role table/RPC checks returned 200 and anonymous
       access returned 401 on 2026-09-19.
 
+## No live payment methods — 2026-09-20
+
+- [x] Owner: "we have no payment setup right now, all of them are fake."
+      Checkout offered Card, Zelle, Bitcoin/USDT and Bank Wire and printed
+      instructions for each — an address to Zelle money to, a promised crypto
+      QR code, promised wire instructions. A customer could have sent money
+      into a dead end. All four are gone, replaced by one "Online payment —
+      coming soon" notice saying the team will email within one business day
+      to arrange payment.
+- [x] Orders are still recorded and still reach the dashboard, with
+      `payment_provider` null. Nothing is charged and no card or bank details
+      are collected anywhere on the site.
+- [x] **The success page was inventing a random order number** with
+      `Math.random()` instead of reading the real one from the redirect, so
+      the number a customer wrote down matched nothing in the dashboard. It
+      now shows the real number. Verified end to end: placed an order, screen
+      showed `USP-MU9MO1IM-K1CE`, the database row matched, then deleted.
+- [x] The FAQ claimed card, debit, Zelle, wire and crypto "with instant
+      processing". Corrected.
+- [x] Resend delivery confirmed by the owner: the test arrived in the Gmail
+      inbox, not spam, showing "USA Peptide Depot (do not reply)". Owner has
+      set `RESEND_FROM` in Vercel and redeployed.
+- [!] Owner: the affiliate page still promises "Monthly payouts via Crypto or
+      Bank Wire". Left alone because it is money going out and arranged by
+      hand, but say if that is not real either.
+- [ ] No payment processing is built. This is the blocker before the store
+      can take money on its own.
+
 ## Contact address, sender and card payment — 2026-09-20
 
 - [x] **The only mailbox the business reads is `info@usapeptides.com`.** It is
@@ -23,13 +51,11 @@ something outside the code.
       a person.
 - [x] `RESEND_FROM` changed to `noreply@usapeptidedepot.com` in `.env.local`,
       and the sender name is now "USA Peptide Depot (do not reply)".
-- [!] **Owner: set `RESEND_FROM=noreply@usapeptidedepot.com` in Vercel and
-      redeploy.** Until then live email still sends from `notifications@`.
-      Vercel only applies changed variables on a new deployment.
-- [!] **Owner: confirm `info@usapeptides.com` is the address registered with
-      Zelle.** Checkout now tells customers to send money there. If Zelle is
-      registered to a different address, transfers will not arrive — set
-      `PAYMENTS_EMAIL` to the right one.
+- [x] Owner set `RESEND_FROM=noreply@usapeptidedepot.com` in Vercel and
+      redeployed on 2026-09-20.
+- [x] Moot: Zelle was removed from checkout entirely — see "No live payment
+      methods" above. `PAYMENTS_EMAIL` stays available for when payment is set
+      up.
 - [x] Card payment now says "coming soon". The three card inputs are gone, so
       the site no longer collects card numbers it silently discarded. Checkout
       defaults to Zelle and the order button is disabled while Card is

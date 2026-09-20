@@ -44,6 +44,6 @@ export const faqs: FAQItem[] = [
   {
     category: 'Payments & Security',
     question: 'What payment methods do you accept?',
-    answer: 'We accept major Credit Cards, Debit Cards, Zelle, Bank Wire / ACH for wholesale orders, and major Cryptocurrencies (Bitcoin, Ethereum, USDT) with instant processing.'
+    answer: 'Online payment is coming soon. For now, place your order on the site and our team emails you within one business day to confirm it and arrange payment. Nothing is charged at checkout and no card details are collected.'
   }
 ];

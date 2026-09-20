@@ -10,21 +10,17 @@ import { BUSINESS } from '@/lib/env';
 import { isEmail, isPersonName, isPhone, isPostalCode } from '@/lib/validate';
 import { 
   ShieldCheck, 
-  CreditCard, 
   Building2, 
   Truck, 
   Lock, 
   CheckCircle2, 
   ArrowRight,
-  Bitcoin,
-  DollarSign
 } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, finalTotal, subtotal, hasFreeShipping, clearCart } = useCart();
 
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'zelle' | 'crypto' | 'wire'>('zelle');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -73,7 +69,6 @@ export default function CheckoutPage() {
     if (formData.city.trim().length < 2) errors.city = 'Enter a city.';
     if (!formData.state.trim()) errors.state = 'Enter a state.';
     if (!isPostalCode(formData.zip)) errors.zip = 'Enter a valid ZIP or postal code.';
-    if (paymentMethod === 'card') errors.paymentMethod = 'Card payment is coming soon. Choose Zelle, crypto or bank wire.';
     return errors;
   };
 
@@ -108,7 +103,6 @@ export default function CheckoutPage() {
           },
           complianceAck: true,
           notes: formData.notes || undefined,
-          paymentMethod,
           ref: readReferral(),
         }),
       });
@@ -320,65 +314,30 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Payment Selection */}
+          {/* Payment */}
           <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-4">
             <h3 className="text-sm font-bold text-brand-heading flex items-center gap-2 border-b border-brand-border pb-3">
               <Lock className="w-4 h-4 text-brand-accentGlow" />
-              3. Payment Selection
+              3. Payment
             </h3>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { id: 'card', label: 'Card (soon)', icon: <CreditCard className="w-4 h-4" /> },
-                { id: 'zelle', label: 'Zelle Pay', icon: <DollarSign className="w-4 h-4" /> },
-                { id: 'crypto', label: 'Bitcoin / USDT', icon: <Bitcoin className="w-4 h-4" /> },
-                { id: 'wire', label: 'Bank Wire / ACH', icon: <Building2 className="w-4 h-4" /> },
-              ].map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPaymentMethod(p.id as any)}
-                  className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all ${
-                    paymentMethod === p.id
-                      ? 'bg-navy-50 border-brand-accentGlow text-brand-heading shadow-md'
-                      : 'bg-brand-darker border-brand-border text-brand-textMuted hover:text-brand-heading'
-                  }`}
-                >
-                  {p.icon}
-                  <span>{p.label}</span>
-                </button>
-              ))}
+            {/*
+              No payment method is live yet. The page used to offer card, Zelle,
+              crypto and wire and print instructions for each, so a customer
+              could send money to an address nobody was watching. Orders are
+              still recorded; a person follows up to arrange payment.
+            */}
+            <div className="p-4 rounded-xl bg-brand-darker border border-brand-border text-xs text-brand-body space-y-2 leading-relaxed">
+              <span className="font-bold text-brand-heading block">Online payment — coming soon</span>
+              <p>
+                We are not taking payment on the site yet. Place your order below and our team will
+                email you within one business day to confirm it and arrange payment.
+              </p>
+              <p className="text-brand-textMuted text-[11px]">
+                Nothing is charged now, and no card or bank details are collected on this page.
+                Questions? Email {BUSINESS.supportEmail} or call {BUSINESS.supportPhone}.
+              </p>
             </div>
-
-            {paymentMethod === 'card' && (
-              <div className="p-4 rounded-xl bg-brand-darker border border-brand-border text-xs text-brand-body space-y-1 leading-relaxed">
-                <span className="font-bold text-brand-heading block">Card payment — coming soon</span>
-                <p>Card payments are not available yet. Choose Zelle, Bitcoin / USDT or Bank Wire above to place this order today.</p>
-                <p className="text-brand-textMuted text-[11px]">We are not collecting card details until card processing is live.</p>
-              </div>
-            )}
-
-            {paymentMethod === 'zelle' && (
-              <div className="p-4 rounded-xl bg-brand-darker border border-brand-border text-xs text-brand-body space-y-1 leading-relaxed">
-                <span className="font-bold text-brand-heading block">Zelle Payment Instructions:</span>
-                <p>Transfer order total to: <strong className="text-brand-accentGlow font-mono">{BUSINESS.paymentsEmail}</strong></p>
-                <p className="text-brand-textMuted text-[11px]">Include your order name in memo. Orders ship immediately upon receipt confirmation.</p>
-              </div>
-            )}
-
-            {paymentMethod === 'crypto' && (
-              <div className="p-4 rounded-xl bg-brand-darker border border-brand-border text-xs text-brand-body space-y-1">
-                <span className="font-bold text-brand-heading block">Crypto (BTC / USDT TRC20 / ETH):</span>
-                <p>A dynamic cryptocurrency invoice QR code and address will be displayed on the next confirmation screen.</p>
-              </div>
-            )}
-
-            {paymentMethod === 'wire' && (
-              <div className="p-4 rounded-xl bg-brand-darker border border-brand-border text-xs text-brand-body space-y-1">
-                <span className="font-bold text-brand-heading block">Domestic Wire / ACH:</span>
-                <p>Wiring instructions and invoice will be automatically emailed to your institution address upon submission.</p>
-              </div>
-            )}
           </div>
 
         </div>
@@ -427,16 +386,14 @@ export default function CheckoutPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting || paymentMethod === 'card'}
+              disabled={isSubmitting}
               className="w-full py-4 px-6 rounded-xl bg-action hover:bg-action-hover text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span>Processing Laboratory Order...</span>
-              ) : paymentMethod === 'card' ? (
-                <span>Choose another payment method</span>
               ) : (
                 <>
-                  <span>Submit &amp; Place Research Order</span>
+                  <span>Place Research Order</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
