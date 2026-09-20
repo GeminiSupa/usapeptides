@@ -9,6 +9,34 @@ something outside the code.
 - [x] Owner ran 0021; service-role table/RPC checks returned 200 and anonymous
       access returned 401 on 2026-09-19.
 
+## Contact address, sender and card payment — 2026-09-20
+
+- [x] **The only mailbox the business reads is `info@usapeptides.com`.** It is
+      now the single source for the contact address, the Zelle address and the
+      Reply-To on every automated email. `BUSINESS` in `src/lib/env.ts` holds it;
+      no page hardcodes an address any more.
+- [x] **Mail must be sent from `usapeptidedepot.com`, not `usapeptides.com`.**
+      Tested against Resend on 2026-09-20: `noreply@usapeptidedepot.com` is
+      accepted (200), `info@usapeptides.com` is refused (403, "domain is not
+      verified"). So the From address stays on the verified domain and
+      Reply-To carries the real mailbox — a customer who replies still reaches
+      a person.
+- [x] `RESEND_FROM` changed to `noreply@usapeptidedepot.com` in `.env.local`,
+      and the sender name is now "USA Peptide Depot (do not reply)".
+- [!] **Owner: set `RESEND_FROM=noreply@usapeptidedepot.com` in Vercel and
+      redeploy.** Until then live email still sends from `notifications@`.
+      Vercel only applies changed variables on a new deployment.
+- [!] **Owner: confirm `info@usapeptides.com` is the address registered with
+      Zelle.** Checkout now tells customers to send money there. If Zelle is
+      registered to a different address, transfers will not arrive — set
+      `PAYMENTS_EMAIL` to the right one.
+- [x] Card payment now says "coming soon". The three card inputs are gone, so
+      the site no longer collects card numbers it silently discarded. Checkout
+      defaults to Zelle and the order button is disabled while Card is
+      selected, explaining why.
+- [ ] Card processing itself is still not built. Nothing on the site can
+      charge a card.
+
 ## Signup failure found and fixed — 2026-09-20
 
 - [x] **Root cause.** Both addresses the owner tried, `omerforce3@gmail.com`

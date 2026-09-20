@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { readReferral } from '@/components/ReferralCapture';
 import { FLAT_SHIPPING } from '@/lib/checkout';
+import { BUSINESS } from '@/lib/env';
 import { isEmail, isPersonName, isPhone, isPostalCode } from '@/lib/validate';
 import { 
   ShieldCheck, 
@@ -23,7 +24,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { cart, finalTotal, subtotal, hasFreeShipping, clearCart } = useCart();
 
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'zelle' | 'crypto' | 'wire'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'zelle' | 'crypto' | 'wire'>('zelle');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -35,9 +36,6 @@ export default function CheckoutPage() {
     state: '',
     zip: '',
     country: 'United States',
-    cardNumber: '',
-    cardExp: '',
-    cardCvc: '',
     notes: ''
   });
 
@@ -75,6 +73,7 @@ export default function CheckoutPage() {
     if (formData.city.trim().length < 2) errors.city = 'Enter a city.';
     if (!formData.state.trim()) errors.state = 'Enter a state.';
     if (!isPostalCode(formData.zip)) errors.zip = 'Enter a valid ZIP or postal code.';
+    if (paymentMethod === 'card') errors.paymentMethod = 'Card payment is coming soon. Choose Zelle, crypto or bank wire.';
     return errors;
   };
 
@@ -330,7 +329,7 @@ export default function CheckoutPage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
-                { id: 'card', label: 'Credit Card', icon: <CreditCard className="w-4 h-4" /> },
+                { id: 'card', label: 'Card (soon)', icon: <CreditCard className="w-4 h-4" /> },
                 { id: 'zelle', label: 'Zelle Pay', icon: <DollarSign className="w-4 h-4" /> },
                 { id: 'crypto', label: 'Bitcoin / USDT', icon: <Bitcoin className="w-4 h-4" /> },
                 { id: 'wire', label: 'Bank Wire / ACH', icon: <Building2 className="w-4 h-4" /> },
@@ -352,63 +351,17 @@ export default function CheckoutPage() {
             </div>
 
             {paymentMethod === 'card' && (
-              <div className="space-y-3 pt-2">
-                <div>
-                  <label className="text-xs text-brand-textMuted block mb-1">Card Number *</label>
-                  <input
-                    type="text"
-                    name="cardNumber"
-                    autoComplete="cc-number"
-                    inputMode="numeric"
-                    placeholder="4000 1234 5678 9010"
-                    required
-                    value={formData.cardNumber}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(fieldErrors.cardNumber)}
-                    className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:border-brand-accent ${fieldErrors.cardNumber ? 'border-action' : ''}`}
-                  />
-                  {fieldErrors.cardNumber && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.cardNumber}</p>}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-brand-textMuted block mb-1">MM / YY *</label>
-                    <input
-                      type="text"
-                      name="cardExp"
-                      autoComplete="cc-exp"
-                      placeholder="12/28"
-                      required
-                      value={formData.cardExp}
-                      onChange={handleChange}
-                      aria-invalid={Boolean(fieldErrors.cardExp)}
-                      className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:border-brand-accent ${fieldErrors.cardExp ? 'border-action' : ''}`}
-                    />
-                    {fieldErrors.cardExp && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.cardExp}</p>}
-                  </div>
-                  <div>
-                    <label className="text-xs text-brand-textMuted block mb-1">CVC / CVV *</label>
-                    <input
-                      type="text"
-                      name="cardCvc"
-                      autoComplete="cc-csc"
-                      inputMode="numeric"
-                      placeholder="123"
-                      required
-                      value={formData.cardCvc}
-                      onChange={handleChange}
-                      aria-invalid={Boolean(fieldErrors.cardCvc)}
-                      className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:border-brand-accent ${fieldErrors.cardCvc ? 'border-action' : ''}`}
-                    />
-                    {fieldErrors.cardCvc && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.cardCvc}</p>}
-                  </div>
-                </div>
+              <div className="p-4 rounded-xl bg-brand-darker border border-brand-border text-xs text-brand-body space-y-1 leading-relaxed">
+                <span className="font-bold text-brand-heading block">Card payment — coming soon</span>
+                <p>Card payments are not available yet. Choose Zelle, Bitcoin / USDT or Bank Wire above to place this order today.</p>
+                <p className="text-brand-textMuted text-[11px]">We are not collecting card details until card processing is live.</p>
               </div>
             )}
 
             {paymentMethod === 'zelle' && (
               <div className="p-4 rounded-xl bg-brand-darker border border-brand-border text-xs text-brand-body space-y-1 leading-relaxed">
                 <span className="font-bold text-brand-heading block">Zelle Payment Instructions:</span>
-                <p>Transfer order total to: <strong className="text-brand-accentGlow font-mono">payments@usapeptides.com</strong></p>
+                <p>Transfer order total to: <strong className="text-brand-accentGlow font-mono">{BUSINESS.paymentsEmail}</strong></p>
                 <p className="text-brand-textMuted text-[11px]">Include your order name in memo. Orders ship immediately upon receipt confirmation.</p>
               </div>
             )}
@@ -474,11 +427,13 @@ export default function CheckoutPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || paymentMethod === 'card'}
               className="w-full py-4 px-6 rounded-xl bg-action hover:bg-action-hover text-white font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span>Processing Laboratory Order...</span>
+              ) : paymentMethod === 'card' ? (
+                <span>Choose another payment method</span>
               ) : (
                 <>
                   <span>Submit &amp; Place Research Order</span>

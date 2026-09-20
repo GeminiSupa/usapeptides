@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { BUSINESS } from '@/lib/env';
 
 export interface PolicySection {
   heading: string;
@@ -54,8 +55,8 @@ export default function PolicyPage({
       <div className="border border-brand-border bg-brand-card p-5">
         <p className="text-[0.6875rem] leading-relaxed text-brand-textMuted">
           Questions about this policy? Email{' '}
-          <a href="mailto:info@usapeptides.com" className="text-brand-accentGlow hover:underline">
-            info@usapeptides.com
+          <a href={`mailto:${BUSINESS.supportEmail}`} className="text-brand-accentGlow hover:underline">
+            {BUSINESS.supportEmail}
           </a>
           .
         </p>

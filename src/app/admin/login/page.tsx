@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
               autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@usapeptides.com"
+              placeholder="you@example.com"
               className="w-full border border-brand-border bg-brand-card px-3 py-3 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none"
             />
             <div className="relative">

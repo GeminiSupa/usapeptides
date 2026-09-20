@@ -70,10 +70,10 @@ export async function sendCustomerAuthEmail({ to, kind, url }: AuthEmailInput) {
   }[kind];
 
   const { subject, heading, action, explanation, footnote } = copy;
-  const support = `This is an automated email and replies are not monitored. For help, email ${BUSINESS.supportEmail} or call ${BUSINESS.supportPhone}.`;
+  const support = `This message was sent from an unmonitored address — please do not reply to it. For help, email ${BUSINESS.supportEmail} or call ${BUSINESS.supportPhone}.`;
   const html = `<!doctype html><html><body style="margin:0;background:#fdfbf0;color:#233049;font-family:Arial,sans-serif"><div style="max-width:600px;margin:0 auto;padding:32px 20px"><h1 style="color:#1f4233;font-size:24px">${heading}</h1><p>${explanation}</p><p style="margin:28px 0"><a href="${url}" style="display:inline-block;background:#1f4233;color:#fff;text-decoration:none;padding:14px 20px;font-weight:700">${action}</a></p><p style="font-size:13px;color:#596274">${footnote}</p><p style="font-size:13px;color:#596274">${support}</p></div></body></html>`;
   const text = `${heading}\n\n${explanation}\n\n${url}\n\n${footnote}\n\n${support}`;
-  const automatedSender = `${BUSINESS.name} - Do Not Reply`;
+  const automatedSender = `${BUSINESS.name} (do not reply)`;
 
   if (resendEnv.apiKey) {
     const response = await fetch('https://api.resend.com/emails', {
@@ -82,6 +82,8 @@ export async function sendCustomerAuthEmail({ to, kind, url }: AuthEmailInput) {
       body: JSON.stringify({
         from: `"${automatedSender}" <${resendEnv.from}>`,
         to: [to],
+        // The From address is not a mailbox; a reply must reach a person.
+        reply_to: BUSINESS.supportEmail,
         subject,
         html,
         text,
@@ -104,6 +106,7 @@ export async function sendCustomerAuthEmail({ to, kind, url }: AuthEmailInput) {
   await transport.sendMail({
     from: `"${automatedSender}" <${smtpEnv.from}>`,
     to,
+    replyTo: BUSINESS.supportEmail,
     subject,
     html,
     text,

@@ -11,12 +11,27 @@
 
 const clean = (v: string | undefined): string => (v ?? '').trim();
 
-/** Public business identity, used in page copy, emails and order records. */
+/**
+ * Public business identity, used in page copy, emails and order records.
+ *
+ * `supportEmail` is the one mailbox a human actually reads. The site is served
+ * from a different domain than the mailbox, which is fine: the site domain is
+ * only used to build links, and the mailbox is only used to receive replies.
+ * Nothing here may be repeated anywhere else in the codebase.
+ */
+const supportEmail = clean(process.env.ORDER_NOTIFICATION_FROM) || 'info@usapeptides.com';
+
 export const BUSINESS = {
   name: 'USA Peptide Depot',
   legalName: 'USA Peptide Depot',
   domain: clean(process.env.NEXT_PUBLIC_SITE_URL) || 'https://usapeptidedepot.com',
-  supportEmail: clean(process.env.ORDER_NOTIFICATION_FROM) || 'info@usapeptidedepot.com',
+  supportEmail,
+  /**
+   * Where customers send Zelle transfers. Defaults to the support mailbox
+   * because that is the only address the business monitors — it must be the
+   * address actually registered with Zelle, or transfers will not arrive.
+   */
+  paymentsEmail: clean(process.env.PAYMENTS_EMAIL) || supportEmail,
   supportPhone: '831-471-5559',
   country: 'US',
   currency: 'USD',
@@ -45,7 +60,14 @@ export const smtpEnv = {
   orderNotificationTo: clean(process.env.ORDER_NOTIFICATION_TO),
 };
 
-/** Resend HTTP API — preferred when an API key is supplied. Server-only. */
+/**
+ * Resend HTTP API — preferred when an API key is supplied. Server-only.
+ *
+ * `RESEND_FROM` is a send-only address on a Resend-verified domain. It is not
+ * a mailbox and nobody reads it, so it is named `noreply@` and every message
+ * carries a Reply-To of `BUSINESS.supportEmail`. A customer who replies anyway
+ * reaches a real person instead of a black hole.
+ */
 export const resendEnv = {
   apiKey: clean(process.env.RESEND_API_KEY),
   from: clean(process.env.RESEND_FROM) || 'onboarding@resend.dev',
