@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { featureUnavailable } from '@/lib/env';
 import { ok, created, badRequest, serverError, readJson, isNonEmpty, clip } from '@/lib/api';
+import { cleanMultiline, cleanText, isPersonName } from '@/lib/validate';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,12 +50,18 @@ export async function POST(req: Request) {
   if (!body) return badRequest('Request body must be valid JSON.');
 
   const rating = Math.floor(Number(body.rating));
+  const productSlug = cleanText(body.productSlug, 200);
+  const authorName = cleanText(body.authorName, 200);
+  const reviewBody = cleanMultiline(body.body, 4000);
+
   const fields: Record<string, string> = {};
-  if (!isNonEmpty(body.productSlug)) fields.productSlug = 'Product slug is required.';
-  if (!isNonEmpty(body.authorName)) fields.authorName = 'Name is required.';
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(productSlug)) fields.productSlug = 'Product slug is required.';
+  if (!isPersonName(authorName)) fields.authorName = 'Enter your name.';
   if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
     fields.rating = 'Rating must be between 1 and 5.';
   }
+  // Optional, but a one-word review is not worth moderating.
+  if (reviewBody && reviewBody.length < 10) fields.body = 'Write at least 10 characters, or leave the review text blank.';
   if (Object.keys(fields).length) return badRequest('Review rejected.', fields);
 
   try {
@@ -63,16 +70,20 @@ export async function POST(req: Request) {
     const { data: product } = await db
       .from('products')
       .select('id')
-      .eq('slug', clip(body.productSlug, 200))
+      .eq('slug', productSlug)
       .maybeSingle();
 
+    // Reviews must hang off a real product, or the moderation queue fills with
+    // rows for slugs that do not exist.
+    if (!product) return badRequest('Review rejected.', { productSlug: 'Unknown product.' });
+
     const { error } = await db.from('product_reviews').insert({
-      product_id: product?.id ?? null,
-      product_slug: clip(body.productSlug, 200),
-      author_name: clip(body.authorName, 200),
-      institution: clip(body.institution, 200) || null,
+      product_id: product.id,
+      product_slug: productSlug,
+      author_name: authorName,
+      institution: cleanText(body.institution, 200) || null,
       rating,
-      body: clip(body.body, 4000) || null,
+      body: reviewBody || null,
       is_approved: false,
     });
 

@@ -33,10 +33,8 @@ export async function readJson<T = Record<string, unknown>>(
   }
 }
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export const isEmail = (v: unknown): v is string =>
-  typeof v === 'string' && EMAIL.test(v.trim());
+// Field rules live in one place so the browser and the server agree.
+export { isEmail, isPhone, isPersonName, isPostalCode, passwordProblem } from './validate';
 
 export const isNonEmpty = (v: unknown): v is string =>
   typeof v === 'string' && v.trim().length > 0;

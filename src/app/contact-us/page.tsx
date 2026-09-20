@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send, ShieldCheck, Loader2 } from 'lucide-react';
 import { useSiteContent } from '@/components/SiteContentProvider';
+import { isEmail, isPersonName } from '@/lib/validate';
 
 export default function ContactUsPage() {
   const { t } = useSiteContent();
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,6 +23,13 @@ export default function ContactUsPage() {
   // thank-you message and send nothing.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Mirrors /api/contact, which checks all of this again.
+    const errors: Record<string, string> = {};
+    if (!isPersonName(formData.name)) errors.name = 'Enter your name.';
+    if (!isEmail(formData.email)) errors.email = 'Enter a valid email address.';
+    if (formData.message.trim().length < 10) errors.message = 'Enter a message of at least 10 characters.';
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) { setSendError('Check the highlighted fields and try again.'); return; }
     setSending(true); setSendError('');
     try {
       const res = await fetch('/api/contact', {
@@ -35,6 +44,7 @@ export default function ContactUsPage() {
       });
       if (!res.ok) {
         const p = await res.json().catch(() => null);
+        setFieldErrors((p?.fields ?? {}) as Record<string, string>);
         throw new Error(p?.message ?? 'Your message could not be sent.');
       }
       setSubmitted(true);
@@ -145,8 +155,10 @@ export default function ContactUsPage() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                      aria-invalid={Boolean(fieldErrors.name)}
+                      className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.name ? 'border-action' : ''}`}
                     />
+                    {fieldErrors.name && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.name}</p>}
                   </div>
                   <div>
                     <label className="text-xs text-brand-textMuted block mb-1">Email Address *</label>
@@ -156,8 +168,10 @@ export default function ContactUsPage() {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                      aria-invalid={Boolean(fieldErrors.email)}
+                      className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.email ? 'border-action' : ''}`}
                     />
+                    {fieldErrors.email && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.email}</p>}
                   </div>
                 </div>
 
@@ -167,7 +181,7 @@ export default function ContactUsPage() {
                     <select
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent"
                     >
                       <option value="General Inquiry">General Product Inquiry</option>
                       <option value="COA Request">COA / Purity Test Request</option>
@@ -182,7 +196,7 @@ export default function ContactUsPage() {
                       placeholder="e.g. USP-123456"
                       value={formData.orderNumber}
                       onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent"
                     />
                   </div>
                 </div>
@@ -195,8 +209,10 @@ export default function ContactUsPage() {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="Provide details regarding your research compounds, testing questions, or order..."
-                    className="w-full bg-brand-dark border border-brand-border rounded-xl p-3 text-xs text-brand-heading focus:outline-none focus:"
+                    aria-invalid={Boolean(fieldErrors.message)}
+                    className={`w-full bg-brand-dark border border-brand-border rounded-xl p-3 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.message ? 'border-action' : ''}`}
                   />
+                  {fieldErrors.message && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.message}</p>}
                 </div>
 
                 {sendError && <p className="border border-action/50 p-3 text-xs text-brand-body">{sendError}</p>}

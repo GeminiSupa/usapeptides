@@ -1,17 +1,77 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
 import { useSiteContent } from '@/components/SiteContentProvider';
 import { safeHref } from '@/lib/siteContent';
+import { isEmail } from '@/lib/validate';
 
 const SOCIAL: [string, string][] = [
   ['social.instagram', 'Instagram'], ['social.facebook', 'Facebook'], ['social.x', 'X'],
   ['social.youtube', 'YouTube'], ['social.tiktok', 'TikTok'], ['social.linkedin', 'LinkedIn'],
 ];
+
+/** Newsletter sign-up. This form used to discard the address it collected. */
+function NewsletterSignup({ title }: { title: string }) {
+  const [email, setEmail] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle');
+  const [error, setError] = useState('');
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isEmail(email)) { setError('Enter a valid email address.'); return; }
+    setError(''); setState('sending');
+    const res = await fetch('/api/newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), source: 'footer' }),
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      const payload = res ? await res.json().catch(() => null) : null;
+      setState('idle');
+      setError((payload as { message?: string } | null)?.message ?? 'Could not subscribe. Please try again.');
+      return;
+    }
+    setState('done'); setEmail('');
+  };
+
+  return (
+    <div>
+      <div className="eyebrow mb-3 text-brand-textMuted">{title}</div>
+      {state === 'done' ? (
+        <p className="max-w-sm text-xs text-brand-accentGlow" role="status">
+          Thank you — this address is on the list.
+        </p>
+      ) : (
+        <form onSubmit={submit} noValidate className="flex max-w-sm">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); if (error) setError(''); }}
+            aria-label={title}
+            aria-invalid={Boolean(error)}
+            autoComplete="email"
+            placeholder="name@institution.edu"
+            className="min-w-0 flex-grow border border-brand-border bg-brand-card px-3 py-2.5 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={state === 'sending'}
+            className="flex flex-shrink-0 items-center gap-1 bg-brand-accent px-4 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover disabled:opacity-60"
+          >
+            <span>{state === 'sending' ? 'Joining' : 'Join'}</span>
+            <ArrowRight className="h-3 w-3" />
+          </button>
+        </form>
+      )}
+      {error && <p className="mt-2 max-w-sm border border-action/50 p-2 text-xs text-brand-body" role="alert">{error}</p>}
+    </div>
+  );
+}
 
 export default function Footer() {
   const categories = useCategories();
@@ -38,29 +98,7 @@ export default function Footer() {
             {t('footer.about')}
           </p>
 
-          <div>
-            <div className="eyebrow mb-3 text-brand-textMuted">{t('footer.newsletterTitle')}</div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
-              className="flex max-w-sm"
-            >
-              <input
-                type="email"
-                required
-                placeholder="name@institution.edu"
-                className="min-w-0 flex-grow border border-brand-border bg-brand-card px-3 py-2.5 text-xs text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="flex flex-shrink-0 items-center gap-1 bg-brand-accent px-4 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.1em] text-brand-onAccent transition-colors hover:bg-brand-accentHover"
-              >
-                <span>Join</span>
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            </form>
-          </div>
+          <NewsletterSignup title={t('footer.newsletterTitle')} />
         </div>
 
         {/* Categories */}

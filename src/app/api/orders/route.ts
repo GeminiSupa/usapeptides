@@ -10,11 +10,21 @@ import {
   notFound,
   serverError,
   readJson,
-  isEmail,
   isNonEmpty,
   clip,
   generateOrderNumber,
 } from '@/lib/api';
+import {
+  MAX_LINE_QUANTITY,
+  MAX_ORDER_LINES,
+  cleanMultiline,
+  cleanText,
+  isEmail,
+  isPersonName,
+  isPhone,
+  normaliseEmail,
+  parseShippingAddress,
+} from '@/lib/validate';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,10 +63,19 @@ export async function POST(req: Request) {
 
   if (!body) return badRequest('Request body must be valid JSON.');
 
-  const fields: Record<string, string> = {};
-  if (!isEmail(body.email)) fields.email = 'A valid email address is required.';
+  const email = normaliseEmail(body.email);
+  const fullName = cleanText(body.fullName, 200);
+  const phone = cleanText(body.phone, 50);
+  const { address: shippingAddress, errors: addressErrors } = parseShippingAddress(body.shippingAddress);
+
+  const fields: Record<string, string> = { ...addressErrors };
+  if (!isEmail(email)) fields.email = 'A valid email address is required.';
+  if (!isPersonName(fullName)) fields.fullName = 'Enter the full name for this order.';
+  if (!isPhone(phone)) fields.phone = 'A valid phone number is required for delivery.';
   if (!Array.isArray(body.items) || body.items.length === 0) {
     fields.items = 'At least one order line is required.';
+  } else if (body.items.length > MAX_ORDER_LINES) {
+    fields.items = `An order cannot have more than ${MAX_ORDER_LINES} different products.`;
   }
   if (body.complianceAck !== true) {
     fields.complianceAck =
@@ -64,7 +83,8 @@ export async function POST(req: Request) {
   }
   if (Object.keys(fields).length) return badRequest('Order rejected.', fields);
 
-  // Normalise the requested lines.
+  // Normalise the requested lines. Quantity is capped so a tampered payload
+  // cannot request a number the warehouse could never fill.
   const requested = (body.items as IncomingItem[])
     .map((item) => ({
       slug: clip(item?.slug, 200),
@@ -74,6 +94,14 @@ export async function POST(req: Request) {
 
   if (requested.length === 0) {
     return badRequest('Order rejected.', { items: 'No valid order lines supplied.' });
+  }
+  if (requested.some((item) => item.quantity > MAX_LINE_QUANTITY)) {
+    return badRequest('Order rejected.', {
+      items: `Each line is limited to ${MAX_LINE_QUANTITY} units. Contact us for larger quantities.`,
+    });
+  }
+  if (new Set(requested.map((item) => item.slug)).size !== requested.length) {
+    return badRequest('Order rejected.', { items: 'Each product may only appear once. Use the quantity field instead.' });
   }
 
   try {
@@ -137,8 +165,6 @@ export async function POST(req: Request) {
     const shippingTotal = discountedMerchandise >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
     const grandTotal = roundMoney(discountedMerchandise + shippingTotal);
 
-    const email = clip(body.email, 320).toLowerCase();
-
     // Referral link first, then "the customer stays with their agent". No
     // match means the order arrives unclaimed for an agent to claim.
     const attribution = await resolveOrderAttribution(db, { ref: body.ref, email });
@@ -157,9 +183,9 @@ export async function POST(req: Request) {
               agent_claimed_at: new Date().toISOString(),
             }
           : {}),
-        full_name: clip(body.fullName, 200) || null,
-        institution: clip(body.institution, 200) || null,
-        phone: clip(body.phone, 50) || null,
+        full_name: fullName,
+        institution: cleanText(body.institution, 200) || null,
+        phone,
         status: 'pending',
         subtotal,
         discount_total: discountTotal,
@@ -167,10 +193,12 @@ export async function POST(req: Request) {
         grand_total: grandTotal,
         currency: BUSINESS.currency,
         coupon_code: deal?.title ?? null,
-        shipping_address: body.shippingAddress ?? null,
+        // Only our own six fields are stored; the raw client object used to go
+        // straight into the column, so any caller could write arbitrary JSON.
+        shipping_address: shippingAddress,
         payment_provider: PAYMENT_METHODS.has(String(body.paymentMethod)) ? String(body.paymentMethod) : null,
         compliance_ack: true,
-        notes: clip(body.notes, 1000) || null,
+        notes: cleanMultiline(body.notes, 1000) || null,
       })
       .select()
       .single();
@@ -210,8 +238,8 @@ export async function GET(req: Request) {
   if (unavailable) return unavailable;
 
   const url = new URL(req.url);
-  const orderNumber = url.searchParams.get('number');
-  const email = url.searchParams.get('email');
+  const orderNumber = cleanText(url.searchParams.get('number'), 64);
+  const email = normaliseEmail(url.searchParams.get('email'));
 
   // Both are required: the order number alone would be guessable.
   if (!isNonEmpty(orderNumber) || !isEmail(email)) {
@@ -221,15 +249,18 @@ export async function GET(req: Request) {
   try {
     const db = getSupabaseAdmin();
 
+    // Matched in JS rather than with `ilike`, where a `%` inside an otherwise
+    // valid address would have been treated as a wildcard.
     const { data: order, error } = await db
       .from('orders')
       .select('*')
       .eq('order_number', orderNumber)
-      .ilike('email', email)
       .maybeSingle();
 
     if (error) return serverError(error.message);
-    if (!order) return notFound('No order matches that number and email.');
+    if (!order || String(order.email ?? '').trim().toLowerCase() !== email) {
+      return notFound('No order matches that number and email.');
+    }
 
     const { data: items } = await db
       .from('order_items')

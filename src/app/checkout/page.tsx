@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { readReferral } from '@/components/ReferralCapture';
 import { FLAT_SHIPPING } from '@/lib/checkout';
+import { isEmail, isPersonName, isPhone, isPostalCode } from '@/lib/validate';
 import { 
   ShieldCheck, 
   CreditCard, 
@@ -42,9 +43,11 @@ export default function CheckoutPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFieldErrors((prev) => (prev[e.target.name] ? { ...prev, [e.target.name]: '' } : prev));
     // Remembered in this browser so an unfinished cart can be followed up.
     if (e.target.name === 'email') {
       try { localStorage.setItem('upd_checkout_email', e.target.value.trim()); } catch { /* ignore */ }
@@ -60,8 +63,30 @@ export default function CheckoutPage() {
    * Card details are never sent anywhere — nothing on this site can charge a
    * card yet, so the order is saved as pending.
    */
+  /** Mirrors the rules in /api/orders so problems are shown next to the field. */
+  const validate = () => {
+    const errors: Record<string, string> = {};
+    if (!isPersonName(formData.firstName)) errors.firstName = 'Enter a first name.';
+    if (!isPersonName(formData.lastName)) errors.lastName = 'Enter a last name.';
+    if (!formData.institution.trim()) errors.institution = 'Enter the institution or company name.';
+    if (!isEmail(formData.email)) errors.email = 'Enter a valid email address.';
+    if (!isPhone(formData.phone)) errors.phone = 'Enter a valid phone number.';
+    if (formData.address.trim().length < 3) errors.address = 'Enter a street address.';
+    if (formData.city.trim().length < 2) errors.city = 'Enter a city.';
+    if (!formData.state.trim()) errors.state = 'Enter a state.';
+    if (!isPostalCode(formData.zip)) errors.zip = 'Enter a valid ZIP or postal code.';
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors = validate();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) {
+      setSubmitError('Check the highlighted fields and try again.');
+      document.querySelector<HTMLElement>(`[name="${Object.keys(errors)[0]}"]`)?.focus();
+      return;
+    }
     setIsSubmitting(true);
     setSubmitError('');
 
@@ -91,8 +116,16 @@ export default function CheckoutPage() {
       const payload = await res.json().catch(() => null);
 
       if (!res.ok) {
-        const firstField = Object.values((payload?.fields ?? {}) as Record<string, string>)[0];
-        setSubmitError(firstField ?? payload?.message ?? 'We could not place your order. Please try again.');
+        const serverFields = (payload?.fields ?? {}) as Record<string, string>;
+        // The server names its address problems "shippingAddress"; the form
+        // splits that across four inputs, so point at the street line.
+        const { shippingAddress, fullName, ...rest } = serverFields;
+        setFieldErrors({
+          ...rest,
+          ...(shippingAddress ? { address: shippingAddress } : {}),
+          ...(fullName ? { firstName: fullName } : {}),
+        });
+        setSubmitError(Object.values(serverFields)[0] ?? payload?.message ?? 'We could not place your order. Please try again.');
         setIsSubmitting(false);
         return;
       }
@@ -155,8 +188,10 @@ export default function CheckoutPage() {
                   required
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.firstName)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.firstName ? 'border-action' : ''}`}
                 />
+                {fieldErrors.firstName && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.firstName}</p>}
               </div>
               <div>
                 <label className="text-xs text-brand-textMuted block mb-1">Last Name *</label>
@@ -167,8 +202,10 @@ export default function CheckoutPage() {
                   required
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.lastName)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.lastName ? 'border-action' : ''}`}
                 />
+                {fieldErrors.lastName && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.lastName}</p>}
               </div>
               <div className="sm:col-span-2">
                 <label className="text-xs text-brand-textMuted block mb-1">Institution / Laboratory / Company Name *</label>
@@ -180,8 +217,10 @@ export default function CheckoutPage() {
                   placeholder="e.g. BioResearch Labs LLC / University Chemistry Dept"
                   value={formData.institution}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.institution)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.institution ? 'border-action' : ''}`}
                 />
+                {fieldErrors.institution && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.institution}</p>}
               </div>
               <div>
                 <label className="text-xs text-brand-textMuted block mb-1">Email Address (Order Confirmation) *</label>
@@ -192,8 +231,10 @@ export default function CheckoutPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.email)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.email ? 'border-action' : ''}`}
                 />
+                {fieldErrors.email && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.email}</p>}
               </div>
               <div>
                 <label className="text-xs text-brand-textMuted block mb-1">Phone Number (Tracking SMS) *</label>
@@ -204,8 +245,10 @@ export default function CheckoutPage() {
                   required
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.phone)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.phone ? 'border-action' : ''}`}
                 />
+                {fieldErrors.phone && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.phone}</p>}
               </div>
             </div>
           </div>
@@ -227,8 +270,10 @@ export default function CheckoutPage() {
                   required
                   value={formData.address}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.address)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.address ? 'border-action' : ''}`}
                 />
+                {fieldErrors.address && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.address}</p>}
               </div>
               <div>
                 <label className="text-xs text-brand-textMuted block mb-1">City *</label>
@@ -239,8 +284,10 @@ export default function CheckoutPage() {
                   required
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.city)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.city ? 'border-action' : ''}`}
                 />
+                {fieldErrors.city && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.city}</p>}
               </div>
               <div>
                 <label className="text-xs text-brand-textMuted block mb-1">State *</label>
@@ -252,8 +299,10 @@ export default function CheckoutPage() {
                   placeholder="e.g. CA, NY, TX"
                   value={formData.state}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.state)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.state ? 'border-action' : ''}`}
                 />
+                {fieldErrors.state && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.state}</p>}
               </div>
               <div>
                 <label className="text-xs text-brand-textMuted block mb-1">ZIP / Postal Code *</label>
@@ -264,8 +313,10 @@ export default function CheckoutPage() {
                   required
                   value={formData.zip}
                   onChange={handleChange}
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:"
+                  aria-invalid={Boolean(fieldErrors.zip)}
+                  className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading focus:outline-none focus:border-brand-accent ${fieldErrors.zip ? 'border-action' : ''}`}
                 />
+                {fieldErrors.zip && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.zip}</p>}
               </div>
             </div>
           </div>
@@ -313,8 +364,10 @@ export default function CheckoutPage() {
                     required
                     value={formData.cardNumber}
                     onChange={handleChange}
-                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:"
+                    aria-invalid={Boolean(fieldErrors.cardNumber)}
+                    className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:border-brand-accent ${fieldErrors.cardNumber ? 'border-action' : ''}`}
                   />
+                  {fieldErrors.cardNumber && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.cardNumber}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -327,8 +380,10 @@ export default function CheckoutPage() {
                       required
                       value={formData.cardExp}
                       onChange={handleChange}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:"
+                      aria-invalid={Boolean(fieldErrors.cardExp)}
+                      className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:border-brand-accent ${fieldErrors.cardExp ? 'border-action' : ''}`}
                     />
+                    {fieldErrors.cardExp && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.cardExp}</p>}
                   </div>
                   <div>
                     <label className="text-xs text-brand-textMuted block mb-1">CVC / CVV *</label>
@@ -341,8 +396,10 @@ export default function CheckoutPage() {
                       required
                       value={formData.cardCvc}
                       onChange={handleChange}
-                      className="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:"
+                      aria-invalid={Boolean(fieldErrors.cardCvc)}
+                      className={`w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-xs text-brand-heading font-mono focus:outline-none focus:border-brand-accent ${fieldErrors.cardCvc ? 'border-action' : ''}`}
                     />
+                    {fieldErrors.cardCvc && <p role="alert" className="mt-1 text-xs text-action">{fieldErrors.cardCvc}</p>}
                   </div>
                 </div>
               </div>

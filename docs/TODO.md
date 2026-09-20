@@ -9,6 +9,53 @@ something outside the code.
 - [x] Owner ran 0021; service-role table/RPC checks returned 200 and anonymous
       access returned 401 on 2026-09-19.
 
+## Signup failure found and fixed — 2026-09-20
+
+- [x] **Root cause.** Both addresses the owner tried, `omerforce3@gmail.com`
+      and `omerforce@gmail.com`, are rows in `admin_users`. `/api/customer/auth/register`
+      short-circuited on any staff address and answered "a verification email
+      has been sent" while sending nothing and creating nothing. Proven on
+      production: the live endpoint returned HTTP 200 with that message and no
+      Auth user was created. The rate-limit table shows both addresses were
+      tried (hashes `29b8239…` and `0981cb5…`) on 2026-09-19 and 2026-09-20.
+- [x] Register and recover now email the address itself explaining the outcome
+      — "this address is a dashboard account", "you already have an account",
+      "no account for this address" — so the on-screen reply is never a lie.
+      The reply shown in the browser is still identical for every address, so
+      the form still cannot be used to discover who has an account.
+- [!] Owner: a staff dashboard login and a customer account cannot share an
+      email address. To test the customer flow, sign up with a third address.
+      `omerforce3@gmail.com` also has an unlinked `customer_profiles` row
+      ("Omer Test 1") left from earlier testing — say the word and it goes.
+- [ ] Inbox delivery is still unconfirmed. The Resend key is send-only, so
+      delivery history cannot be read; no test mail has been sent from here.
+
+## Form validation — 2026-09-20
+
+- [x] New `src/lib/validate.ts` holds every field rule once, with no
+      `server-only` import, so the browser and the route handler run the same
+      checks. Nothing business-specific in it.
+- [x] Checkout and the contact form now show the problem under the field that
+      caused it instead of one line at the bottom.
+- [x] The footer newsletter form used to throw away the address it collected.
+      It now posts to `/api/newsletter`.
+- [x] `/api/orders` stored the client's `shippingAddress` object verbatim; any
+      caller could write arbitrary JSON into the column. Only our six fields
+      are kept now, each capped. Also: full name and phone required, order
+      lines capped at 50, quantity at 999, duplicate slugs rejected.
+- [x] Order lookup and newsletter used `ilike` on a caller-supplied address. A
+      `%` is legal in an email address but is a wildcard to `ilike`, so it
+      could match another row. Both now compare exactly.
+- [x] Tighter email rule: rejects `a@b`, `a@b..co`, trailing dots, over-long
+      local parts. Phone, postal code and name rules added. Passwords reject
+      the address itself and the obvious guesses on top of the 12-character
+      minimum.
+- [x] Reviews must name a real product; unknown slugs no longer fill the
+      moderation queue.
+- [x] 44 validation unit tests pass. `npx tsc --noEmit` clean. `npx next build`
+      clean. All test rows deleted from the live database.
+- [ ] Not yet deployed.
+
 ## Customer account follow-up — 2026-09-20
 
 - [x] Work isolated on `codex/customer-account-flow`. Added independent
