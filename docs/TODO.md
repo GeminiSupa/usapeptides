@@ -36,6 +36,11 @@ something outside the code.
       selected, explaining why.
 - [ ] Card processing itself is still not built. Nothing on the site can
       charge a card.
+- [x] Deployed and checked live on 2026-09-20 (commit 6be907a). Every page
+      shows `info@usapeptides.com`; the only `usapeptidedepot.com` left is the
+      site URL in canonical/OG/schema tags, which is correct. Live checkout
+      serves zero `cc-*` inputs. `https://usapeptidedepot.com/my-account`
+      returns 200, so the links in verification emails resolve.
 
 ## Signup failure found and fixed — 2026-09-20
 
