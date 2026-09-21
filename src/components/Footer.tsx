@@ -121,7 +121,7 @@ export default function Footer() {
           <ul className="space-y-0.5 text-xs sm:space-y-2.5">
             {[
               { href: '/shop', label: 'All research peptides' },
-              { href: '/install', label: 'Install app' },
+              { href: '/install', label: 'Mobile app' },
               { href: '/coa-database', label: 'COA database' },
               { href: '/bulk-discounts', label: 'Bulk discounts' },
               { href: '/calculator', label: 'Reconstitution calculator' },

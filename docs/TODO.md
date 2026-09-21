@@ -10,7 +10,8 @@ something outside the code.
       in `docs/PWA-PLAN.md`. No app-store submission or database migration.
 - [x] Added manifest, branded Android/maskable/Apple icons, standalone launch,
       `/install` instructions and optional browser install button, footer link,
-      and mobile bottom safe-area spacing.
+      header and mobile menu **Mobile app** link, sitemap entry, and mobile
+      bottom safe-area spacing.
 - [x] Production worker caches only the generic offline document. API calls,
       order submissions and private data are never added to its cache. Updates
       wait for old tabs to close rather than interrupting checkout.

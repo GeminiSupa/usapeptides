@@ -29,6 +29,7 @@ const NAV = [
   { href: '/blog', label: 'Research' },
   { href: '/about-us', label: 'About' },
   { href: '/faq', label: 'FAQ' },
+  { href: '/install', label: 'Mobile app' },
   { href: '/contact-us', label: 'Contact' },
   { href: '/my-account', label: 'Account' },
 ];
