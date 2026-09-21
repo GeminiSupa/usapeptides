@@ -26,6 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
     description: c['seo.description'],
     keywords: c['seo.keywords'].split(',').map((k) => k.trim()).filter(Boolean),
     applicationName: c['business.name'],
+    appleWebApp: { capable: true, title: c['business.name'], statusBarStyle: 'default' },
+    icons: { apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180' }] },
     alternates: { canonical: '/' },
     openGraph: {
       type: 'website',
@@ -49,6 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#1F4233',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -62,7 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="stylesheet" href="/fonts/cera.css" />
         <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(organizationSchema(content))} />
       </head>
-      <body className="min-h-screen flex flex-col bg-brand-dark text-brand-body pb-16 lg:pb-0">
+      <body className="min-h-screen flex flex-col bg-brand-dark text-brand-body pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0">
         <SiteContentProvider value={content}>
           <StorefrontShell>{children}</StorefrontShell>
         </SiteContentProvider>

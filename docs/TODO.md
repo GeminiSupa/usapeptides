@@ -4,6 +4,23 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## Installable mobile app — 2026-09-21
+
+- [x] Researched and implemented browser installation; plan and official sources
+      in `docs/PWA-PLAN.md`. No app-store submission or database migration.
+- [x] Added manifest, branded Android/maskable/Apple icons, standalone launch,
+      `/install` instructions and optional browser install button, footer link,
+      and mobile bottom safe-area spacing.
+- [x] Production worker caches only the generic offline document. API calls,
+      order submissions and private data are never added to its cache. Updates
+      wait for old tabs to close rather than interrupting checkout.
+- [x] TypeScript and production build pass (62 pages). Five worker tests pass.
+      HTTP checks verify manifest, icon dimensions, worker headers and pages.
+      Phone-width DOM checked at 390px; real browser offline fallback verified
+      by stopping the local production server on isolated port 3107.
+- [ ] Deploy, then test actual Android Chrome and iPhone Safari installation,
+      standalone launch, sign-in/cart behavior and app updates on real phones.
+
 ## Migration status
 
 - [x] Owner ran 0021; service-role table/RPC checks returned 200 and anonymous
