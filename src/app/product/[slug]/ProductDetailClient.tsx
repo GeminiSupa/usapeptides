@@ -8,6 +8,8 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import BulkPricingTable from '@/components/BulkPricingTable';
 import ProductCard from '@/components/ProductCard';
+import ResearchResources from '@/components/ResearchResources';
+import type { Product } from '@/types';
 import WhatsAppOrderButton from '@/components/WhatsAppOrderButton';
 import {
   FileText,
@@ -31,10 +33,10 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id'];
 
-export default function ProductDetailClient({ slug }: { slug: string }) {
+export default function ProductDetailClient({ slug, initialProduct }: { slug: string; initialProduct?: Product }) {
   const { addToCart, setSelectedCOAProduct } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const { products, loading } = useCatalogue();
+  const { products, loading, source } = useCatalogue();
 
   // Every hook runs before the two exits below, so the set of hooks is the
   // same on the loading render and the loaded one.
@@ -42,7 +44,8 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [added, setAdded] = useState<boolean>(false);
 
-  const product = products.find((p) => p.slug === slug);
+  const product = (loading || source === 'bundled') && initialProduct?.slug === slug
+    ? initialProduct : products.find((p) => p.slug === slug);
 
   // A product added in the dashboard is not in the bundled catalogue, so
   // "not found" has to wait until the live one has actually been fetched -
@@ -405,6 +408,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           </div>
         </div>
       )}
+      <ResearchResources />
     </div>
   );
 }

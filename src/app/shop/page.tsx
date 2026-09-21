@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import ProductCard from '@/components/ProductCard';
+import ResearchResources from '@/components/ResearchResources';
 import CatalogueViewToggle, { useCatalogueView } from '@/components/CatalogueViewToggle';
 import { useCatalogue } from '@/hooks/useCatalogue';
 import { useCategories } from '@/hooks/useCategories';
@@ -232,6 +233,7 @@ export default function ShopPage() {
         </div>
 
       </div>
+      <ResearchResources currentPath="/shop" />
     </div>
   );
 }

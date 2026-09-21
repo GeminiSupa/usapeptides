@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Check } from 'lucide-react';
+import ResearchResources from '@/components/ResearchResources';
 
 const TIERS = [
   { qty: '1 – 2 vials', off: 0, note: 'List price' },
@@ -24,7 +25,7 @@ export default function BulkDiscountsPage() {
     <div className="shell space-y-10 py-10">
       <div className="border-b border-brand-border pb-6">
         <p className="eyebrow mb-2.5">Volume pricing</p>
-        <h1 className="page-title">Bulk Discounts</h1>
+        <h1 className="page-title">Bulk Research Peptide Pricing</h1>
         <p className="mt-3 max-w-2xl text-xs leading-relaxed text-brand-textMuted sm:text-sm">
           Discounts apply per line item and are calculated automatically at checkout. There is no code
           to enter and no account tier to qualify for.
@@ -147,6 +148,7 @@ export default function BulkDiscountsPage() {
           ))}
         </ul>
       </div>
+      <ResearchResources currentPath="/bulk-discounts" />
     </div>
   );
 }
