@@ -115,6 +115,11 @@ tests, seven-page metadata/HTTP regression check, 13-page after-audit and 390px
 browser DOM check of the purchasing-resource links. All passed. The after-audit
 is in `seo-audit-after.json`; this local report uses bundled catalogue data.
 
+Deployed as `61af3bd` and checked on the production www domain on 2026-09-21.
+Live regression checks passed. All 13 sampled canonical paths match their page
+and use the final www host. No environment-variable adjustment was needed for
+this deployment. Search Console indexing and ranking effects are still unmeasured.
+
 Run `npx tsc --noEmit`, `npm run build`, then start the production server and run
 `node scripts/audit-seo.mjs http://127.0.0.1:3108 docs/seo-audit-after.json`.
 `node scripts/check-seo.mjs http://127.0.0.1:3108` checks the page metadata,

@@ -9,7 +9,7 @@ something outside the code.
 - [x] Audited 13 production URLs and saved public-response evidence in
       `docs/seo-audit-before.json`; keyword map, priorities and measurement plan
       are in `docs/SEO-AUDIT-AND-PLAN.md`.
-- [~] Fixed seven pages inheriting the homepage canonical/title; added editable
+- [x] Fixed seven pages inheriting the homepage canonical/title; added editable
       metadata, accurate sitemap dates, shared server product data for initial
       HTML/schema, stock-aware offer markup and contextual purchasing links.
 - [x] Three fixture tests cover changed database details, zero stock, missing
@@ -17,6 +17,9 @@ something outside the code.
 - [x] TypeScript and production build pass. Local HTTP checks verify all seven
       metadata fixes, product schema/HTML, unknown-product HTTP 404 and sitemap
       dates. Before/after audit saved; purchasing links fit the 390px browser DOM.
+- [x] Deployed as `61af3bd` and verified on the live www domain: all 13 sampled
+      canonical paths and hosts match; metadata, product markup, missing-product
+      HTTP 404 and sitemap regression checks pass.
 - [!] Owner confirmed Search Console exists, but the available browser has no
       signed-in property session. Query/click/ranking analysis needs that session
       or a Performance export. No keyword volumes or ranking gains are claimed.
