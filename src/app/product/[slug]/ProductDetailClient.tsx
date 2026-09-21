@@ -101,7 +101,7 @@ export default function ProductDetailClient({ slug, initialProduct }: { slug: st
         <div className="space-y-4 lg:col-span-6">
           <div className="relative flex aspect-square items-center justify-center border border-brand-border bg-brand-card p-5 sm:p-8">
             <img
-              src={product.image}
+              src={product.detailImage || product.image}
               alt={product.name}
               className="relative z-10 h-4/5 w-4/5 object-contain"
             />

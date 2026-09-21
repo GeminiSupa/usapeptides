@@ -28,6 +28,8 @@ const NAV = [
   { href: '/coa-database', label: 'COA Database' },
   { href: '/blog', label: 'Research' },
   { href: '/about-us', label: 'About' },
+  { href: '/our-story', label: 'Our story' },
+  { href: '/quality-standards', label: 'Standards' },
   { href: '/faq', label: 'FAQ' },
   { href: '/install', label: 'Mobile app' },
   { href: '/contact-us', label: 'Contact' },

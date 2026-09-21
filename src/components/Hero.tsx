@@ -15,8 +15,13 @@ export default function Hero() {
   const primaryHref = safeHref(t('hero.primaryHref')) || '/shop';
   const secondaryHref = safeHref(t('hero.secondaryHref'));
   return (
-    <section className="theme-forest border-b border-brand-border bg-brand-dark">
-      <div className="shell py-20 sm:py-28 lg:py-32">
+    <section className="theme-forest relative isolate overflow-hidden border-b border-brand-border bg-brand-dark">
+      <div className="molecular-backdrop" aria-hidden="true">
+        {Array.from({ length: 14 }, (_, i) => <span key={i} className={`molecular-node molecular-node-${i + 1}`} />)}
+        <i className="molecular-link molecular-link-a" /><i className="molecular-link molecular-link-b" /><i className="molecular-link molecular-link-c" />
+      </div>
+      <div className="absolute inset-0 z-[1] bg-brand-dark/80" aria-hidden="true" />
+      <div className="shell relative z-10 py-20 sm:py-28 lg:py-32">
         <div className="mx-auto max-w-4xl text-center">
           <p className="eyebrow text-brand-textMuted">
             {t('hero.eyebrow')}

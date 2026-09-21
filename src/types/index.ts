@@ -44,6 +44,8 @@ export interface Product {
   /** Uploaded certificate PDF, when the dashboard has one for this product. */
   coaUrl?: string;
   image: string;
+  /** Optional second image used on the individual product page. */
+  detailImage?: string;
   tags: string[];
   isFeatured?: boolean;
   isPopular?: boolean;

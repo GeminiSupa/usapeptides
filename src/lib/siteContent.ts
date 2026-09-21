@@ -60,15 +60,15 @@ export const DEFAULT_CONTENT: Record<string, string> = {
   'social.linkedin': '',
 
   // Home page
-  'hero.eyebrow': 'In-vitro research materials — stocked and shipped in the USA',
-  'hero.title': 'High-Purity\nResearch Peptides',
-  'hero.points': 'Every lot carries an HPLC report\nAnalysed by an outside laboratory\nTracked domestic delivery',
-  'hero.primaryLabel': 'Shop Research Peptides',
+  'hero.eyebrow': 'Laboratory research use only — evidence over hype',
+  'hero.title': 'Why trust what\nyou can test?',
+  'hero.points': 'Independent HPLC testing where available\nLot-specific documentation\nU.S.-based fulfillment and support',
+  'hero.primaryLabel': 'Shop Research Materials',
   'hero.primaryHref': '/shop',
-  'hero.secondaryLabel': 'View Test Reports',
-  'hero.secondaryHref': '/blog',
+  'hero.secondaryLabel': 'Search COA Database',
+  'hero.secondaryHref': '/coa-database',
   'hero.disclaimer':
-    'Sold for laboratory research only. These materials are not drugs, not intended for human or animal use, and may be purchased only by universities, research institutions and other qualified laboratory buyers.',
+    'Anyone can print a purity number on a label. We organize lot-specific documentation so researchers can verify what they received. Products are for laboratory and research use only and are not intended for human or veterinary use.',
 
   // Shop
   'shop.eyebrow': 'Catalog & Reference Materials',

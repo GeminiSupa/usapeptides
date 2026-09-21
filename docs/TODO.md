@@ -4,6 +4,15 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## USA Peptide Depot content structure — 2026-09-22
+
+- [x] Added the owner-provided trust and verification positioning to the homepage hero.
+- [x] Reworked About Us to use the owner-provided standards and research-use notice.
+- [x] Added Our Story, Why Us, How It Works, and Quality Standards pages and linked them in navigation.
+- [~] Confirmed the supplied folder has 32 shared PNGs in matched pairs: the plain filename is the cream-background card/category image and the `(2)` filename is the product-detail image. The Drive bulk download completed, but the in-app browser did not expose the generated archive in the workspace filesystem for import.
+- [x] Added paired product media fields to the admin editor: Image 1 for cards/categories and Image 2 for product detail pages. Added migration `0022_product_detail_images.sql`; the owner must run it in Supabase before saving Image 2.
+- [ ] Add the remaining owner-approved policy/editorial pages after legal copy is supplied or approved.
+
 ## SEO audit and first fixes — 2026-09-21
 
 - [x] Audited 13 production URLs and saved public-response evidence in
