@@ -21,6 +21,11 @@ something outside the code.
 - [ ] Deploy, then test actual Android Chrome and iPhone Safari installation,
       standalone launch, sign-in/cart behavior and app updates on real phones.
 
+## Entry notice logo — 2026-09-21
+
+- [x] Replaced the warning icon in the research-use entry notice with the
+      website logo on a forest background, above the existing notice heading.
+
 ## Migration status
 
 - [x] Owner ran 0021; service-role table/RPC checks returned 200 and anonymous
