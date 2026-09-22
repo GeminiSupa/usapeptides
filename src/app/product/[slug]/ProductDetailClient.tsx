@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import BulkPricingTable from '@/components/BulkPricingTable';
 import ProductCard from '@/components/ProductCard';
+import ProductImageViewer from '@/components/ProductImageViewer';
 import ResearchResources from '@/components/ResearchResources';
 import type { Product } from '@/types';
 import WhatsAppOrderButton from '@/components/WhatsAppOrderButton';
@@ -100,11 +101,7 @@ export default function ProductDetailClient({ slug, initialProduct }: { slug: st
         {/* Image */}
         <div className="space-y-4 lg:col-span-6">
           <div className="relative flex aspect-square items-center justify-center border border-brand-border bg-brand-card p-5 sm:p-8">
-            <img
-              src={product.detailImage || product.image}
-              alt={product.name}
-              className="relative z-10 h-4/5 w-4/5 object-contain"
-            />
+            <ProductImageViewer key={product.id} name={product.name} image={product.image} detailImage={product.detailImage} />
 
             <div className="absolute left-4 top-4 z-20 flex flex-col items-start gap-2">
               <span className="bg-brand-accent px-2.5 py-1 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-brand-onAccent">

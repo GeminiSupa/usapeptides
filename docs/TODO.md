@@ -6,6 +6,10 @@ something outside the code.
 
 ## USA Peptide Depot content structure — 2026-09-22
 
+- [x] Fixed desktop navigation overflow by allowing links to wrap inside the header; Affiliate Portal and Admin Login stay together. Mobile drawer remains available below the desktop breakpoint.
+
+- [~] Added touch/keyboard product-image zoom, optional paired-image thumbnails, subtle reveal and desktop hover motion, with reduced-motion support. Local implementation; browser verification pending.
+
 - [x] Created an original 24-second H.264 molecular/cell background video (1280×720, approximately 1.1 MB), with poster, muted looping playback, pause control and reduced-motion support. Replaces the CSS dots; does not use the supplied WhatsApp video. Renderer: `scripts/render-biotech.py`.
 
 - [x] Added the owner-provided trust and verification positioning to the homepage hero.
