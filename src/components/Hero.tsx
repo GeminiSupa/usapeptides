@@ -9,9 +9,9 @@ import { contentLines, safeHref } from '@/lib/siteContent';
  * Centered hero. No gradient, no glow, no ornament — the headline and the
  * hairline rules do the work, which is how the reference layout holds up.
  *
- * A muted looping video sits behind the text under a flat forest tint so the
- * copy stays readable. Visitors who ask for reduced motion get the plain
- * forest band instead.
+ * A muted looping video fills the band on phones under a flat forest tint; on
+ * desktop it sits in the right 60% and fades out towards the copy. Visitors
+ * who ask for reduced motion get the plain forest band instead.
  */
 export default function Hero() {
   const { t } = useSiteContent();
@@ -20,25 +20,26 @@ export default function Hero() {
   const secondaryHref = safeHref(t('hero.secondaryHref'));
   return (
     <section className="theme-forest relative isolate overflow-hidden border-b border-brand-border bg-brand-dark">
-      <video
-        className="absolute inset-0 -z-10 h-full w-full object-cover motion-reduce:hidden"
-        src="/videos/hero-bg.mp4"
-        poster="/videos/hero-bg-poster.jpg"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-      />
-      <div className="absolute inset-0 -z-10 bg-brand-dark/75" aria-hidden="true" />
+      <div className="hero-media" aria-hidden="true">
+        <video
+          className="h-full w-full object-cover motion-reduce:hidden"
+          src="/videos/hero-bg.mp4"
+          poster="/videos/hero-bg-poster.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+        />
+        <div className="absolute inset-0 bg-brand-dark/75 lg:bg-brand-dark/25" />
+      </div>
       <div className="shell relative py-20 sm:py-28 lg:py-32">
-        <div className="mx-auto max-w-4xl text-center">
+        <div className="mx-auto max-w-4xl text-center lg:mx-0 lg:max-w-[50%]">
           <p className="eyebrow text-brand-textMuted">
             {t('hero.eyebrow')}
           </p>
 
-          <h1 className="mt-6 font-display uppercase text-brand-heading text-hero">
+          <h1 className="mt-6 font-display uppercase text-brand-heading text-hero lg:text-[clamp(2.5rem,3.6vw,4.25rem)]">
             {titleLines.map((line, i) => (
               <React.Fragment key={i}>{i > 0 && <br />}{line}</React.Fragment>
             ))}

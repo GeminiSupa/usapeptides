@@ -132,6 +132,23 @@
     @apply max-w-shell mx-auto px-4 sm:px-6 lg:px-8;
   }
 
+  /*
+   * Hero video. On phones it fills the band under a heavy tint; from lg up it
+   * takes the right 60% and fades out towards the text on the left, as the
+   * owner asked. The fade is a mask on the video itself, not a colour overlay.
+   */
+  .hero-media {
+    @apply absolute inset-0 -z-10;
+  }
+  @media (min-width: 1024px) {
+    .hero-media {
+      left: auto;
+      width: 60%;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+      mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+    }
+  }
+
   /* Primary action: forest on cream, cream on the dark bands. */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 font-display uppercase
