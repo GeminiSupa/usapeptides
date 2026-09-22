@@ -9,8 +9,8 @@ import { contentLines, safeHref } from '@/lib/siteContent';
  * Centered hero. No gradient, no glow, no ornament — the headline and the
  * hairline rules do the work, which is how the reference layout holds up.
  *
- * A muted looping video fills the band on phones under a flat forest tint; on
- * desktop it sits in the right 60% and fades out towards the copy. Visitors
+ * A muted looping video sits above the copy on phones and tablets, and in the
+ * right 60% on desktop, fading out towards the copy (see .hero-media). Visitors
  * who ask for reduced motion get the plain forest band instead.
  */
 export default function Hero() {
@@ -31,9 +31,9 @@ export default function Hero() {
           playsInline
           preload="auto"
         />
-        <div className="absolute inset-0 bg-brand-dark/75 lg:bg-brand-dark/25" />
+        <div className="absolute inset-0 bg-brand-dark/25" />
       </div>
-      <div className="shell relative py-20 sm:py-28 lg:py-32">
+      <div className="shell relative -mt-6 pb-16 sm:-mt-10 sm:pb-24 lg:mt-0 lg:py-32">
         <div className="mx-auto max-w-4xl text-center lg:mx-0 lg:max-w-[50%]">
           <p className="eyebrow text-brand-textMuted">
             {t('hero.eyebrow')}

@@ -133,17 +133,25 @@
   }
 
   /*
-   * Hero video. On phones it fills the band under a heavy tint; from lg up it
-   * takes the right 60% and fades out towards the text on the left, as the
-   * owner asked. The fade is a mask on the video itself, not a colour overlay.
+   * Hero video. A wide clip cannot fill a tall phone hero without being
+   * blown up and blurred, so below lg it is a full-width 16:9 strip above
+   * the copy that fades into the band. From lg up it takes the right 60%
+   * behind the copy and fades out to the left, as the owner asked. The fade
+   * is a mask on the video itself, not a colour overlay.
    */
   .hero-media {
-    @apply absolute inset-0 -z-10;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
   }
   @media (min-width: 1024px) {
     .hero-media {
-      left: auto;
+      position: absolute;
+      inset: 0 0 0 auto;
+      z-index: -10;
       width: 60%;
+      aspect-ratio: auto;
       -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 45%);
       mask-image: linear-gradient(to right, transparent 0%, #000 45%);
     }
