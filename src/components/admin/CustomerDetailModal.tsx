@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Loader2, Save, X } from 'lucide-react';
+import CustomerRetention from './CustomerRetention';
 
 type Fetcher = (path: string, init?: RequestInit) => Promise<Response>;
 const money = (value: unknown) => `$${Number(value ?? 0).toFixed(2)}`;
@@ -61,6 +62,7 @@ export default function CustomerDetailModal({ customerId, authedFetch, isAgent, 
         </header>
         {loading ? <p className="flex items-center gap-2 p-8 text-xs text-brand-textMuted"><Loader2 className="h-4 w-4 animate-spin"/> Loading customer history…</p> : error && !data ? <p className="m-5 border border-action/50 p-4 text-xs">{error}</p> : data && (
           <div className="space-y-5 p-5">
+            <CustomerRetention data={data} customerId={customerId} authedFetch={authedFetch} onSaved={() => { onChanged(); void load(); }} />
             {error && <p className="border border-action/50 p-3 text-xs text-brand-body">{error}</p>}
             {!data.ownershipReady && <p className="border border-action/50 bg-brand-dark p-3 text-xs text-brand-body">Customer ownership needs <strong>supabase/migrations/0019_customer_ownership.sql</strong>. History still works, but the original sales agent cannot be changed until it is run.</p>}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

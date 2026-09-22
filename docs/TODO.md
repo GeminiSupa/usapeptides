@@ -4,6 +4,13 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## CRM retention foundation — 2026-09-22
+
+- [~] Customer profiles now include visible paid-order spend, last paid date, frequently purchased products and their estimated reorder dates, saved shipping addresses, plus staff-only acquisition source, notes, purchasing interval and follow-up deferral.
+- [~] Customers list includes due-soon/overdue follow-ups based on paid buying occasions (minimum three days of purchases for automatic estimates). Sales-agent filtering is retained; no messages sent.
+- [ ] Owner: run `supabase/migrations/0023_customer_retention.sql`. New editing stays disabled until applied; reads still work. Verify authenticated saving and cross-agent access against the database after migration.
+- [ ] Later phases: address editing, explicit favorites, complete net lifetime value/refund ledger, product-specific manual overrides, outreach history, Chatwoot links and automations. Current profile history is capped at 200 visible orders and labelled accordingly; queue uses paginated paid history.
+
 ## USA Peptide Depot content structure — 2026-09-22
 
 - [x] Fixed desktop navigation overflow by allowing links to wrap inside the header; Affiliate Portal and Admin Login stay together. Mobile drawer remains available below the desktop breakpoint.

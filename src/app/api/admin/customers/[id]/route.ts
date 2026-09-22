@@ -5,10 +5,33 @@ import { isCreditable } from '@/lib/attribution';
 import { isSalesAgent } from '@/lib/permissions';
 import { writeAudit } from '@/lib/audit';
 import { ok, badRequest, notFound, serverError, readJson } from '@/lib/api';
+import { PAID_ORDER_STATUSES, reorderEstimate } from '@/lib/retention';
 
 export const dynamic = 'force-dynamic';
 
 const SETUP = 'Customer ownership needs supabase/migrations/0019_customer_ownership.sql to be run in Supabase first.';
+
+/** Staff-only retention details; ownership changes remain super-admin PATCH. */
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const unavailable = featureUnavailable('adminDatabase');
+  if (unavailable) return unavailable;
+  const auth = await requireAdmin(req, { permission: 'customers' });
+  if (!auth.ok) return auth.response;
+  const body = await readJson<Record<string, unknown>>(req);
+  if (!body || typeof body.notes !== 'string' || body.notes.length > 5000 || typeof body.acquisition_source !== 'string' || body.acquisition_source.length > 200) return badRequest('Enter a source up to 200 characters and notes up to 5000 characters.');
+  const days = body.reorder_days;
+  if (days !== null && (typeof days !== 'number' || !Number.isInteger(days) || days < 1 || days > 365)) return badRequest('Reorder interval must be 1–365 days or empty.');
+  const after = body.follow_up_after;
+  if (after !== null && (typeof after !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(after) || !Number.isFinite(Date.parse(after)) || new Date(after).toISOString().slice(0,10) !== after)) return badRequest('Choose a valid follow-up date.');
+  const db = getSupabaseAdmin();
+  const customer = await db.from('customer_profiles').select('id,owner_id').eq('id', params.id).maybeSingle();
+  if (customer.error) return serverError(customer.error.message);
+  if (!customer.data || (isSalesAgent(auth.admin.profile) && customer.data.owner_id && customer.data.owner_id !== auth.admin.id)) return notFound('No customer with that id.');
+  const result = await db.from('customer_retention').upsert({ customer_id: params.id, notes: body.notes.trim(), acquisition_source: body.acquisition_source.trim(), reorder_days: days, follow_up_after: after, updated_at: new Date().toISOString() });
+  if (result.error) return serverError(/42P01|PGRST205/.test(result.error.code) ? 'Run supabase/migrations/0023_customer_retention.sql in Supabase first.' : result.error.message);
+  await writeAudit(auth.admin, { action: 'customer.retention.update', targetType: 'customer', targetId: params.id, detail: { fields: ['notes', 'acquisition_source', 'reorder_days', 'follow_up_after'] } });
+  return ok({ saved: true });
+}
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const unavailable = featureUnavailable('adminDatabase');
@@ -85,7 +108,24 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       owners = (people ?? []).filter(isCreditable).map((person: any) => ({ id: person.id, name: person.full_name || person.email }));
     }
 
+    const retention = await db.from('customer_retention').select('*').eq('customer_id', customer.id).maybeSingle();
+    if (retention.error && !/42P01|PGRST205/.test(retention.error.code)) return serverError(retention.error.message);
+    const addresses = await db.from('customer_addresses').select('id,label,line1,line2,city,state,postal_code,country,is_default').eq('customer_id', customer.id);
+    if (addresses.error) return serverError(addresses.error.message);
+    const paid = (orders ?? []).filter(o => PAID_ORDER_STATUSES.has(o.status));
+    const productHistory = new Map<string, { name: string; quantity: number; dates: string[] }>();
+    for (const order of paid) for (const item of byOrder.get(order.id) ?? []) {
+      const key = item.product_slug || item.sku || item.product_name;
+      const p = productHistory.get(key) ?? { name: item.product_name, quantity: 0, dates: [] as string[] };
+      p.quantity += Number(item.quantity); p.dates.push(order.created_at); productHistory.set(key, p);
+    }
     return ok({
+      retentionReady: !retention.error,
+      retention: retention.data,
+      addresses: addresses.data ?? [],
+      purchaseSummary: { paidOrders: paid.length, spent: paid.reduce((s,o) => s + Number(o.grand_total), 0), lastOrderAt: paid[0]?.created_at ?? null, historyLimited: (orders ?? []).length === 200 },
+      reorder: reorderEstimate(paid.map(o => o.created_at), retention.data?.reorder_days),
+      frequentlyPurchased: Array.from(productHistory.values()).sort((a,b) => b.quantity-a.quantity).map(p => ({ ...p, reorder: reorderEstimate(p.dates) })),
       customer,
       ownershipReady,
       owners,
