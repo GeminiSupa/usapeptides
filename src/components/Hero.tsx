@@ -8,6 +8,10 @@ import { contentLines, safeHref } from '@/lib/siteContent';
 /**
  * Centered hero. No gradient, no glow, no ornament — the headline and the
  * hairline rules do the work, which is how the reference layout holds up.
+ *
+ * A muted looping video sits behind the text under a flat forest tint so the
+ * copy stays readable. Visitors who ask for reduced motion get the plain
+ * forest band instead.
  */
 export default function Hero() {
   const { t } = useSiteContent();
@@ -15,8 +19,19 @@ export default function Hero() {
   const primaryHref = safeHref(t('hero.primaryHref')) || '/shop';
   const secondaryHref = safeHref(t('hero.secondaryHref'));
   return (
-    <section className="theme-forest border-b border-brand-border bg-brand-dark">
-      <div className="shell py-20 sm:py-28 lg:py-32">
+    <section className="theme-forest relative isolate overflow-hidden border-b border-brand-border bg-brand-dark">
+      <video
+        className="absolute inset-0 -z-10 h-full w-full object-cover motion-reduce:hidden"
+        src="/videos/hero-bg.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+      />
+      <div className="absolute inset-0 -z-10 bg-brand-dark/75" aria-hidden="true" />
+      <div className="shell relative py-20 sm:py-28 lg:py-32">
         <div className="mx-auto max-w-4xl text-center">
           <p className="eyebrow text-brand-textMuted">
             {t('hero.eyebrow')}
