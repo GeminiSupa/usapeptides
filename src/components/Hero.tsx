@@ -23,6 +23,7 @@ export default function Hero() {
       <video
         className="absolute inset-0 -z-10 h-full w-full object-cover motion-reduce:hidden"
         src="/videos/hero-bg.mp4"
+        poster="/videos/hero-bg-poster.jpg"
         autoPlay
         muted
         loop
