@@ -132,6 +132,36 @@
     @apply max-w-shell mx-auto px-4 sm:px-6 lg:px-8;
   }
 
+  /*
+   * Hero video. Below lg it sits full-bleed behind the eyebrow and headline
+   * (its parent is the positioned block) and fades down into the band; a wide
+   * clip stretched over the whole tall phone hero was blurred and muddy. From
+   * lg up the parent goes static, so it takes the right 60% of the section and
+   * fades out to the left, as the owner asked. The fades are masks on the
+   * video itself, not colour overlays.
+   */
+  .hero-media {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    z-index: -10;
+    -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+  }
+  @media (min-width: 1024px) {
+    .hero-media {
+      left: auto;
+      right: 0;
+      width: 60%;
+      transform: none;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+      mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+    }
+  }
+
   /* Primary action: forest on cream, cream on the dark bands. */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 font-display uppercase
