@@ -310,17 +310,7 @@
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 .animate-fadeIn { animation: fadeIn 0.16s ease-out forwards; }
-
-@keyframes product-photo-reveal {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.product-photo-reveal { animation: product-photo-reveal 400ms ease-out both; }
-@media (prefers-reduced-motion: reduce) {
-  .product-photo-reveal { animation: none; }
-}
 
 /* Horizontal product rails on small screens, grid on desktop. */
 .rail {

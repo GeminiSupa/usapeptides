@@ -124,7 +124,7 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     blurb: 'Your catalogue. What you set here is what the website shows.',
     select:
       'id, slug, name, category, category_slug, price, sale_price, sku, purity, sequence,' +
-      ' cas_number, molar_mass, formula, storage, appearance, description, image, detail_image, coa_url,' +
+      ' cas_number, molar_mass, formula, storage, appearance, description, image, coa_url,' +
       ' coa_lot, coa_tested_at, stock_count, in_stock, is_featured, is_popular, is_active,' +
       ' sort_order, created_at',
     orderBy: 'name',
@@ -133,7 +133,7 @@ export const RESOURCES: Record<string, ResourceConfig> = {
       'name', 'slug', 'sku', 'category', 'category_slug', 'price', 'sale_price',
       'stock_count', 'in_stock', 'is_featured', 'is_popular', 'is_active',
       'purity', 'sequence', 'cas_number', 'molar_mass', 'formula', 'storage',
-      'appearance', 'description', 'image', 'detail_image', 'coa_url', 'coa_lot', 'coa_tested_at',
+      'appearance', 'description', 'image', 'coa_url', 'coa_lot', 'coa_tested_at',
       'sort_order',
     ],
     deletable: true,
@@ -152,9 +152,7 @@ export const RESOURCES: Record<string, ResourceConfig> = {
       { group: 'Price and stock', name: 'stock_count', label: 'Units in stock', type: 'number' },
 
       { group: 'Media', name: 'image', label: 'Product photo', type: 'image',
-        help: 'Image 1: homepage and category cards. JPG, PNG or WEBP, up to 2 MB.' },
-      { group: 'Media', name: 'detail_image', label: 'Product detail photo', type: 'image',
-        help: 'Image 2: the individual product page. Upload the matching detail image for this product.' },
+        help: 'JPG, PNG or WEBP, up to 2 MB.' },
       { group: 'Media', name: 'coa_url', label: 'Certificate of analysis', type: 'file',
         help: 'PDF up to 2 MB. Customers download this from the product page.' },
       { group: 'Media', name: 'coa_lot', label: 'Certificate lot number', type: 'text' },

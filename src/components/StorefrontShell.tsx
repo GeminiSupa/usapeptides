@@ -15,7 +15,6 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 import ChatwootWidget from '@/components/ChatwootWidget';
 import ReferralCapture from '@/components/ReferralCapture';
 import VisitorTracker from '@/components/VisitorTracker';
-import PwaProvider from '@/components/PwaProvider';
 
 /**
  * Everything around a storefront page that needs the browser: cart, wishlist,
@@ -29,7 +28,6 @@ export default function StorefrontShell({ children }: { children: React.ReactNod
   const isAdmin = pathname?.startsWith('/admin') ?? false;
 
   return (
-    <PwaProvider>
     <WishlistProvider>
       <CartProvider>
         {!isAdmin && <AnnouncementBanner />}
@@ -53,6 +51,5 @@ export default function StorefrontShell({ children }: { children: React.ReactNod
         )}
       </CartProvider>
     </WishlistProvider>
-    </PwaProvider>
   );
 }

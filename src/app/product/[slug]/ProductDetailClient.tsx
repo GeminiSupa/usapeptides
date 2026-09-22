@@ -8,9 +8,6 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import BulkPricingTable from '@/components/BulkPricingTable';
 import ProductCard from '@/components/ProductCard';
-import ProductImageViewer from '@/components/ProductImageViewer';
-import ResearchResources from '@/components/ResearchResources';
-import type { Product } from '@/types';
 import WhatsAppOrderButton from '@/components/WhatsAppOrderButton';
 import {
   FileText,
@@ -34,10 +31,10 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id'];
 
-export default function ProductDetailClient({ slug, initialProduct }: { slug: string; initialProduct?: Product }) {
+export default function ProductDetailClient({ slug }: { slug: string }) {
   const { addToCart, setSelectedCOAProduct } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const { products, loading, source } = useCatalogue();
+  const { products, loading } = useCatalogue();
 
   // Every hook runs before the two exits below, so the set of hooks is the
   // same on the loading render and the loaded one.
@@ -45,8 +42,7 @@ export default function ProductDetailClient({ slug, initialProduct }: { slug: st
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [added, setAdded] = useState<boolean>(false);
 
-  const product = (loading || source === 'bundled') && initialProduct?.slug === slug
-    ? initialProduct : products.find((p) => p.slug === slug);
+  const product = products.find((p) => p.slug === slug);
 
   // A product added in the dashboard is not in the bundled catalogue, so
   // "not found" has to wait until the live one has actually been fetched -
@@ -101,7 +97,11 @@ export default function ProductDetailClient({ slug, initialProduct }: { slug: st
         {/* Image */}
         <div className="space-y-4 lg:col-span-6">
           <div className="relative flex aspect-square items-center justify-center border border-brand-border bg-brand-card p-5 sm:p-8">
-            <ProductImageViewer key={product.id} name={product.name} image={product.image} detailImage={product.detailImage} />
+            <img
+              src={product.image}
+              alt={product.name}
+              className="relative z-10 h-4/5 w-4/5 object-contain"
+            />
 
             <div className="absolute left-4 top-4 z-20 flex flex-col items-start gap-2">
               <span className="bg-brand-accent px-2.5 py-1 font-display text-[0.625rem] font-black uppercase tracking-[0.1em] text-brand-onAccent">
@@ -405,7 +405,6 @@ export default function ProductDetailClient({ slug, initialProduct }: { slug: st
           </div>
         </div>
       )}
-      <ResearchResources />
     </div>
   );
 }

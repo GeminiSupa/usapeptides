@@ -212,15 +212,7 @@ export async function GET(req: Request, { params }: { params: { resource: string
     };
 
     let hasOwnership = Boolean(own);
-    const requestedSelect = own ? `${config.select}, ${own.extraSelect}` : config.select;
-    let result = await build(requestedSelect);
-
-    // Keep the dashboard readable while a newly-added optional product column
-    // is waiting to be applied in Supabase. The editor still advertises the
-    // field; saving it will work as soon as migration 0022 is run.
-    if (result.error && params.resource === 'products' && isMissingColumn(result.error) && /detail_image/.test(config.select)) {
-      result = await build(requestedSelect.replace(/,?\s*detail_image\s*,?/, ','));
-    }
+    let result = await build(own ? `${config.select}, ${own.extraSelect}` : config.select);
 
     if (result.error && own && !agent && isMissingColumn(result.error)) {
       hasOwnership = false;

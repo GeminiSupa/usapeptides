@@ -121,17 +121,12 @@ export default function Footer() {
           <ul className="space-y-0.5 text-xs sm:space-y-2.5">
             {[
               { href: '/shop', label: 'All research peptides' },
-              { href: '/install', label: 'Mobile app' },
               { href: '/coa-database', label: 'COA database' },
               { href: '/bulk-discounts', label: 'Bulk discounts' },
               { href: '/calculator', label: 'Reconstitution calculator' },
               { href: '/order-received', label: 'Track an order' },
               { href: '/blog', label: 'Research & test results' },
               { href: '/about-us', label: 'About our standards' },
-              { href: '/our-story', label: 'Our story' },
-              { href: '/why-us', label: 'Why us' },
-              { href: '/how-it-works', label: 'How it works' },
-              { href: '/quality-standards', label: 'Quality standards' },
               { href: '/faq', label: 'Frequently asked questions' },
               { href: '/contact-us', label: 'Contact support' },
               { href: '/affiliates', label: 'Affiliate portal' },

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useSiteContent } from '@/components/SiteContentProvider';
 import { contentLines, safeHref } from '@/lib/siteContent';
@@ -16,25 +16,12 @@ import { contentLines, safeHref } from '@/lib/siteContent';
  * who ask for reduced motion get the plain forest band instead.
  */
 export default function Hero() {
-  const video = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(false);
   const { t } = useSiteContent();
   const titleLines = t('hero.title').split(/\n/);
   const primaryHref = safeHref(t('hero.primaryHref')) || '/shop';
   const secondaryHref = safeHref(t('hero.secondaryHref'));
   return (
     <section className="theme-forest relative isolate overflow-hidden border-b border-brand-border bg-brand-dark">
-      {/* A looping video needs a way to stop it (WCAG 2.2.2). */}
-      <button
-        type="button"
-        className="absolute bottom-3 right-4 z-20 border border-brand-border bg-brand-dark/80 px-3 py-2 text-xs text-brand-heading motion-reduce:hidden"
-        onClick={() => {
-          if (playing) video.current?.pause();
-          else void video.current?.play().catch(() => setPlaying(false));
-        }}
-      >
-        {playing ? 'Pause background' : 'Play background'}
-      </button>
       <div className="shell pb-16 sm:pb-24 lg:py-32">
         <div className="mx-auto max-w-4xl text-center lg:mx-0 lg:max-w-[50%]">
           <div className="relative pb-20 pt-24 sm:pb-24 sm:pt-32 lg:static lg:p-0">
@@ -48,9 +35,6 @@ export default function Hero() {
                 loop
                 playsInline
                 preload="auto"
-                onPlay={() => setPlaying(true)}
-                onPause={() => setPlaying(false)}
-                ref={video}
               />
               <div className="absolute inset-0 bg-brand-dark/40 lg:bg-brand-dark/25" />
             </div>

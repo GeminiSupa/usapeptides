@@ -24,7 +24,7 @@ const supportEmail = clean(process.env.ORDER_NOTIFICATION_FROM) || 'info@usapept
 export const BUSINESS = {
   name: 'USA Peptide Depot',
   legalName: 'USA Peptide Depot',
-  domain: clean(process.env.NEXT_PUBLIC_SITE_URL) || 'https://www.usapeptidedepot.com',
+  domain: clean(process.env.NEXT_PUBLIC_SITE_URL) || 'https://usapeptidedepot.com',
   supportEmail,
   /**
    * Where customers send Zelle transfers. Defaults to the support mailbox

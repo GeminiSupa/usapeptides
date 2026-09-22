@@ -28,10 +28,7 @@ const NAV = [
   { href: '/coa-database', label: 'COA Database' },
   { href: '/blog', label: 'Research' },
   { href: '/about-us', label: 'About' },
-  { href: '/our-story', label: 'Our story' },
-  { href: '/quality-standards', label: 'Standards' },
   { href: '/faq', label: 'FAQ' },
-  { href: '/install', label: 'Mobile app' },
   { href: '/contact-us', label: 'Contact' },
   { href: '/my-account', label: 'Account' },
 ];
@@ -139,7 +136,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
         {/* Row 2 - primary navigation */}
         <nav className="hidden border-t border-brand-border lg:block">
-          <div className="shell flex flex-wrap items-center gap-0">
+          <div className="shell flex items-center gap-0">
             <div className="relative" onMouseLeave={() => setCategoryDropdownOpen(false)}>
               <button
                 onMouseEnter={() => setCategoryDropdownOpen(true)}
@@ -194,10 +191,9 @@ export default function Header({ onOpenSearch }: HeaderProps) {
               <span>Calculator</span>
             </Link>
 
-            <div className="ml-auto flex shrink-0 items-center">
             <Link
               href="/affiliates"
-              className="whitespace-nowrap px-2 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.08em] xl:px-3 2xl:px-4 2xl:tracking-[0.12em] text-brand-textMuted hover:text-brand-accentGlow"
+              className="ml-auto whitespace-nowrap px-2 py-3 font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.08em] xl:px-3 2xl:px-4 2xl:tracking-[0.12em] text-brand-textMuted hover:text-brand-accentGlow"
             >
               Affiliate Portal
             </Link>
@@ -208,7 +204,6 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             >
               <ShieldCheck className="h-3.5 w-3.5" /> Admin login
             </Link>
-            </div>
           </div>
         </nav>
 

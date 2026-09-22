@@ -36,7 +36,6 @@ export interface DbProduct {
   coa_lot: string | null;
   coa_tested_at: string | null;
   image: string | null;
-  detail_image: string | null;
   tags: string[] | null;
   in_stock: boolean;
   stock_count: number;
@@ -110,7 +109,6 @@ export function mapDbProduct(row: DbProduct): Product {
     coaUrl: row.coa_url ?? undefined,
 
     image: row.image ?? '',
-    detailImage: row.detail_image ?? row.image ?? '',
     tags: row.tags ?? [],
     isFeatured: row.is_featured,
     isPopular: row.is_popular,

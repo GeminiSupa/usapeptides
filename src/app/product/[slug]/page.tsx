@@ -1,8 +1,4 @@
 import type { Metadata } from 'next';
-import { cache } from 'react';
-import { notFound } from 'next/navigation';
-import { mapDbProduct, type DbProduct } from '@/lib/catalogue';
-import type { Product } from '@/types';
 import { products } from '@/data/products';
 import { publicRest } from '@/lib/siteContentServer';
 import { jsonLd, siteUrl } from '@/lib/seo';
@@ -18,25 +14,30 @@ export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
 }
 
-interface Props { params: Promise<{ slug: string }> }
+interface Props { params: { slug: string } }
 
-// Metadata, structured data and the first visible render share the same record.
-const fetchProduct = cache(async (slug: string): Promise<Product | null> => {
-  const rows = await publicRest<DbProduct[]>(
-    `products?slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=*&limit=1`,
+interface Row {
+  name: string; slug: string; description: string | null; image: string | null; sku: string | null;
+  price: number; sale_price: number | null; in_stock: boolean; category: string | null; purity: string | null;
+}
+
+async function fetchProduct(slug: string): Promise<Row | null> {
+  const rows = await publicRest<Row[]>(
+    `products?slug=eq.${encodeURIComponent(slug)}&select=name,slug,description,image,sku,price,sale_price,in_stock,category,purity&limit=1`,
     ['catalogue']
   );
-  if (rows !== null) return rows[0] ? mapDbProduct(rows[0]) : null;
-  return products.find((x) => x.slug === slug) ?? null;
-});
+  if (rows?.[0]) return rows[0];
+  const p = products.find((x) => x.slug === slug);
+  return p ? { name: p.name, slug: p.slug, description: p.description, image: p.image, sku: p.sku, price: p.price,
+    sale_price: p.salePrice ?? null, in_stock: p.inStock, category: p.category, purity: p.purity } : null;
+}
 
 const absolute = (url: string | null) => (url ? (url.startsWith('/') ? `${siteUrl()}${url}` : url) : undefined);
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const p = await fetchProduct(slug);
+  const p = await fetchProduct(params.slug);
   if (!p) return {};
-  const description = (p.description || `${p.name}. View research-product specifications and available documentation.`).slice(0, 160);
+  const description = (p.description || `${p.name}${p.purity ? `, ${p.purity} purity` : ''}. HPLC tested research compound.`).slice(0, 160);
   return {
     title: p.name,
     description,
@@ -46,9 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const { slug } = await params;
-  const p = await fetchProduct(slug);
-  if (!p) notFound();
+  const p = await fetchProduct(params.slug);
   const schema = p && {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -62,15 +61,14 @@ export default async function ProductDetailPage({ params }: Props) {
       '@type': 'Offer',
       url: `${siteUrl()}/product/${p.slug}`,
       priceCurrency: BUSINESS.currency,
-      // The product page and cart use the base price for one vial.
-      price: p.price.toFixed(2),
-      availability: p.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      price: Number(p.sale_price ?? p.price).toFixed(2),
+      availability: p.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     },
   };
   return (
     <>
       {schema && <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(schema)} />}
-      <ProductDetailClient slug={slug} initialProduct={p} />
+      <ProductDetailClient slug={params.slug} />
     </>
   );
 }

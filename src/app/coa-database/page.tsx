@@ -4,7 +4,6 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, FileText, X } from 'lucide-react';
 import { useCatalogue } from '@/hooks/useCatalogue';
-import ResearchResources from '@/components/ResearchResources';
 import { useCategories } from '@/hooks/useCategories';
 import { useCart } from '@/context/CartContext';
 
@@ -44,10 +43,10 @@ export default function CoaDatabasePage() {
     <div className="shell space-y-8 py-10">
       <div className="border-b border-brand-border pb-6">
         <p className="eyebrow mb-2.5">Published analysis</p>
-        <h1 className="page-title">Peptide Certificates of Analysis (COA)</h1>
+        <h1 className="page-title">COA Database</h1>
         <p className="mt-3 max-w-2xl text-xs leading-relaxed text-brand-textMuted sm:text-sm">
-          Search analysis records by compound, lot number, CAS number or laboratory.
-          Match the lot number on your label to the report before relying on its results.
+          Every lot we have released, with the independent chromatography filed against it. Search by
+          compound, lot number, CAS number or laboratory.
         </p>
       </div>
 
@@ -200,7 +199,6 @@ export default function CoaDatabasePage() {
         Reports are published per lot. If the lot on your vial is not listed here, contact us with the
         number printed on the label and we will send the matching analysis.
       </p>
-      <ResearchResources currentPath="/coa-database" />
     </div>
   );
 }

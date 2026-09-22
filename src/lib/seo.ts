@@ -27,12 +27,6 @@ export async function pageMetadata(page: string, path: string, extra: Partial<Me
     description,
     alternates: { canonical: path },
     openGraph: { title: title ? `${title}${c['seo.titleSuffix']}` : c['seo.siteTitle'], description, url: path },
-    twitter: {
-      card: c['seo.ogImage'] ? 'summary_large_image' : 'summary',
-      title: title ? `${title}${c['seo.titleSuffix']}` : c['seo.siteTitle'],
-      description,
-      images: c['seo.ogImage'] ? [c['seo.ogImage']] : undefined,
-    },
     ...extra,
   };
 }
