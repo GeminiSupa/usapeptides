@@ -49,6 +49,7 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
   const [total, setTotal] = useState(0);
   const [meta, setMeta] = useState<{ createFields: FieldDef[]; editable: string[]; deletable: boolean }>({ createFields: [], editable: [], deletable: false });
   const [stats, setStats] = useState<Record<string, Stats>>({});
+  const [followUps, setFollowUps] = useState<{ customerId: string; name: string; dueAt: string; status: string; basis: string }[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -79,7 +80,8 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
       setTotal(p.data.total);
       setMeta({ createFields: p.data.createFields, editable: p.data.editable, deletable: p.data.deletable });
       const s = await statRes.json().catch(() => null);
-      if (statRes.ok) setStats(s.data.stats);
+      if (statRes.ok) { setStats(s.data.stats); setFollowUps(s.data.followUps ?? []); }
+      else { setStats({}); setFollowUps([]); setError(s?.message || 'Customer statistics could not be loaded.'); }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Could not load customers.';
       if (message !== 'denied') setError(message);
@@ -219,6 +221,14 @@ export default function CustomersPanel({ authedFetch, upload, isAgent }: Props) 
 
   return (
     <div className="space-y-4">
+      <section className="border border-brand-border bg-brand-card p-4">
+        <h3 className="font-display font-bold text-brand-heading">Reorder follow-ups · {followUps.length}</h3>
+        <p className="mt-1 text-xs text-brand-textMuted">Expected purchases due within 7 days or overdue. Estimates use visible paid orders; no messages are sent automatically.</p>
+        <div className="mt-3 max-h-64 space-y-2 overflow-auto">
+          {followUps.map(f => <button key={f.customerId} onClick={() => setDetailId(f.customerId)} className="flex min-h-12 w-full flex-wrap justify-between gap-2 border border-brand-border p-3 text-left text-xs text-brand-body"><strong>{f.name}</strong><span>{f.status} · {f.dueAt} · {f.basis}</span></button>)}
+          {!followUps.length && <p className="text-xs text-brand-textMuted">No estimated follow-ups due. Automatic estimates need at least three separate purchase days.</p>}
+        </div>
+      </section>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[0.75rem] text-brand-textMuted">
           <span><strong className="text-brand-heading">{total}</strong> customers</span>

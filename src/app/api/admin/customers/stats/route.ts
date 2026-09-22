@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { featureUnavailable } from '@/lib/env';
 import { isSalesAgent } from '@/lib/permissions';
 import { ok, serverError } from '@/lib/api';
+import { PAID_ORDER_STATUSES, reorderEstimate } from '@/lib/retention';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,7 @@ export async function GET(req: Request) {
 
   const db = getSupabaseAdmin();
   const stats: Record<string, { orders: number; spent: number; lastOrderAt: string | null }> = {};
+  const dates: Record<string, string[]> = {};
 
   try {
     for (let from = 0; ; from += 1000) {
@@ -42,13 +44,35 @@ export async function GET(req: Request) {
         if (!email) continue;
         const s = (stats[email] ??= { orders: 0, spent: 0, lastOrderAt: null });
         s.orders += 1;
-        if (!['cancelled', 'refunded', 'pending'].includes(String(o.status))) s.spent += Number(o.grand_total ?? 0);
-        if (!s.lastOrderAt || String(o.created_at) > s.lastOrderAt) s.lastOrderAt = String(o.created_at);
+        if (PAID_ORDER_STATUSES.has(String(o.status))) {
+          s.spent += Number(o.grand_total ?? 0);
+          (dates[email] ??= []).push(String(o.created_at));
+          if (!s.lastOrderAt || String(o.created_at) > s.lastOrderAt) s.lastOrderAt = String(o.created_at);
+        }
       }
       if (!data || data.length < 1000) break;
     }
 
-    return ok({ stats });
+    const followUps = [];
+    const emails = Object.keys(dates);
+    for (let i = 0; i < emails.length; i += 100) {
+      let q = db.from('customer_profiles').select('id,email,full_name,owner_id').in('email', emails.slice(i, i + 100));
+      if (isSalesAgent(auth.admin.profile)) q = q.or(`owner_id.is.null,owner_id.eq.${auth.admin.id}`);
+      const profiles = await q;
+      if (profiles.error) return serverError(profiles.error.message);
+      const ids = (profiles.data ?? []).map(p => p.id);
+      const settings = ids.length ? await db.from('customer_retention').select('*').in('customer_id', ids) : { data: [], error: null };
+      if (settings.error && !/42P01|PGRST205/.test(settings.error.code)) return serverError(settings.error.message);
+      for (const p of profiles.data ?? []) {
+        const preference = settings.data?.find(s => s.customer_id === p.id);
+        const estimate = reorderEstimate(dates[p.email.toLowerCase()] ?? [], preference?.reorder_days);
+        if (estimate && estimate.daysUntil <= 7 && (!preference?.follow_up_after || preference.follow_up_after <= new Date().toISOString().slice(0, 10))) {
+          followUps.push({ customerId: p.id, name: p.full_name || p.email, ...estimate });
+        }
+      }
+    }
+    followUps.sort((a,b) => a.daysUntil - b.daysUntil);
+    return ok({ stats, followUps });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);
   }

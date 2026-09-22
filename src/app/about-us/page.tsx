@@ -1,103 +1,30 @@
-'use client';
-
-import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Award, FlaskConical, Truck, CheckCircle2, FileText, ArrowRight } from 'lucide-react';
 
 export default function AboutUsPage() {
   return (
-    <div className="shell py-10 space-y-12">
-      
-      {/* Header */}
-      <div className="border-b border-brand-border pb-6">
-        <div className="eyebrow mb-2.5">
-          Laboratory Standards
+    <div className="shell space-y-14 py-12">
+      <header className="max-w-3xl border-b border-brand-border pb-8">
+        <p className="eyebrow mb-3">About USA Peptide Depot</p>
+        <h1 className="page-title">Why trust what you can test?</h1>
+        <p className="mt-4 text-sm leading-relaxed text-brand-body">USA Peptide Depot is a U.S.-based supplier of research peptides and laboratory reference materials built on one simple principle: never trust what you can test.</p>
+      </header>
+      <section className="grid gap-8 lg:grid-cols-2">
+        <div className="space-y-5 text-sm leading-relaxed text-brand-body">
+          <h2 className="section-title">Clear evidence for real research</h2>
+          <p>Anyone can print a purity number on a label. We focus on clear product identification, lot-specific documentation, independent analytical testing where available, domestic fulfillment, and responsive support.</p>
+          <p>Every step of the process is built for traceability, transparency, and consistency — from sourcing and documentation to fulfillment and customer support.</p>
         </div>
-        <h1 className="page-title">
-          About USA Peptide Depot
-        </h1>
-        <p className="text-xs sm:text-sm text-brand-textMuted mt-2 max-w-2xl leading-relaxed">
-          Supplying HPLC-tested research peptides and reference materials to academic universities, private laboratories, and biotechnology institutions.
-        </p>
-      </div>
-
-      {/* Mission & Vision */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        <div className="space-y-4 text-xs sm:text-sm text-brand-body leading-relaxed">
-          <h2 className="text-xl font-bold text-brand-heading">
-            Uncompromising Chemical Integrity
-          </h2>
-          <p>
-            USA Peptide Depot was founded to eliminate the variance and lack of transparency historically associated with research chemical procurement. We believe researchers deserve clear, reproducible purity data before running critical in-vitro assays.
-          </p>
-          <p>
-            Every peptide batch we distribute is synthesized via automated solid-phase peptide synthesis (SPPS), purified with preparative RP-HPLC, lyophilized into sterile Type I borosilicate vials under inert argon atmosphere, and validated through independent third-party laboratories.
-          </p>
-        </div>
-
-        <div className="p-6 rounded-3xl bg-brand-card border border-brand-border space-y-4">
-          <h3 className="font-bold text-brand-heading text-sm flex items-center gap-2">
-            <Award className="w-5 h-5 text-brand-accentGlow" />
-            Our Laboratory Guarantees
-          </h3>
-          <ul className="space-y-2.5 text-xs text-brand-body">
-            <li className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-brand-success flex-shrink-0 mt-0.5" />
-              <span><strong>Guaranteed Purity:</strong> Minimum 99.0% chromatographic purity on every peptide.</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-brand-success flex-shrink-0 mt-0.5" />
-              <span><strong>Full Analytical Transparency:</strong> Publicly verifiable RP-HPLC UV-214nm chromatograms and MS spectra.</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-brand-success flex-shrink-0 mt-0.5" />
-              <span><strong>USA Domestic Operations:</strong> Climate-controlled warehousing and expedited same-day dispatch.</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      {/* 3 Pillars */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-        <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-3">
-          <FlaskConical className="w-8 h-8 text-brand-accentGlow" />
-          <h3 className="font-bold text-brand-heading text-sm">Automated SPPS Synthesis</h3>
-          <p className="text-xs text-brand-textMuted leading-relaxed">
-            Solid-phase peptide synthesis utilizing Fmoc chemistry ensuring precise amino acid chain sequencing and minimizing deletion impurities.
-          </p>
-        </div>
-
-        <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-3">
-          <ShieldCheck className="w-8 h-8 text-brand-success" />
-          <h3 className="font-bold text-brand-heading text-sm">Independent 3rd-Party Audits</h3>
-          <p className="text-xs text-brand-textMuted leading-relaxed">
-            Analytical validation conducted by recognized independent facilities including Janoshik Analytical and MZ Biolabs.
-          </p>
-        </div>
-
-        <div className="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-3">
-          <Truck className="w-8 h-8 text-brand-accentGlow" />
-          <h3 className="font-bold text-brand-heading text-sm">Cold-Chain Delivery</h3>
-          <p className="text-xs text-brand-textMuted leading-relaxed">
-            Protective thermal insulated packaging ensuring lyophilized peptide stability during domestic transit.
-          </p>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="p-8 rounded-3xl bg-brand-card border border-brand-border flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-        <div>
-          <h3 className="text-lg font-bold text-brand-heading">Have Custom Synthesis or Bulk Institutional Inquiries?</h3>
-          <p className="text-xs text-brand-textMuted mt-1">Our team provides custom aliquot packaging and academic department invoicing.</p>
-        </div>
-        <Link
-          href="/contact-us"
-          className="px-6 py-3 bg-brand-accent hover:bg-brand-accentHover text-brand-onAccent font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] rounded-xl transition-colors flex-shrink-0"
-        >
-          Contact Laboratory Team
-        </Link>
-      </div>
-
+        <div className="border border-brand-border bg-brand-card p-6"><p className="eyebrow mb-3 text-brand-accentGlow">Our standard</p><p className="font-display text-xl font-extrabold uppercase leading-tight text-brand-heading">Don’t believe the hype. Believe the results.</p><p className="mt-4 text-sm text-brand-textMuted">That’s Trust. <em>Verified.</em></p></div>
+      </section>
+      <section className="grid gap-5 md:grid-cols-3">
+        {[
+          ['Document every lot', 'We make the documentation that exists for a lot easy to find and understand.'],
+          ['Keep the facts clear', 'We separate verifiable information from marketing language and unsupported claims.'],
+          ['Support the work', 'Direct support helps researchers find product, shipping, and documentation answers.'],
+        ].map(([title, body]) => <article key={title} className="border border-brand-border bg-brand-card p-6"><h2 className="font-display text-sm font-extrabold uppercase tracking-wide text-brand-heading">{title}</h2><p className="mt-3 text-sm leading-relaxed text-brand-textMuted">{body}</p></article>)}
+      </section>
+      <div className="flex flex-wrap gap-3"><Link href="/our-story" className="btn-primary">Read our story</Link><Link href="/quality-standards" className="btn-ghost">Quality standards</Link></div>
+      <p className="border-t border-brand-border pt-6 text-xs leading-relaxed text-brand-textMuted">Products sold by USA Peptide Depot are intended for laboratory and research use only and are not intended for human or veterinary use.</p>
     </div>
   );
 }

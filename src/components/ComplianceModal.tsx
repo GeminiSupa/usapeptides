@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, CheckCircle2, Lock } from 'lucide-react';
+import Image from 'next/image';
+import { CheckCircle2 } from 'lucide-react';
+import { useSiteContent } from '@/components/SiteContentProvider';
 
 export default function ComplianceModal() {
+  const { t } = useSiteContent();
   const [isOpen, setIsOpen] = useState(false);
   const [remember, setRemember] = useState(true);
 
@@ -35,9 +38,9 @@ export default function ComplianceModal() {
         className="w-full max-w-lg bg-brand-card border border-brand-border rounded-2xl p-6 space-y-5 text-center sm:text-left"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-red-50 border border-amber-500/40 flex items-center justify-center text-red-700 flex-shrink-0">
-            <ShieldAlert className="w-6 h-6" />
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="theme-forest flex w-full justify-center border border-brand-border bg-brand-dark px-5 py-4">
+            <Image src="/logo.png" alt={t('business.name')} width={622} height={205} className="h-auto w-44 max-w-full" />
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-red-700 tracking-wider block">

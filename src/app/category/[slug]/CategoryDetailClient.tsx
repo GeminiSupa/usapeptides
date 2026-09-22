@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
+import ResearchResources from '@/components/ResearchResources';
 import CatalogueViewToggle, { useCatalogueView } from '@/components/CatalogueViewToggle';
 import { useCatalogue } from '@/hooks/useCatalogue';
 import { useCategory } from '@/hooks/useCategories';
@@ -85,6 +86,7 @@ export default function CategoryDetailClient({ slug }: { slug: string }) {
         )}
       </div>
 
+      <ResearchResources />
     </div>
   );
 }

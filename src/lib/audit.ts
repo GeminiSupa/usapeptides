@@ -50,6 +50,7 @@ export type AuditAction =
   | 'product.import'
   | 'customer.create'
   | 'customer.assign'
+  | 'customer.retention.update'
   | 'customer.delete'
   | 'customer.login_invite'
   | 'prospect.import'
