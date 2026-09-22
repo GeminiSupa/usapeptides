@@ -281,23 +281,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes molecular-drift {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .28; }
-  50% { transform: translate3d(18px, -22px, 0) scale(1.18); opacity: .65; }
-}
-
-.molecular-backdrop { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: #17382f; }
-.molecular-backdrop::after { content: ''; position: absolute; inset: 0; background: rgba(23, 56, 47, .58); }
-.molecular-backdrop::before { content: ''; position: absolute; width: 28rem; height: 28rem; right: -9rem; top: -13rem; border: 1px solid rgba(92, 175, 190, .28); border-radius: 999px; box-shadow: 0 0 0 4rem rgba(92, 175, 190, .04), 0 0 0 9rem rgba(92, 175, 190, .025); animation: molecular-drift 18s ease-in-out infinite; }
-.molecular-node { position: absolute; width: 9px; height: 9px; border: 1px solid rgba(188, 212, 197, .7); border-radius: 999px; animation: molecular-drift 9s ease-in-out infinite; }
-.molecular-node::after { content: ''; position: absolute; inset: 2px; border-radius: inherit; background: rgba(188, 212, 197, .5); }
-.molecular-node:nth-child(3n) { width: 5rem; height: 5rem; border-color: rgba(71, 157, 177, .24); filter: blur(.2px); }
-.molecular-node:nth-child(5n) { width: 8rem; height: 8rem; border-color: rgba(126, 192, 171, .16); }
-.molecular-node:nth-child(3n)::after, .molecular-node:nth-child(5n)::after { inset: 35%; background: rgba(106, 186, 190, .24); }
-.molecular-link { position: absolute; height: 1px; width: 42%; background: rgba(188, 212, 197, .22); transform-origin: left center; animation: molecular-drift 12s ease-in-out infinite; }
-.molecular-node-1 { left: 8%; top: 24%; animation-delay: -2s; }.molecular-node-2 { left: 22%; top: 62%; animation-delay: -5s; }.molecular-node-3 { left: 38%; top: 18%; animation-delay: -1s; }.molecular-node-4 { left: 51%; top: 70%; animation-delay: -7s; }.molecular-node-5 { left: 67%; top: 28%; animation-delay: -3s; }.molecular-node-6 { left: 82%; top: 55%; animation-delay: -6s; }.molecular-node-7 { left: 91%; top: 15%; animation-delay: -4s; }.molecular-node-8 { left: 14%; top: 86%; animation-delay: -8s; }.molecular-node-9 { left: 31%; top: 42%; animation-delay: -2s; }.molecular-node-10 { left: 46%; top: 34%; animation-delay: -6s; }.molecular-node-11 { left: 59%; top: 84%; animation-delay: -1s; }.molecular-node-12 { left: 74%; top: 68%; animation-delay: -5s; }.molecular-node-13 { left: 86%; top: 38%; animation-delay: -7s; }.molecular-node-14 { left: 4%; top: 58%; animation-delay: -3s; }
-.molecular-link-a { left: 11%; top: 28%; transform: rotate(24deg); }.molecular-link-b { left: 39%; top: 21%; transform: rotate(52deg); animation-delay: -4s; }.molecular-link-c { left: 55%; top: 73%; transform: rotate(-28deg); animation-delay: -8s; }
-@media (prefers-reduced-motion: reduce) { .molecular-node, .molecular-link { animation: none; } }
 .animate-fadeIn { animation: fadeIn 0.16s ease-out forwards; }
 
 /* Horizontal product rails on small screens, grid on desktop. */

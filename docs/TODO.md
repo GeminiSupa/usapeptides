@@ -6,6 +6,8 @@ something outside the code.
 
 ## USA Peptide Depot content structure — 2026-09-22
 
+- [x] Created an original 24-second H.264 molecular/cell background video (1280×720, approximately 1.1 MB), with poster, muted looping playback, pause control and reduced-motion support. Replaces the CSS dots; does not use the supplied WhatsApp video. Renderer: `scripts/render-biotech.py`.
+
 - [x] Added the owner-provided trust and verification positioning to the homepage hero.
 - [x] Reworked About Us to use the owner-provided standards and research-use notice.
 - [x] Added Our Story, Why Us, How It Works, and Quality Standards pages and linked them in navigation.
