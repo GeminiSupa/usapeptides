@@ -125,7 +125,7 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     select:
       'id, slug, name, category, category_slug, price, sale_price, sku, purity, sequence,' +
       ' cas_number, molar_mass, formula, storage, appearance, description, image, detail_image, coa_url,' +
-      ' coa_lot, coa_tested_at, stock_count, in_stock, is_featured, is_popular, is_active,' +
+      ' coa, coa_lot, coa_tested_at, stock_count, in_stock, is_featured, is_popular, is_active,' +
       ' sort_order, created_at',
     orderBy: 'name',
     searchable: ['name', 'sku', 'slug'],
@@ -134,7 +134,7 @@ export const RESOURCES: Record<string, ResourceConfig> = {
       'stock_count', 'in_stock', 'is_featured', 'is_popular', 'is_active',
       'purity', 'sequence', 'cas_number', 'molar_mass', 'formula', 'storage',
       'appearance', 'description', 'image', 'detail_image', 'coa_url', 'coa_lot', 'coa_tested_at',
-      'sort_order',
+      'coa_lab', 'coa_method', 'sort_order',
     ],
     deletable: true,
     createFields: [
@@ -159,6 +159,10 @@ export const RESOURCES: Record<string, ResourceConfig> = {
         help: 'PDF up to 2 MB. Customers download this from the product page.' },
       { group: 'Media', name: 'coa_lot', label: 'Certificate lot number', type: 'text' },
       { group: 'Media', name: 'coa_tested_at', label: 'Tested on', type: 'date' },
+      { group: 'Media', name: 'coa_lab', label: 'Testing laboratory', type: 'text',
+        help: 'Shown in the COA database, e.g. Janoshik Analytical Services. Leave blank for the site default.' },
+      { group: 'Media', name: 'coa_method', label: 'Test method', type: 'text',
+        help: 'e.g. RP-HPLC UV-214nm & ESI-MS. Leave blank for the site default.' },
 
       { group: 'Details', name: 'description', label: 'Description', type: 'textarea' },
       { group: 'Details', name: 'sequence', label: 'Sequence', type: 'textarea' },
@@ -195,6 +199,16 @@ export const RESOURCES: Record<string, ResourceConfig> = {
       // Live unless the form said otherwise, so adding a product and pressing
       // save actually puts it on the website.
       if (row.is_active === undefined) row.is_active = true;
+
+      const coa: Record<string, string> = {};
+      if (row.coa_lot) coa.lotNumber = String(row.coa_lot);
+      if (row.coa_tested_at) coa.testDate = String(row.coa_tested_at);
+      if (row.purity) coa.purity = String(row.purity);
+      if (row.coa_lab) coa.lab = String(row.coa_lab);
+      if (row.coa_method) coa.method = String(row.coa_method);
+      if (Object.keys(coa).length) row.coa = coa;
+      delete row.coa_lab;
+      delete row.coa_method;
 
       return row;
     },
@@ -523,6 +537,39 @@ export const RESOURCES: Record<string, ResourceConfig> = {
 };
 
 export type ResourceName = keyof typeof RESOURCES;
+
+/** Flatten coa JSON into form fields the product editor understands. */
+export function flattenProductCoaRow(row: Record<string, unknown>): Record<string, unknown> {
+  const coa = (row.coa ?? {}) as Record<string, string>;
+  return {
+    ...row,
+    coa_lab: coa.lab ?? '',
+    coa_method: coa.method ?? '',
+  };
+}
+
+/** Merge dashboard COA fields into the products.coa JSON column. */
+export function mergeProductCoaUpdate(
+  existing: unknown,
+  changes: Record<string, unknown>,
+): Record<string, unknown> | null {
+  if (!('coa_lab' in changes) && !('coa_method' in changes)) return null;
+
+  const coa = { ...((existing ?? {}) as Record<string, unknown>) };
+  if ('coa_lab' in changes) {
+    const lab = changes.coa_lab;
+    if (lab) coa.lab = String(lab);
+    else delete coa.lab;
+    delete changes.coa_lab;
+  }
+  if ('coa_method' in changes) {
+    const method = changes.coa_method;
+    if (method) coa.method = String(method);
+    else delete coa.method;
+    delete changes.coa_method;
+  }
+  return coa;
+}
 
 export const isResource = (name: string): name is ResourceName =>
   Object.prototype.hasOwnProperty.call(RESOURCES, name);

@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAdmin, type AdminIdentity } from '@/lib/adminAuth';
-import { RESOURCES, isResource } from '@/lib/adminResources';
+import { RESOURCES, flattenProductCoaRow, isResource, mergeProductCoaUpdate } from '@/lib/adminResources';
 import { featureUnavailable, supabaseEnv } from '@/lib/env';
 import { isSalesAgent } from '@/lib/permissions';
 import { generateCommissionsForOrder } from '@/lib/commissions';
@@ -34,6 +34,9 @@ const isMissingColumn = (error: { code?: string; message?: string }): boolean =>
   error.code === '42703' ||
   error.code === 'PGRST204' ||
   /column .* does not exist|could not find the .* column/i.test(error.message ?? '');
+
+const shapeRowForResponse = (resource: string, row: Record<string, unknown>) =>
+  resource === 'products' ? flattenProductCoaRow(row) : row;
 
 /**
  * True for a URL inside our own Supabase storage, which is where the upload
@@ -231,7 +234,8 @@ export async function GET(req: Request, { params }: { params: { resource: string
     if (error) return serverError(migrationHint(error) ?? error.message);
 
     const people = hasOwnership ? await creditablePeople(db, auth.admin) : [];
-    return respond(data ?? [], count ?? 0, hasOwnership, people);
+    const rows = (data ?? []).map((row) => shapeRowForResponse(params.resource, row as unknown as Record<string, unknown>));
+    return respond(rows, count ?? 0, hasOwnership, people);
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);
   }
@@ -366,7 +370,7 @@ export async function POST(req: Request, { params }: { params: { resource: strin
       return serverError(migrationHint(error) ?? error.message);
     }
 
-    return created({ row: data });
+    return created({ row: shapeRowForResponse(params.resource, data as unknown as Record<string, unknown>) });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);
   }
@@ -407,8 +411,16 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
     });
   }
 
-  const update = config.deriveUpdate ? config.deriveUpdate(changes) : changes;
   const db = getSupabaseAdmin();
+
+  if (params.resource === 'products' && ('coa_lab' in changes || 'coa_method' in changes)) {
+    const { data: current, error } = await db.from('products').select('coa').eq('id', body.id).maybeSingle();
+    if (error) return serverError(error.message);
+    const coa = mergeProductCoaUpdate(current?.coa, changes);
+    if (coa) changes.coa = coa;
+  }
+
+  const update = config.deriveUpdate ? config.deriveUpdate(changes) : changes;
   if (params.resource === 'products' && update.category) {
     const { data: category } = await db.from('product_categories').select('slug').eq('name', String(update.category)).maybeSingle();
     if (category?.slug) update.category_slug = category.slug;
@@ -454,7 +466,7 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
       }
     }
 
-    return ok({ row: data, applied: Object.keys(update), ignored: rejected });
+    return ok({ row: shapeRowForResponse(params.resource, data as unknown as Record<string, unknown>), applied: Object.keys(update), ignored: rejected });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);
   }

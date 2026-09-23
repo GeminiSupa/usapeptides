@@ -1,7 +1,7 @@
 import { requireAdmin } from '@/lib/adminAuth';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { featureUnavailable } from '@/lib/env';
-import { slugify } from '@/lib/adminResources';
+import { mergeProductCoaUpdate, slugify } from '@/lib/adminResources';
 import { isOwnMediaUrl } from '@/lib/media';
 import { writeAudit } from '@/lib/audit';
 import { ok, badRequest, serverError, readJson, clip } from '@/lib/api';
@@ -29,7 +29,7 @@ export const dynamic = 'force-dynamic';
 
 const SELECT =
   'id, slug, name, category, category_slug, price, sale_price, sku, purity, sequence, cas_number,' +
-  ' molar_mass, formula, storage, appearance, description, tags, image, coa_url, coa_lot,' +
+  ' molar_mass, formula, storage, appearance, description, tags, image, coa, coa_url, coa_lot,' +
   ' coa_tested_at, stock_count, in_stock, is_featured, is_popular, is_active, sort_order';
 
 type Row = Record<string, unknown>;
@@ -156,6 +156,8 @@ export async function POST(req: Request) {
       else row.sku = sku;
     }
 
+    const coaChanges: Row = {};
+
     for (const field of PRODUCT_SHEET_FIELDS) {
       const value = raw[field.key];
       if (blank(value) || ['name', 'sku', 'slug', 'category'].includes(field.key)) continue;
@@ -200,7 +202,8 @@ export async function POST(req: Request) {
               break;
             }
           }
-          row[field.key] = text;
+          if (field.key === 'coa_lab' || field.key === 'coa_method') coaChanges[field.key] = text;
+          else row[field.key] = text;
         }
       }
     }
@@ -226,6 +229,8 @@ export async function POST(req: Request) {
     }
 
     if (row.stock_count !== undefined) row.in_stock = Number(row.stock_count) > 0;
+    const coa = mergeProductCoaUpdate(match?.coa, coaChanges);
+    if (coa) row.coa = coa;
 
     if (errors.length) {
       results.push({ line, action: 'error', name, sku, messages: [...errors, ...messages] });

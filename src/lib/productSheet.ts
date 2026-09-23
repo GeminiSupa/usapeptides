@@ -44,6 +44,8 @@ export const PRODUCT_SHEET_FIELDS: SheetField[] = [
   { key: 'coa_url', header: 'Certificate link', type: 'text', aliases: ['coa', 'coa url', 'certificate', 'certificado'] },
   { key: 'coa_lot', header: 'Certificate lot', type: 'text', aliases: ['lot', 'batch', 'lote'] },
   { key: 'coa_tested_at', header: 'Tested on', type: 'date', aliases: ['test date', 'tested', 'fecha de prueba'] },
+  { key: 'coa_lab', header: 'Testing laboratory', type: 'text', aliases: ['lab', 'laboratory', 'testing lab', 'analytical lab', 'laboratorio'] },
+  { key: 'coa_method', header: 'Test method', type: 'text', aliases: ['method', 'analytical method', 'test', 'assay method', 'metodo', 'método'] },
   { key: 'is_featured', header: 'Featured', type: 'boolean', aliases: ['destacado'] },
   { key: 'is_popular', header: 'Popular', type: 'boolean', aliases: ['popular item'] },
   { key: 'sort_order', header: 'Sort position', type: 'integer', aliases: ['sort', 'position', 'order', 'orden'] },
@@ -79,7 +81,11 @@ export function mapSheetRow(raw: Record<string, unknown>): Record<string, unknow
 /** One product as the cells of an export row, in PRODUCT_SHEET_FIELDS order. */
 export function productToCells(product: Record<string, unknown>, fields = PRODUCT_SHEET_FIELDS): (string | number)[] {
   return fields.map((field) => {
-    const value = product[field.key];
+    const coa = (product.coa ?? {}) as Record<string, unknown>;
+    const value =
+      field.key === 'coa_lab' ? coa.lab
+      : field.key === 'coa_method' ? coa.method
+      : product[field.key];
     if (value === null || value === undefined) return '';
     switch (field.type) {
       case 'money':

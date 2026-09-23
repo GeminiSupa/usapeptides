@@ -617,7 +617,8 @@ anything hardcoded or weak.
 ## Next
 - [ ] Blog written in the dashboard, published to the website
 - [ ] Remaining product detail fields in the form: specs table, bulk pricing
-      tiers, tags, the structured `coa` JSON
+      tiers, tags and the less-used structured `coa` JSON fields. COA lab and
+      method are now editable in Dashboard > Products and in product import/export.
 - [x] Per-section dashboard permissions — done. Access is no longer
       all-or-nothing
 - [ ] Real product photography to replace the generated placeholder SVGs
@@ -650,7 +651,8 @@ anything hardcoded or weak.
       dates and public publishing. Public pages read only published articles
       and keep the bundled library as an offline fallback. Requires migration
       `0009_articles.sql` before it can be used live.
-- [ ] Complete structured product fields, including bulk tiers and COA data.
+- [ ] Complete structured product fields, including bulk tiers and the remaining
+      COA data beyond lab/method.
 - [ ] Build campaigns, broadcasts and abandoned-cart recovery around optional
       email/Chatwoot/Meta providers; drafting and audience selection must work
       when sending providers are absent.
