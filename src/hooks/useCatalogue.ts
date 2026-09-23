@@ -28,7 +28,7 @@ interface CatalogueResult {
 const SELECT =
   'id, slug, name, category, category_slug, price, sale_price, sku, purity, sequence,' +
   ' cas_number, molar_mass, formula, storage, appearance, description, details, specs,' +
-  ' bulk_pricing, coa, coa_url, coa_lot, coa_tested_at, image, tags, in_stock,' +
+  ' bulk_pricing, coa, coa_url, coa_lot, coa_tested_at, image, detail_image, tags, in_stock,' +
   ' stock_count, is_featured, is_popular, is_active';
 
 let cache: Promise<{ products: Product[]; source: CatalogueSource }> | null = null;

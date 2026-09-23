@@ -98,9 +98,9 @@ export function mapDbProduct(row: DbProduct): Product {
         })),
 
     coa: {
-      lotNumber: coa.lotNumber ?? row.coa_lot ?? '',
-      testDate: coa.testDate ?? row.coa_tested_at ?? '',
-      purity: coa.purity ?? row.purity ?? '',
+      lotNumber: row.coa_lot || coa.lotNumber || '',
+      testDate: row.coa_tested_at || coa.testDate || '',
+      purity: row.purity || coa.purity || '',
       lab: coa.lab ?? 'Independent analytical laboratory',
       method: coa.method ?? 'RP-HPLC UV-214nm & ESI-MS',
       sampleType: coa.sampleType ?? 'Lyophilized polypeptide',

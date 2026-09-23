@@ -413,7 +413,14 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
 
   const db = getSupabaseAdmin();
 
-  if (params.resource === 'products' && ('coa_lab' in changes || 'coa_method' in changes)) {
+  if (
+    params.resource === 'products' &&
+    ('coa_lab' in changes ||
+      'coa_method' in changes ||
+      'coa_lot' in changes ||
+      'coa_tested_at' in changes ||
+      'purity' in changes)
+  ) {
     const { data: current, error } = await db.from('products').select('coa').eq('id', body.id).maybeSingle();
     if (error) return serverError(error.message);
     const coa = mergeProductCoaUpdate(current?.coa, changes);

@@ -553,7 +553,14 @@ export function mergeProductCoaUpdate(
   existing: unknown,
   changes: Record<string, unknown>,
 ): Record<string, unknown> | null {
-  if (!('coa_lab' in changes) && !('coa_method' in changes)) return null;
+  const hasCoaFields =
+    'coa_lab' in changes ||
+    'coa_method' in changes ||
+    'coa_lot' in changes ||
+    'coa_tested_at' in changes ||
+    'purity' in changes;
+
+  if (!hasCoaFields) return null;
 
   const coa = { ...((existing ?? {}) as Record<string, unknown>) };
   if ('coa_lab' in changes) {
@@ -567,6 +574,21 @@ export function mergeProductCoaUpdate(
     if (method) coa.method = String(method);
     else delete coa.method;
     delete changes.coa_method;
+  }
+  if ('coa_lot' in changes) {
+    const lot = changes.coa_lot;
+    if (lot) coa.lotNumber = String(lot);
+    else delete coa.lotNumber;
+  }
+  if ('coa_tested_at' in changes) {
+    const testDate = changes.coa_tested_at;
+    if (testDate) coa.testDate = String(testDate);
+    else delete coa.testDate;
+  }
+  if ('purity' in changes) {
+    const purity = changes.purity;
+    if (purity) coa.purity = String(purity);
+    else delete coa.purity;
   }
   return coa;
 }
