@@ -2,7 +2,7 @@ import 'server-only';
 
 import { getSupabaseAdmin } from './supabaseAdmin';
 import { fireTrigger } from './automationEngine';
-import type { InboundLead } from './leadIntake';
+import type { InboundLead } from './partnerLead';
 
 /**
  * Write one form submission into Leads.

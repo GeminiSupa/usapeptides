@@ -2,7 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { BUSINESS, featureUnavailable } from '@/lib/env';
 import { created, badRequest, serverError, readJson } from '@/lib/api';
 import { cleanMultiline, cleanText, isEmail, isPersonName, isPhone, normaliseEmail } from '@/lib/validate';
-import { siteHost } from '@/lib/leadIntake';
+import { siteHost } from '@/lib/partnerLead';
 import { recordInboundLead } from '@/lib/inboundLead';
 
 export const dynamic = 'force-dynamic';

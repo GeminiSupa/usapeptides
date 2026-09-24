@@ -1,91 +1,233 @@
-import { timingSafeEqual } from 'node:crypto';
-
-import { cleanMultiline, cleanText, isEmail, isPhone, normaliseEmail } from './validate';
+import { cleanMultiline, cleanText, isEmail, isPersonName, isPhone, normaliseEmail } from './validate';
 
 /**
- * Rules for a form posted into the CRM from this site or from another domain.
- * No database and no secret here, so the checks can be tested on their own.
+ * Lead intake for the local lead-gen sites.
+ *
+ * The dropdown options, the payload rules and the spam checks live here so the
+ * public endpoint and the dashboard agree on what a lead looks like. Nothing
+ * in this file names a business: the option lists are generic peptide-industry
+ * interests and the site list lives in the database, so another deployment of
+ * this template changes no code.
+ *
+ * The spec the lead-gen sites are built against is docs/LEAD-INTAKE-API.md.
  */
 
-export interface InboundLead {
-  name: string | null;
-  email: string | null;
-  phone: string | null;
-  institution: string | null;
-  message: string | null;
-  /** Hostname only, lower case. This is what Leads shows as the source. */
-  site: string;
+export interface Choice {
+  slug: string;
+  label: string;
 }
 
-export interface LeadIntakeFailure {
-  ok: false;
+export const INTEREST_OPTIONS: Choice[] = [
+  { slug: 'weight_management', label: 'Weight management' },
+  { slug: 'hair_scalp', label: 'Hair & scalp' },
+  { slug: 'skin_cosmetic', label: 'Skin / cosmetic' },
+  { slug: 'collagen', label: 'Collagen' },
+  { slug: 'copper_peptides', label: 'Copper peptides' },
+  { slug: 'general_info', label: 'General peptide information' },
+  { slug: 'availability', label: 'Product availability' },
+  { slug: 'pricing', label: 'Pricing' },
+  { slug: 'other', label: 'Other' },
+];
+
+export const GOAL_OPTIONS: Choice[] = [
+  { slug: 'weight_management', label: 'Weight management' },
+  { slug: 'body_composition', label: 'Body composition' },
+  { slug: 'recovery', label: 'Recovery' },
+  { slug: 'healthy_aging', label: 'Healthy aging' },
+  { slug: 'skin_appearance', label: 'Skin appearance' },
+  { slug: 'hair', label: 'Hair' },
+  { slug: 'general_wellness', label: 'General wellness' },
+  { slug: 'learning_options', label: 'Learning about peptide options' },
+  { slug: 'other', label: 'Other' },
+];
+
+/** The value stored in `leads.source` for everything the intake endpoint takes. */
+export const LOCAL_LEAD_SOURCE = 'local_site';
+
+/** A lead that arrived less than this long ago is updated, not duplicated. */
+const DEDUPE_WINDOW_DAYS = 30;
+
+/** A form filled in faster than this was filled in by a script. */
+const MIN_FILL_MS = 3_000;
+
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const;
+
+/**
+ * Accepts the slug, the label, or anything close to either. An option added to
+ * a live site before this list catches up must not cost us the lead, so an
+ * unrecognised answer becomes 'other' and the raw text is kept for the notes.
+ */
+export function matchChoice(value: unknown, options: Choice[]): { slug: string; raw: string } {
+  const raw = cleanText(value, 120);
+  if (!raw) return { slug: '', raw: '' };
+
+  const needle = raw.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const hit = options.find(
+    (o) => o.slug === needle || o.label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') === needle
+  );
+  return { slug: hit ? hit.slug : 'other', raw };
+}
+
+export const choiceLabel = (slug: string, options: Choice[]): string =>
+  options.find((o) => o.slug === slug)?.label ?? slug;
+
+export interface LeadIntakeInput {
+  full_name: string;
+  email: string;
+  phone: string;
+  interest: string;
+  interestRaw: string;
+  goal: string;
+  goalRaw: string;
   message: string;
-  fields: Record<string, string>;
+  lead_source: string;
+  tracking_phone: string;
+  meta: Record<string, string>;
 }
 
-/** Constant-time compare that does not leak the secret's length through timing. */
-export function secretMatches(supplied: string, expected: string): boolean {
-  const a = Buffer.from(supplied);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length) {
-    timingSafeEqual(b, b);
-    return false;
+export interface ParsedIntake {
+  lead?: LeadIntakeInput;
+  fields?: Record<string, string>;
+  /** Looked like a bot. Answer as though it worked and store nothing. */
+  silentlyDrop?: boolean;
+}
+
+/** Validate a posted body. Field keys match the payload names the sites send. */
+export function parseIntake(body: Record<string, unknown>, fallbackSource: string): ParsedIntake {
+  // Honeypot: a real person never sees this input, so anything in it is a bot.
+  if (cleanText(body.company, 200)) return { silentlyDrop: true };
+
+  const ts = Number(body.ts);
+  if (Number.isFinite(ts) && ts > 0) {
+    const elapsed = Date.now() - ts;
+    // A future timestamp is a forged one; too fast is a script.
+    if (elapsed < MIN_FILL_MS) return { silentlyDrop: true };
   }
-  return timingSafeEqual(a, b);
-}
 
-/** `https://Shop.Example.com/contact` and `shop.example.com` both become the host. */
-export function siteHost(value: unknown): string | null {
-  const raw = cleanText(value, 200);
-  if (!raw || /\s/.test(raw)) return null;
-  try {
-    const withScheme = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-    const host = new URL(withScheme).hostname.toLowerCase().replace(/\.$/, '');
-    if (!host.includes('.') || host.length > 120) return null;
-    if (!/^[a-z0-9.-]+$/.test(host)) return null;
-    if (host.startsWith('.') || host.endsWith('.') || host.includes('..')) return null;
-    return host;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Read a partner-site form. `site` is required so a lead always says which
- * domain it came from. Email or phone is required; a name alone cannot be followed up.
- */
-export function parseLeadIntake(body: Record<string, unknown>): { ok: true; value: InboundLead } | LeadIntakeFailure {
-  const fields: Record<string, string> = {};
-  const site = siteHost(body.site ?? body.domain ?? body.website);
-  if (!site) fields.site = 'Send the site domain, for example shop.example.com.';
-
-  const emailRaw = normaliseEmail(body.email);
-  const email = emailRaw && isEmail(emailRaw) ? emailRaw : '';
-  if (body.email != null && String(body.email).trim() && !email) fields.email = 'Enter a valid email address, or leave it blank.';
-
+  const full_name = cleanText(body.full_name ?? body.name, 200);
+  const email = normaliseEmail(body.email);
   const phone = cleanText(body.phone, 50);
-  if (phone && !isPhone(phone)) fields.phone = 'Enter a valid phone number, or leave it blank.';
-  if (!email && !phone && !fields.email && !fields.phone) {
-    fields.email = 'An email address or a phone number is required.';
-  }
+  const message = cleanMultiline(body.message, 5000);
+  const interest = matchChoice(body.interest, INTEREST_OPTIONS);
+  const goal = matchChoice(body.goal, GOAL_OPTIONS);
 
-  const name = cleanText(body.name ?? body.full_name, 160);
-  const institution = cleanText(body.institution ?? body.company, 200);
-  const message = cleanMultiline(body.message ?? body.notes, 2000);
+  const fields: Record<string, string> = {};
+  if (!isPersonName(full_name)) fields.full_name = 'Enter your full name.';
+  if (!isEmail(email)) fields.email = 'A valid email address is required.';
+  if (!phone) fields.phone = 'A phone number is required.';
+  else if (!isPhone(phone)) fields.phone = 'Enter a valid phone number.';
+  if (!interest.slug) fields.interest = 'Choose what you are interested in.';
+  if (!goal.slug) fields.goal = 'Choose your primary goal.';
+  if (Object.keys(fields).length) return { fields };
 
-  if (Object.keys(fields).length) {
-    return { ok: false, message: 'Lead rejected.', fields };
+  const meta: Record<string, string> = {};
+  const page_url = cleanText(body.page_url, 500);
+  const referrer = cleanText(body.referrer, 500);
+  if (page_url) meta.page_url = page_url;
+  if (referrer) meta.referrer = referrer;
+  for (const key of UTM_KEYS) {
+    const value = cleanText(body[key], 120);
+    if (value) meta[key] = value;
   }
 
   return {
-    ok: true,
-    value: {
-      name: name.length >= 2 ? name : null,
-      email: email || null,
-      phone: phone || null,
-      institution: institution || null,
-      message: message || null,
-      site: site!,
+    lead: {
+      full_name,
+      email,
+      phone,
+      interest: interest.slug,
+      interestRaw: interest.raw,
+      goal: goal.slug,
+      goalRaw: goal.raw,
+      message,
+      // A site that forgets the hidden field still gets attributed, by the key
+      // it posted with.
+      lead_source: cleanText(body.lead_source, 120) || fallbackSource,
+      tracking_phone: cleanText(body.tracking_phone, 50),
+      meta,
     },
   };
 }
+
+/**
+ * What a salesperson reads in the CRM. The dropdown answers are written out in
+ * full so the lead is legible without cross-referencing a slug list, and the
+ * raw answer is kept when it did not match an option we know.
+ */
+export function buildNotes(lead: LeadIntakeInput): string {
+  const interest = choiceLabel(lead.interest, INTEREST_OPTIONS);
+  const goal = choiceLabel(lead.goal, GOAL_OPTIONS);
+  const lines = [
+    `Interested in: ${interest}${lead.interest === 'other' && lead.interestRaw ? ` (${lead.interestRaw})` : ''}`,
+    `Primary goal: ${goal}${lead.goal === 'other' && lead.goalRaw ? ` (${lead.goalRaw})` : ''}`,
+    `From: ${lead.lead_source}${lead.tracking_phone ? ` · called number ${lead.tracking_phone}` : ''}`,
+  ];
+  if (lead.message) lines.push('', lead.message);
+  const utm = UTM_KEYS.filter((k) => lead.meta[k]).map((k) => `${k.replace('utm_', '')}=${lead.meta[k]}`);
+  if (utm.length) lines.push('', `Campaign: ${utm.join(' · ')}`);
+  return lines.join('\n');
+}
+
+/* ------------------------------------------------------------ site keys -- */
+
+export interface LeadSite {
+  id: string;
+  site_key: string;
+  label: string;
+  domains: string;
+  tracking_phone: string | null;
+  post_secret: string | null;
+  is_active: boolean;
+}
+
+/** True when the lead_sites table has not been created yet (0023 not run). */
+export function missingLeadSites(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  return (
+    error.code === '42P01' ||
+    error.code === 'PGRST205' ||
+    /relation .*lead_sites.* does not exist|could not find the table/i.test(error.message ?? '')
+  );
+}
+
+/** Columns 0023 adds to `leads`; absent until the owner runs it. */
+export function missingIntakeColumns(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  return (
+    error.code === '42703' ||
+    error.code === 'PGRST204' ||
+    /column .* does not exist|could not find the .* column/i.test(error.message ?? '')
+  );
+}
+
+export function hostOf(value: string | null): string {
+  if (!value) return '';
+  try {
+    return new URL(value).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Is this request coming from a domain registered for the key?
+ *
+ * The domains column is a comma-separated list because the dashboard edits it
+ * as one text field. A bare domain covers its subdomains, so `example.com`
+ * also allows `go.example.com` but never `notexample.com`.
+ */
+export function originAllowed(domains: string, origin: string | null): boolean {
+  const host = hostOf(origin);
+  if (!host) return false;
+
+  return domains
+    .split(/[,\s]+/)
+    .map((d) => d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, ''))
+    .filter(Boolean)
+    .some((allowed) => host === allowed || host.endsWith(`.${allowed}`));
+}
+
+/* ---------------------------------------------------------------- dedupe -- */
+
+export const dedupeSince = (): string =>
+  new Date(Date.now() - DEDUPE_WINDOW_DAYS * 86_400_000).toISOString();

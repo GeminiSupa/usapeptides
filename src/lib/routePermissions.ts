@@ -46,6 +46,7 @@ const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/reviews(?:\/|$)/,         permissions: ['reviews'] },
   { pattern: /^\/api\/admin\/carts(?:\/|$)/,           permissions: ['carts'] },
   { pattern: /^\/api\/admin\/leads(?:\/|$)/,           permissions: ['leads'] },
+  { pattern: /^\/api\/admin\/lead_sites(?:\/|$)/,      permissions: ['lead_sites'] },
   { pattern: /^\/api\/admin\/prospects(?:\/|$)/,       permissions: ['prospects'] },
   { pattern: /^\/api\/admin\/affiliates(?:\/|$)/,      permissions: ['affiliates'] },
   { pattern: /^\/api\/admin\/commissions(?:\/|$)/,     permissions: ['commissions'] },

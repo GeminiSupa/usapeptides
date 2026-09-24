@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
  */
 function migrationHint(error: { code?: string; message?: string } | null): string | null {
   if (!error) return null;
-  if (!isMissingColumn(error)) return null;
+  if (!isMissingColumn(error) && !isMissingTable(error)) return null;
 
   return (
     'This section needs a database update that has not been run yet. Open the ' +
@@ -29,6 +29,12 @@ function migrationHint(error: { code?: string; message?: string } | null): strin
     `applied yet, in number order, then reload. (${error.message ?? ''})`
   );
 }
+
+/** The whole table is from a migration that has not been run. */
+const isMissingTable = (error: { code?: string; message?: string }): boolean =>
+  error.code === '42P01' ||
+  error.code === 'PGRST205' ||
+  /relation .* does not exist|could not find the table/i.test(error.message ?? '');
 
 const isMissingColumn = (error: { code?: string; message?: string }): boolean =>
   error.code === '42703' ||
@@ -215,19 +221,26 @@ export async function GET(req: Request, { params }: { params: { resource: string
     };
 
     let hasOwnership = Boolean(own);
-    const requestedSelect = own ? `${config.select}, ${own.extraSelect}` : config.select;
-    let result = await build(requestedSelect);
+    let hasPending = Boolean(config.pendingSelect);
 
-    // Keep the dashboard readable while a newly-added optional product column
-    // is waiting to be applied in Supabase. The editor still advertises the
-    // field; saving it will work as soon as migration 0022 is run.
-    if (result.error && params.resource === 'products' && isMissingColumn(result.error) && /detail_image/.test(config.select)) {
-      result = await build(requestedSelect.replace(/,?\s*detail_image\s*,?/, ','));
+    const selectNow = () =>
+      [config.select, hasOwnership && own ? own.extraSelect : null, hasPending ? config.pendingSelect : null]
+        .filter(Boolean)
+        .join(', ');
+
+    let result = await build(selectNow());
+
+    // Columns from a migration that has not been applied yet: drop them and
+    // show the section rather than refusing to load it. The editor still
+    // offers the field, and saving works as soon as the SQL is run.
+    if (result.error && hasPending && isMissingColumn(result.error)) {
+      hasPending = false;
+      result = await build(selectNow());
     }
 
     if (result.error && own && !agent && isMissingColumn(result.error)) {
       hasOwnership = false;
-      result = await build(config.select);
+      result = await build(selectNow());
     }
 
     const { data, error, count } = result;

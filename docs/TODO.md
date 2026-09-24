@@ -4,19 +4,47 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
-## Lead intake from other peptide sites — 2026-10-01
+## Lead intake from other domains - 2026-10-01
 
-- [x] `POST /api/leads/intake` writes a form from another domain into Leads.
-      The caller sends `LEAD_INTAKE_SECRET`. Source on the lead is that domain.
-      A repeat person keeps their status and salesperson notes; the new message
-      is logged as activity. A new lead raises a dashboard alert and starts the
-      "new lead" email sequence when they left an email.
-- [x] This site's contact form still saves an enquiry, and now also creates
-      the same kind of lead.
-- [!] Owner: set `LEAD_INTAKE_SECRET` in Vercel (type Secret, at least 16
-      characters) and redeploy before handing the address to the other sites.
-      The secret stays on their server, not in the browser. See
-      docs/LEAD-INTAKE.md.
+Leads from the local lead-gen sites (peptidesoklahomacity.com and the rest) post
+into this CRM. Two implementations of this landed within an hour of each other;
+this is the merged result.
+
+- [x] `POST /api/leads/intake` is public and takes a form posted straight from
+      the visitor's browser, so a city site can be a static page with no
+      backend. Each site has its own key, usable only from the domains
+      registered against it, created under **Lead sites** in the dashboard and
+      switchable off there.
+- [x] Fields: name, phone, email, the nine "interested in" options, the nine
+      "primary goal" options, comments, a hidden `lead_source`, the site's
+      tracking phone number, and any UTM values.
+- [x] Spam: honeypot field, minimum fill time, 5 posts per IP and 20 per site
+      per ten minutes using the 0021 rate-limit function. A blocked submission
+      gets the same 201 a real one gets.
+- [x] A repeat person within 30 days updates their lead and is logged as
+      activity, so status and salesperson notes survive. A new lead rings the
+      dashboard bell (trigger in 0023), emails the sales mailbox when email is
+      configured, and starts the "new lead" email sequence.
+- [x] This site's own contact form still saves an enquiry and also creates a
+      lead, kept from the other implementation along with `siteHost`
+      (`src/lib/partnerLead.ts`).
+- [x] Dropped from the other implementation: the single `LEAD_INTAKE_SECRET`
+      for every site. It has to live on a server, and these sites have none,
+      so it would have ended up readable in the page. Per-site keys replace it.
+- [x] `supabase/migrations/0023_lead_intake.sql` applied and verified on
+      2026-10-01: `lead_sites` exists, the five new `leads` columns exist, and
+      the bell trigger fired on a test lead (test row deleted).
+- [x] Verified: tsc clean, 21 behaviour tests pass
+      (`node --test tests/leadIntake.test.cjs`), CORS preflight correct.
+      `tests/loadTs.cjs` now stubs `server-only`, which that test needed to run
+      at all.
+- [x] Docs: one file, `docs/LEAD-INTAKE-API.md`, plus a PDF of it for sending
+      to whoever builds the sites.
+- [ ] Still to do: add the first city site under Lead sites, then post a real
+      lead end to end through the deployed site.
+- [ ] Chatwoot: leads go to the CRM, not into a chat conversation.
+      Contact-only sync (so a later chat shows the form answers) is designed,
+      not built. Waiting on the owner.
 
 ## Brand green favicon and link preview — 2026-10-01
 
@@ -193,6 +221,21 @@ Knowledge Center did not exist at all.
 
 - [x] Owner ran 0021; service-role table/RPC checks returned 200 and anonymous
       access returned 401 on 2026-09-19.
+
+## Partner product synchronization — 2026-09-22
+
+- [~] Secure server-side synchronization is drafted with external-ID matching,
+      signed raw-response verification, ETag/incremental support, translations,
+      currency prices, run auditing and guarded full
+      catalogue reconciliation. Migration `0022_product_partner_sync.sql` has
+      not been run and the cron configuration has not been deployed.
+- [x] Partner images and COAs are deliberately ignored. This store keeps its
+      own images, and COAs remain manually managed through its admin portal.
+- [x] Product-sync behavior suite passes 15/15 and TypeScript is clean.
+- [!] The configured partner endpoint returned the public HTML website instead
+      of JSON and supplied no feed-signature headers during the read-only check.
+      It must return the documented signed JSON feed before synchronization is
+      enabled; this failure cannot deactivate or change catalogue products.
 
 ## No live payment methods — 2026-09-20
 

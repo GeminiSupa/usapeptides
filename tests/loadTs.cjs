@@ -28,10 +28,15 @@ function loadTs(file) {
   mod.paths = Module._nodeModulePaths(path.dirname(full));
   // Relative imports inside the module resolve against its own folder; a
   // '@/lib/x' import would need the alias, and these modules do not use one.
-  mod.require = (request) =>
-    request.startsWith('.')
+  // 'server-only' is a build-time marker that throws when required outside a
+  // server component. Stubbing it lets a server module's pure helpers be
+  // tested without pulling Next's build into the test run.
+  mod.require = (request) => {
+    if (request === 'server-only') return {};
+    return request.startsWith('.')
       ? loadTs(path.relative(path.resolve(__dirname, '..'), path.resolve(path.dirname(full), `${request}.ts`)))
       : require(request);
+  };
 
   cache.set(full, mod.exports);
   mod._compile(outputText, full);

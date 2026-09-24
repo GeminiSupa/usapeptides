@@ -29,7 +29,7 @@ import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
-  Pencil, Monitor, ScrollText, MapPin, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3, Menu, X,
+  Pencil, Monitor, ScrollText, MapPin, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3, Menu, X, Globe,
 } from 'lucide-react';
 
 /**
@@ -53,6 +53,7 @@ const ICONS: Record<string, typeof LayoutDashboard> = {
   reviews: Star,
   carts: ShoppingCart,
   leads: Target,
+  lead_sites: Globe,
   prospects: MapPin,
   affiliates: Handshake,
   commissions: Receipt,

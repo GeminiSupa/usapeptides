@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { randomInt } from 'node:crypto';
+
 import { categories } from '@/data/categories';
 
 /**
@@ -47,6 +49,12 @@ export interface ResourceConfig {
   title: string;
   blurb: string;
   select: string;
+  /**
+   * Columns a migration adds that may not have been applied yet. Asked for
+   * when present and dropped when the database reports them missing, so a
+   * section never refuses to load on the version before its migration.
+   */
+  pendingSelect?: string;
   orderBy: string;
   searchable: string[];
   editable: string[];
@@ -75,6 +83,17 @@ export interface ResourceConfig {
    * good data with a default.
    */
   deriveUpdate?: (changes: Record<string, unknown>) => Record<string, unknown>;
+}
+
+/**
+ * Random tail for a generated lead-site key. `crypto.randomInt`, never
+ * `Math.random`: a guessable key lets somebody file leads as another city.
+ */
+function randomKeySuffix(): string {
+  const alphabet = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let out = '';
+  for (let i = 0; i < 10; i += 1) out += alphabet[randomInt(alphabet.length)];
+  return out;
 }
 
 /** URL-safe slug from a product name, for when the field is left blank. */
@@ -124,9 +143,11 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     blurb: 'Your catalogue. What you set here is what the website shows.',
     select:
       'id, slug, name, category, category_slug, price, sale_price, sku, purity, sequence,' +
-      ' cas_number, molar_mass, formula, storage, appearance, description, image, detail_image, coa_url,' +
+      ' cas_number, molar_mass, formula, storage, appearance, description, image, coa_url,' +
       ' coa, coa_lot, coa_tested_at, stock_count, in_stock, is_featured, is_popular, is_active,' +
       ' sort_order, created_at',
+    // Applied by 0022. Dropped until then; the editor still offers the field.
+    pendingSelect: 'detail_image',
     orderBy: 'name',
     searchable: ['name', 'sku', 'slug'],
     editable: [
@@ -341,6 +362,9 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     blurb: 'People who showed interest but have not ordered. Forms on this site and on the other peptide sites land here. Source is the domain the form was on.',
     select:
       'id, email, phone, full_name, institution, source, status, assigned_to, score, notes, last_contacted_at, created_at',
+    // Added by 0023. Dropped automatically until it is applied, so the Leads
+    // screen keeps working on an older database.
+    pendingSelect: 'lead_source, interest, goal, tracking_phone',
     orderBy: 'created_at',
     searchable: ['email', 'full_name', 'institution', 'source'],
     editable: ['status', 'assigned_to', 'score', 'notes', 'last_contacted_at', 'phone', 'full_name'],
@@ -357,6 +381,38 @@ export const RESOURCES: Record<string, ResourceConfig> = {
       { name: 'score', label: 'Score', type: 'number' },
       { name: 'notes', label: 'Notes', type: 'textarea' },
     ],
+  },
+
+  lead_sites: {
+    table: 'lead_sites',
+    title: 'Lead sites',
+    blurb:
+      'The local lead-gen domains that may post to the contact-form endpoint. One row per site: its key, the domains allowed to use it, and the number printed on it.',
+    select: 'id, site_key, label, domains, tracking_phone, is_active, notes, created_at',
+    orderBy: 'created_at',
+    searchable: ['label', 'site_key', 'domains', 'tracking_phone'],
+    editable: ['label', 'domains', 'tracking_phone', 'is_active', 'notes', 'post_secret'],
+    deletable: true,
+    createFields: [
+      { name: 'label', label: 'Site name', type: 'text', required: true, help: 'e.g. Oklahoma City' },
+      { name: 'domains', label: 'Domains', type: 'text', required: true,
+        help: 'The domain the form is on, e.g. peptidesoklahomacity.com. Separate several with commas. Subdomains are covered.' },
+      { name: 'tracking_phone', label: 'Phone on that site', type: 'text' },
+      { name: 'site_key', label: 'Site key', type: 'text',
+        help: 'Leave blank and one is generated. This goes in the form on that site.' },
+      { name: 'is_active', label: 'Accepting leads', type: 'boolean' },
+      { name: 'notes', label: 'Notes', type: 'textarea' },
+    ],
+    columns: ['label', 'domains', 'site_key', 'tracking_phone', 'is_active'],
+    derive: (row) => {
+      // The key is public, so it only has to be unguessable enough that
+      // somebody cannot post as another city by typing its name.
+      if (!row.site_key && row.label) {
+        row.site_key = `${slugify(String(row.label)).slice(0, 24) || 'site'}-${randomKeySuffix()}`;
+      }
+      if (row.is_active === undefined) row.is_active = true;
+      return row;
+    },
   },
 
   prospects: {

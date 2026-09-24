@@ -96,15 +96,6 @@ export const chatwootEnv = {
 };
 
 /**
- * Lead intake — other sites post a contact form and it becomes a lead here.
- * Server-only. A short secret is treated as "not set" so a placeholder cannot
- * open the endpoint.
- */
-export const leadIntakeEnv = {
-  secret: clean(process.env.LEAD_INTAKE_SECRET),
-};
-
-/**
  * Maps for the Prospector. All free OpenStreetMap services by default; each can
  * be pointed at a paid or self-hosted mirror if the business outgrows the
  * public servers' fair-use limits. No key is needed, so the feature is always on.
@@ -141,7 +132,6 @@ export const features = {
   /** The webhook that turns a chat into a lead, separate from the widget. */
   liveChatWebhook: Boolean(chatwootEnv.webhookSecret),
   /** Other domains posting forms into Leads. Off until the secret is long enough. */
-  leadIntake: leadIntakeEnv.secret.length >= 16,
 } as const;
 
 export type FeatureName = keyof typeof features;
@@ -155,7 +145,6 @@ export const featureRequirements: Record<FeatureName, string[]> = {
   cardCheckout: ['NEXT_PUBLIC_ENABLE_CARD_CHECKOUT'],
   liveChat: ['NEXT_PUBLIC_CHATWOOT_BASE_URL', 'NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN'],
   liveChatWebhook: ['CHATWOOT_WEBHOOK_SECRET'],
-  leadIntake: ['LEAD_INTAKE_SECRET (at least 16 characters)'],
 };
 
 /** Guard for routes that need a feature. Returns null when available. */
