@@ -184,3 +184,34 @@ test('only the listed triggers are accepted', () => {
   assert.equal(automations.isTrigger('manual'), true);
   assert.equal(automations.isTrigger('run_arbitrary_code'), false);
 });
+
+/* ------------------------------------------------- explaining a sequence --- */
+
+test('a sequence is described with the waits added up, not step by step', () => {
+  const lines = automations.plainEnglish([
+    emailStep({ id: 'a', subject: 'First' }),
+    waitStep({ id: 'w1', wait_minutes: 60 }),
+    emailStep({ id: 'b', subject: 'Second' }),
+  ], 'manual');
+
+  assert.match(lines[0], /Nothing starts this by itself/);
+  assert.match(lines[1], /straight away: send "First"/);
+  assert.match(lines[2], /1 hour in: send "Second"/, 'the wait is counted from the start, not the step');
+});
+
+test('a sequence that never sends is called out', () => {
+  const lines = automations.plainEnglish([waitStep()], 'manual');
+  assert.ok(lines.some((l) => /No email is ever sent/.test(l)));
+});
+
+test('a wait left on the end is explained rather than left to puzzle over', () => {
+  const lines = automations.plainEnglish([
+    emailStep(), waitStep({ id: 'w2', wait_minutes: 1440 }),
+  ], 'manual');
+  assert.ok(lines.some((l) => /last step is a wait/.test(l)));
+});
+
+test('a real trigger is named in the first line', () => {
+  const lines = automations.plainEnglish([emailStep()], 'abandoned_cart');
+  assert.match(lines[0], /Starts when:.*cart/i);
+});

@@ -10,7 +10,7 @@ import { type UploadKind } from './UploadField';
 import { useSiteContent } from '@/components/SiteContentProvider';
 import {
   AUTOMATION_STATUS_LABEL, CONDITIONS, ENROLLMENT_STATUS_LABEL, ON_FAIL_OPTIONS, STEP_KINDS,
-  TRIGGERS, WAIT_UNITS, sequenceProblems, splitWait, stepSummary, totalDuration, triggerLabel,
+  TRIGGERS, WAIT_UNITS, plainEnglish, sequenceProblems, splitWait, stepSummary, totalDuration, triggerLabel,
   DEFAULT_CART_AGE_HOURS, type OnFail, type Step, type StepKind, type TriggerId,
 } from '@/lib/automations';
 import { checkEmail, VERDICT_LABEL, type SpamReport } from '@/lib/emailHealth';
@@ -573,6 +573,27 @@ function Builder({ id, authedFetch, upload, onBack }: {
     touch();
   };
 
+  /**
+   * Copy a step, placed directly below the original.
+   *
+   * The copy gets a temporary id, which is what tells the save that it is a new
+   * row rather than an edit of the one it was copied from - without that, both
+   * cards would write to the same record and one would silently overwrite the
+   * other.
+   */
+  const duplicateStep = (index: number) => {
+    const source = steps[index];
+    if (!source) return;
+    const copy: LoadedSteps = {
+      ...source,
+      id: `new-${Date.now()}-${Math.round(Math.random() * 1e6)}`,
+      design: sanitizeDesign(JSON.parse(JSON.stringify(source.design ?? {}))),
+    };
+    setSteps((list) => [...list.slice(0, index + 1), copy, ...list.slice(index + 1)]);
+    setOpen(copy.id);
+    touch();
+  };
+
   const move = (index: number, direction: -1 | 1) => {
     const next = index + direction;
     if (next < 0 || next >= steps.length) return;
@@ -725,6 +746,22 @@ function Builder({ id, authedFetch, upload, onBack }: {
         />
       ) : (
         <ol className="space-y-2">
+          {steps.length > 0 && (
+            <li className="border border-brand-border bg-brand-card p-4">
+              <p className="field-label mb-1.5">What will happen</p>
+              <ul className="space-y-1 text-[0.8125rem] text-brand-body">
+                {plainEnglish(steps, automation.trigger_type).map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
+              </ul>
+              {!live && (
+                <p className="mt-2 text-[0.75rem] text-brand-textMuted">
+                  Nothing is sent while this is a draft. Press Turn on above, and the first run happens
+                  within half an hour - or press Run due now to send straight away.
+                </p>
+              )}
+            </li>
+          )}
           <AddRow onAdd={(kind) => addStep(kind, 0)} first />
           {steps.map((step, index) => (
             <li key={step.id} className="space-y-2">
@@ -738,6 +775,7 @@ function Builder({ id, authedFetch, upload, onBack }: {
                 onToggle={() => setOpen(open === step.id ? null : step.id)}
                 onChange={(patch) => setStep(step.id, patch)}
                 onMove={(dir) => move(index, dir)}
+                onDuplicate={() => duplicateStep(index)}
                 onRemove={() => removeStep(step.id)}
                 onTest={async (to) => {
                   const d = await act('test', { stepId: step.id, to });
@@ -773,10 +811,10 @@ function AddRow({ onAdd, first }: { onAdd: (kind: StepKind) => void; first?: boo
   );
 }
 
-function StepCard({ step, index, total, stat, expanded, businessName, onToggle, onChange, onMove, onRemove, onTest, upload }: {
+function StepCard({ step, index, total, stat, expanded, businessName, onToggle, onChange, onMove, onDuplicate, onRemove, onTest, upload }: {
   step: LoadedSteps; index: number; total: number; stat?: StepStat; expanded: boolean; businessName: string;
   onToggle: () => void; onChange: (patch: Partial<LoadedSteps>) => void;
-  onMove: (dir: -1 | 1) => void; onRemove: () => void;
+  onMove: (dir: -1 | 1) => void; onDuplicate: () => void; onRemove: () => void;
   onTest: (to: string[]) => Promise<void>; upload: (file: File, kind: UploadKind) => Promise<string>;
 }) {
   const Icon = KIND_ICON[step.kind];
@@ -821,6 +859,7 @@ function StepCard({ step, index, total, stat, expanded, businessName, onToggle, 
         )}
         <button type="button" aria-label="Move up" disabled={index === 0} onClick={() => onMove(-1)} className="p-1 text-brand-textMuted disabled:opacity-30"><ArrowUp className="h-3.5 w-3.5" /></button>
         <button type="button" aria-label="Move down" disabled={index === total - 1} onClick={() => onMove(1)} className="p-1 text-brand-textMuted disabled:opacity-30"><ArrowDown className="h-3.5 w-3.5" /></button>
+        <button type="button" aria-label="Copy step" title="Copy this step" onClick={onDuplicate} className="p-1 text-brand-textMuted hover:text-brand-heading"><Copy className="h-3.5 w-3.5" /></button>
         <button type="button" aria-label="Remove step" onClick={onRemove} className="p-1 text-brand-textMuted hover:text-action"><X className="h-3.5 w-3.5" /></button>
       </div>
 

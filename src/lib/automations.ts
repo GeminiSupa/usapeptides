@@ -265,6 +265,55 @@ export function totalDuration(steps: Step[]): string {
   return `${minutes} min`;
 }
 
+/**
+ * The whole sequence as sentences, for somebody who wants to know what it will
+ * do before they turn it on.
+ *
+ * Built from the same step list the engine walks, so it cannot describe
+ * something different from what will happen - and it counts the waits, which
+ * is the part people get wrong.
+ */
+export function plainEnglish(steps: Step[], trigger: TriggerId): string[] {
+  const lines: string[] = [];
+  const t = TRIGGER_BY_ID.get(trigger);
+  lines.push(trigger === 'manual'
+    ? 'Nothing starts this by itself. It runs for whoever you add on the People tab.'
+    : `Starts when: ${String(t?.description ?? trigger)}`);
+
+  let elapsed = 0;
+  let emails = 0;
+  const since = (m: number) => {
+    if (m <= 0) return 'straight away';
+    if (m % 1440 === 0) return `${m / 1440} day${m / 1440 === 1 ? '' : 's'} in`;
+    if (m % 60 === 0) return `${m / 60} hour${m / 60 === 1 ? '' : 's'} in`;
+    return `${m} minutes in`;
+  };
+
+  for (const step of steps) {
+    if (step.kind === 'wait') { elapsed += clampWait(step.wait_minutes); continue; }
+    if (step.kind === 'email') {
+      emails += 1;
+      lines.push(`${since(elapsed)}: send "${step.subject?.trim() || 'an untitled email'}".`);
+      continue;
+    }
+    if (step.kind === 'goal') { lines.push(`${since(elapsed)}: everybody who gets here is finished.`); continue; }
+    const check = CONDITIONS.find((c) => c.id === step.condition_type)?.label ?? 'something not chosen yet';
+    const fail = ON_FAIL_OPTIONS.find((o) => o.id === step.on_fail)?.label ?? '';
+    lines.push(`${since(elapsed)}: check whether ${check.toLowerCase()} - if not, ${fail}.`);
+  }
+
+  if (!emails) lines.push('No email is ever sent, so this does nothing at the moment.');
+
+  // A wait at the very end is the commonest confusion: people expect it to
+  // mean something, and it means the sequence sits there before finishing.
+  const last = steps[steps.length - 1];
+  if (last?.kind === 'wait' && clampWait(last.wait_minutes) > 0) {
+    lines.push('The last step is a wait, so after the final email people simply sit there until it passes, then finish. You can delete it - it changes nothing.');
+  }
+
+  return lines;
+}
+
 export const AUTOMATION_STATUS_LABEL: Record<string, string> = {
   draft: 'Draft',
   active: 'Running',
