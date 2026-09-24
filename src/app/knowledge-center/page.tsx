@@ -18,7 +18,7 @@ function Blocks({ body }: { body: Block[] }) {
         if (block.type === 'p') return <Prose key={i} body={[block.text]} muted />;
         if (block.type === 'ul') return <Bullets key={i} items={block.items} />;
         return (
-          <ol key={i} className="space-y-4">
+          <ol key={i} className="max-w-[68ch] space-y-4">
             {block.items.map((item, n) => (
               <li key={item.title} className="flex gap-4">
                 <span className="font-display text-sm font-extrabold text-brand-accentGlow">
@@ -56,7 +56,7 @@ export default function KnowledgeCenterPage() {
         <p className="max-w-3xl text-sm leading-relaxed text-brand-body">
           Each topic opens in place. Start anywhere — they are written to be read on their own.
         </p>
-        <div className="space-y-4">
+        <div className="max-w-4xl space-y-4">
           {KNOWLEDGE_ARTICLES.map((article) => (
             <div key={article.id} id={article.id} className="scroll-mt-24">
               <Disclosure summary={article.title} kicker="Knowledge Center">
@@ -75,7 +75,7 @@ export default function KnowledgeCenterPage() {
 
       <section className="space-y-6">
         <h2 className="section-title">Common analytical terms</h2>
-        <dl className="grid gap-px border border-brand-border bg-brand-border sm:grid-cols-2">
+        <dl className="grid gap-px border border-brand-border bg-brand-border sm:grid-cols-2 xl:grid-cols-3">
           {GLOSSARY.map((entry) => (
             <div key={entry.term} className="bg-brand-card p-5">
               <dt className="font-display text-xs font-extrabold uppercase tracking-wide text-brand-heading">
@@ -90,7 +90,7 @@ export default function KnowledgeCenterPage() {
 
       <section className="space-y-6">
         <h2 className="section-title">Research peptides and laboratory handling</h2>
-        <div className="space-y-3">
+        <div className="max-w-4xl space-y-3">
           {KNOWLEDGE_FAQS.map((faq) => (
             <Disclosure key={faq.question} summary={faq.question} openLabel="Answer">
               <Prose body={[faq.answer]} muted />

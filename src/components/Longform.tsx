@@ -46,7 +46,7 @@ export function PageHeader({
 /** A paragraph run at body size. */
 export function Prose({ body, muted = false }: { body: string[]; muted?: boolean }) {
   return (
-    <div className="space-y-4">
+    <div className="max-w-[68ch] space-y-4">
       {body.map((para, i) => (
         <p
           key={i}
@@ -61,7 +61,7 @@ export function Prose({ body, muted = false }: { body: string[]; muted?: boolean
 
 export function Bullets({ items }: { items: string[] }) {
   return (
-    <ul className="space-y-2.5 border-l border-brand-border pl-5">
+    <ul className="max-w-[68ch] space-y-2.5 border-l border-brand-border pl-5">
       {items.map((item) => (
         <li key={item} className="text-sm leading-relaxed text-brand-body">
           {item}
@@ -126,7 +126,7 @@ export function Step({
           <h2 className="font-display text-sm font-extrabold uppercase tracking-wide text-brand-heading">
             {title}
           </h2>
-          <p className="text-sm leading-relaxed text-brand-body">{summary}</p>
+          <p className="max-w-[68ch] text-sm leading-relaxed text-brand-body">{summary}</p>
         </div>
       </div>
       {detail && detail.length > 0 && (
@@ -172,9 +172,11 @@ export function Related({ links }: { links: { href: string; label: string }[] })
 /** The research-use-only line every one of these pages ends with. */
 export function ResearchUseNote({ children }: { children?: React.ReactNode }) {
   return (
-    <p className="border-t border-brand-border pt-6 text-xs leading-relaxed text-brand-textMuted">
-      {children ??
-        'Products are intended for laboratory and research use only and are not intended for human or veterinary use.'}
-    </p>
+    <div className="border-t border-brand-border pt-6">
+      <p className="max-w-[80ch] text-xs leading-relaxed text-brand-textMuted">
+        {children ??
+          'Products are intended for laboratory and research use only and are not intended for human or veterinary use.'}
+      </p>
+    </div>
   );
 }

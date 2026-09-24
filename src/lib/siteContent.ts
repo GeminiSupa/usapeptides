@@ -145,7 +145,7 @@ export const DEFAULT_CONTENT: Record<string, string> = {
   'seo.story.description': 'Why the company was founded: too many claims, too little proof. Evidence over hype, lot by lot.',
   'seo.team.title': 'Our Team and Leadership',
   'seo.team.description': 'An operations-first leadership approach: rigorous sourcing, lot-specific documentation and direct support.',
-  'seo.why.title': `Why ${NAME}`,
+  'seo.why.title': 'Why Choose Us',
   'seo.why.description': 'Lot-specific testing, independent analysis, domestic fulfillment with tracking, and support that answers questions.',
   'seo.how.title': 'How It Works',
   'seo.how.description': 'Six steps from choosing a research material to verifying the lot documentation that came with it.',
