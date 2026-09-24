@@ -19,6 +19,7 @@ import CategoriesPanel from '@/components/admin/CategoriesPanel';
 import CustomersPanel from '@/components/admin/CustomersPanel';
 import ProspectorPanel from '@/components/admin/ProspectorPanel';
 import CampaignsPanel from '@/components/admin/CampaignsPanel';
+import AutomationsPanel from '@/components/admin/AutomationsPanel';
 import NotificationBell from '@/components/admin/NotificationBell';
 import DealsPanel from '@/components/admin/DealsPanel';
 import DashboardHome from '@/components/admin/insights/DashboardHome';
@@ -702,6 +703,8 @@ export default function AdminPage() {
 
         ) : active.id === 'campaigns' ? (
           <CampaignsPanel authedFetch={authedFetch} upload={upload} />
+        ) : active.id === 'automations' ? (
+          <AutomationsPanel authedFetch={authedFetch} upload={upload} />
         ) : active.id === 'prospects' ? (
           <ProspectorPanel authedFetch={authedFetch} me={me} />
         ) : active.id === 'customers' ? (

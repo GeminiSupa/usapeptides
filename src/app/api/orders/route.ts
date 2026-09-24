@@ -25,6 +25,7 @@ import {
   normaliseEmail,
   parseShippingAddress,
 } from '@/lib/validate';
+import { fireTrigger } from '@/lib/automationEngine';
 
 export const dynamic = 'force-dynamic';
 
@@ -214,6 +215,14 @@ export async function POST(req: Request) {
       await db.from('orders').delete().eq('id', order.id);
       return serverError(itemsError.message);
     }
+
+    // A drip sequence must never be the reason an order fails, so this is
+    // deliberately after the order is safely stored and it never throws.
+    await fireTrigger(
+      'order_placed',
+      { email, name: fullName, source: 'customer', subjectType: 'order', subjectId: String(order.id) },
+      { orderTotal: grandTotal }
+    );
 
     return created({
       order: {

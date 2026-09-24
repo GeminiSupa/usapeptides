@@ -59,6 +59,7 @@ export const MODULES: ModuleDef[] = [
   { id: 'commissions',   label: 'Commissions',     group: 'Sales' },
 
   { id: 'campaigns',     label: 'Campaigns',       group: 'Marketing' },
+  { id: 'automations',   label: 'Email automation', group: 'Marketing' },
   { id: 'subscribers',   label: 'Subscribers',     group: 'Marketing' },
   { id: 'storefront',    label: 'Storefront',      group: 'Marketing' },
   { id: 'articles',      label: 'Blog',            group: 'Marketing' },

@@ -5,6 +5,7 @@ import nodemailer, { type Transporter } from 'nodemailer';
 import { BUSINESS, features, resendEnv, smtpEnv, supabaseEnv } from './env';
 import { getSupabaseAdmin } from './supabaseAdmin';
 import { getSiteContent } from './siteContentServer';
+import { releaseSends, reserveSends } from './sendingPolicy';
 import {
   personalize, renderEmailHtml, renderEmailText, safeEmailUrl, sanitizeDesign,
   type AudienceFilterId, type AudienceId,
@@ -60,6 +61,14 @@ export function verifyLink(token: string | null, ...parts: string[]): boolean {
 
 export const unsubscribeUrl = (recipientId: string) =>
   `${siteUrl()}/api/email/unsubscribe?r=${recipientId}&t=${signLink('u', recipientId)}`;
+
+/**
+ * The same three links for an automation send. A separate letter in the
+ * signature ('au' rather than 'u') means a token minted for one kind of email
+ * can never be replayed against the other table.
+ */
+export const automationUnsubscribeUrl = (sendId: string) =>
+  `${siteUrl()}/api/email/unsubscribe?a=${sendId}&t=${signLink('au', sendId)}`;
 
 /* ------------------------------------------------------------ audiences -- */
 
@@ -164,7 +173,7 @@ interface OutgoingEmail {
   headers: Record<string, string>;
 }
 
-async function sendEmail(message: OutgoingEmail) {
+export async function sendEmail(message: OutgoingEmail) {
   if (!features.email) {
     throw new CampaignError('Email sending is not connected yet. Add RESEND_API_KEY in Vercel, then redeploy.', 503);
   }
@@ -211,26 +220,52 @@ interface CampaignRow {
   reply_to: string | null; design: unknown; status: string;
 }
 
-/** The HTML one person receives: their name filled in, links tracked, unsubscribe signed. */
-async function composeFor(c: CampaignRow, r: { id: string; email: string; name: string | null }) {
+export interface ComposeArgs {
+  design: unknown;
+  subject: string;
+  previewText?: string | null;
+  recipient: { email: string; name: string | null };
+  /** The row id the open and click links point back at. */
+  trackId: string;
+  /** Which table that id lives in: a campaign recipient, or an automation send. */
+  scope: 'campaign' | 'automation';
+  /** The utm_campaign value on our own links. */
+  tag: string;
+}
+
+/**
+ * The HTML one person receives: their name filled in, links tracked,
+ * unsubscribe signed.
+ *
+ * Shared by campaigns and automations so there is exactly one place where an
+ * email is built, one place that fills merge fields before escaping, and one
+ * place that rewrites links.
+ */
+export async function composeDesigned(a: ComposeArgs) {
   const content = await getSiteContent();
   const business = content['business.name'] || BUSINESS.name;
-  const design = sanitizeDesign(c.design);
+  const r = a.recipient;
+  const automation = a.scope === 'automation';
+  const design = sanitizeDesign(a.design);
   // Merge fields are filled before rendering, so escaping still applies to them.
   design.blocks = design.blocks.map((b) => ({
     ...b,
     text: b.text !== undefined ? personalize(b.text, r, business) : undefined,
     label: b.label !== undefined ? personalize(b.label, r, business) : undefined,
   }));
-  const subject = personalize(c.subject ?? c.name, r, business);
+  const subject = personalize(a.subject, r, business);
   const base = siteUrl();
-  const unsub = unsubscribeUrl(r.id);
-  const pixel = `<img src="${base}/api/email/open?r=${r.id}&t=${signLink('o', r.id)}" width="1" height="1" alt="" style="display:block;border:0;">`;
+  const id = a.trackId;
+  const unsub = automation ? automationUnsubscribeUrl(id) : unsubscribeUrl(id);
+  const openLink = automation
+    ? `${base}/api/email/open?a=${id}&t=${signLink('ao', id)}`
+    : `${base}/api/email/open?r=${id}&t=${signLink('o', id)}`;
+  const pixel = `<img src="${openLink}" width="1" height="1" alt="" style="display:block;border:0;">`;
   const options = {
     businessName: business,
     siteUrl: base,
     address: content['contact.address'],
-    previewText: personalize(c.preview_text ?? '', r, business),
+    previewText: personalize(a.previewText ?? '', r, business),
     unsubscribeUrl: unsub,
     trailer: pixel,
   };
@@ -240,20 +275,40 @@ async function composeFor(c: CampaignRow, r: { id: string; email: string; name: 
   html = html.replace(/href="([^"]+)"/g, (whole, raw: string) => {
     const url = raw.replace(/&amp;/g, '&');
     if (!/^https?:\/\//i.test(url) || url.startsWith(`${base}/api/email/`)) return whole;
-    const target = url.startsWith(base) ? `${url}${url.includes('?') ? '&' : '?'}utm_source=email&utm_medium=campaign&utm_campaign=${c.id}` : url;
-    const link = `${base}/api/email/click?r=${r.id}&u=${encodeURIComponent(target)}&t=${signLink('c', r.id, target)}`;
+    const medium = automation ? 'automation' : 'campaign';
+    const target = url.startsWith(base)
+      ? `${url}${url.includes('?') ? '&' : '?'}utm_source=email&utm_medium=${medium}&utm_campaign=${a.tag}`
+      : url;
+    const link = automation
+      ? `${base}/api/email/click?a=${id}&u=${encodeURIComponent(target)}&t=${signLink('ac', id, target)}`
+      : `${base}/api/email/click?r=${id}&u=${encodeURIComponent(target)}&t=${signLink('c', id, target)}`;
     return `href="${link.replace(/&/g, '&amp;')}"`;
   });
 
   return { subject, html, text: renderEmailText(design, options), unsub, business };
 }
 
+const composeFor = (c: CampaignRow, r: { id: string; email: string; name: string | null }) =>
+  composeDesigned({
+    design: c.design,
+    subject: c.subject ?? c.name,
+    previewText: c.preview_text,
+    recipient: r,
+    trackId: r.id,
+    scope: 'campaign',
+    tag: c.id,
+  });
+
+/** The address every message leaves from, whichever service is connected. */
+export const senderAddress = () => (resendEnv.apiKey ? resendEnv.from : smtpEnv.from);
+
+/** A From header. Quotes and angle brackets are stripped so it cannot be split. */
+export const fromHeader = (name: string) => `"${String(name).replace(/["<>]/g, '')}" <${senderAddress()}>`;
+
 async function sendOne(c: CampaignRow, r: { id: string; email: string; name: string | null }, to = r.email) {
   const { subject, html, text, unsub, business } = await composeFor(c, r);
-  const fromName = (c.from_name || business).replace(/["<>]/g, '');
-  const fromAddress = resendEnv.apiKey ? resendEnv.from : smtpEnv.from;
   await sendEmail({
-    from: `"${fromName}" <${fromAddress}>`,
+    from: fromHeader(c.from_name || business),
     to,
     replyTo: c.reply_to || undefined,
     subject,
@@ -340,11 +395,20 @@ export async function sendBatch(id: string) {
     .select('id, email, name').eq('campaign_id', id).eq('status', 'queued').limit(BATCH_SIZE);
   if (error) throw new CampaignError(error.message, 500);
 
+  // The warm-up limit applies to campaigns too. Without this, one blast on the
+  // first week undoes everything the automations are being careful about.
+  const permits = await reserveSends(db, (queue ?? []).length);
+  let unused = permits.granted;
+  if (queue?.length && permits.granted === 0) {
+    return { sent: 0, failed: 0, remaining: queue.length, status: 'sending', held: permits.reason };
+  }
+
   const suppressed = await suppressedEmails(db);
   let sent = 0;
   let failed = 0;
   for (const r of queue ?? []) {
     if (Date.now() - started > BATCH_BUDGET_MS) break;
+    if (unused <= 0) break;
     // Claim the row first so two workers never send the same email twice.
     const { data: claimed } = await db.from('campaign_recipients')
       .update({ status: 'sending', claimed_at: new Date().toISOString() }).eq('id', r.id).eq('status', 'queued').select('id').maybeSingle();
@@ -354,6 +418,7 @@ export async function sendBatch(id: string) {
       await db.from('campaign_recipients').update({ status: 'skipped', error: 'Unsubscribed or blocked' }).eq('id', r.id);
       continue;
     }
+    unused -= 1;
     try {
       await sendOne(c, r);
       await db.from('campaign_recipients').update({ status: 'sent', sent_at: new Date().toISOString(), error: null }).eq('id', r.id);
@@ -366,11 +431,13 @@ export async function sendBatch(id: string) {
         await db.from('email_suppressions').upsert({ email: normEmail(r.email), reason: 'bounced', campaign_id: id }, { onConflict: 'email', ignoreDuplicates: true });
       }
       failed += 1;
-      if (err instanceof CampaignError) throw err;
+      if (err instanceof CampaignError) { await releaseSends(db, unused); throw err; }
     }
     if (SEND_DELAY_MS) await new Promise((res) => setTimeout(res, SEND_DELAY_MS));
   }
 
+  // Permits taken but not spent go back, or the queue eats tomorrow's ration.
+  await releaseSends(db, unused);
   return finishIfDone(db, id, sent, failed);
 }
 
@@ -412,5 +479,11 @@ export async function processDueCampaigns() {
 /** Where a click is allowed to land: only the URL that was signed for it. */
 export function clickTarget(url: string | null, recipientId: string, token: string | null): string | null {
   if (!url || !verifyLink(token, 'c', recipientId, url)) return null;
+  return safeEmailUrl(url, siteUrl()) || null;
+}
+
+/** The same, for a link in an automation email. */
+export function automationClickTarget(url: string | null, sendId: string, token: string | null): string | null {
+  if (!url || !verifyLink(token, 'ac', sendId, url)) return null;
   return safeEmailUrl(url, siteUrl()) || null;
 }

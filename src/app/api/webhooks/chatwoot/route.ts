@@ -3,6 +3,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { chatwootEnv, features } from '@/lib/env';
 import { ok, badRequest, serverError, readJson, clip } from '@/lib/api';
+import { fireTrigger } from '@/lib/automationEngine';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -194,6 +195,11 @@ async function recordLead(
   if (error) return serverError(error.message);
 
   await logActivity(created.id, 'note', row.notes);
+  if (email) {
+    await fireTrigger('lead_created', {
+      email, name: row.full_name, source: 'lead', subjectType: 'lead', subjectId: String(created.id),
+    });
+  }
   return ok({ lead: created.id, created: true });
 }
 

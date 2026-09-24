@@ -4,6 +4,50 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## Email automation and deliverability - 2026-09-24
+
+New dashboard section under Marketing: **Email automation**. Two halves.
+
+- [x] Deliverability: reads the live DNS for the sending domain and reports
+      SPF, DKIM, DMARC, the From address and MX, each with the exact record to
+      paste at the registrar. Read-only - it never changes DNS.
+- [x] Warm-up limit: one policy row plus a per-day counter, ramping 25 to 1500
+      over 26 days, then the owner's ceiling. Permits are handed out by a
+      database function with the row locked, so two workers cannot both spend
+      the last one. **Campaigns obey the same limit**, which is the point -
+      one blast in week one would undo everything the sequences are being
+      careful about.
+- [x] Sequence builder: a vertical list of steps - Send email, Wait, If/then,
+      Finish - with the same email designer Campaigns uses (now extracted into
+      a shared component so there is one designer, not two) and a live
+      spam-risk check on each email.
+- [x] Triggers: no trigger (add people by hand), new lead, newsletter signup,
+      new customer account, order placed (optionally above a total), abandoned
+      cart (age configurable, found by the cron).
+- [x] The engine claims an enrollment before sending, so the cron and the
+      dashboard button cannot send the same step twice; nobody is in a
+      sequence twice; unsubscribing stops every sequence that person is in;
+      pausing holds people in place rather than dropping them.
+- [x] The existing `/api/cron/campaigns` now does both jobs and runs every 30
+      minutes instead of once a day. No new cron entry.
+- [x] Verified: tsc clean, next build clean with the dev server stopped, 21
+      behaviour tests pass (`npm run test:automations`). One real bug was
+      caught by them: an unset daily-cap override read as a cap of zero, which
+      would have stopped every email the site sends.
+- [!] **Owner must run `supabase/migrations/0024_email_automations.sql`** in
+      the Supabase SQL editor. Until then the screen loads and says exactly
+      that, and nothing is capped - a missing warm-up table must never stop an
+      order confirmation going out.
+- [!] **Owner must set up the domain in Resend** (add the domain, paste the
+      DNS records, set `RESEND_FROM` to an address on usapeptides.com as type
+      Config, redeploy). Until then email sends from a shared Resend address
+      and will keep landing in spam. The Deliverability screen lists exactly
+      what is missing.
+- [ ] The `lead_created` trigger currently fires from the Chatwoot webhook
+      only. The lead-intake endpoint lives on the `hero-video` branch; one
+      line hooks it up when that branch merges.
+- [x] Written up in docs/EMAIL-AUTOMATION.md
+
 ## CRM retention foundation — 2026-09-22
 
 - [~] Customer profiles now include visible paid-order spend, last paid date, frequently purchased products and their estimated reorder dates, saved shipping addresses, plus staff-only acquisition source, notes, purchasing interval and follow-up deferral.

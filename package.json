@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:automations": "node --test tests/emailAutomation.test.cjs",
     "seed": "node scripts/seed-catalogue.mjs",
     "migrate": "node scripts/run-migration.mjs"
   },

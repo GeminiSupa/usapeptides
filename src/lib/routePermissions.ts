@@ -21,7 +21,7 @@ const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/banners(?:\/|$)/,         permissions: ['storefront'] },
   { pattern: /^\/api\/admin\/whatsapp(?:\/|$)/,        permissions: ['storefront'] },
   { pattern: /^\/api\/admin\/site-content$/,           permissions: ['storefront'] },
-  { pattern: /^\/api\/admin\/upload(?:\/|$)/,          permissions: ['products', 'storefront', 'users', 'articles', 'campaigns'] },
+  { pattern: /^\/api\/admin\/upload(?:\/|$)/,          permissions: ['products', 'storefront', 'users', 'articles', 'campaigns', 'automations'] },
 
   { pattern: /^\/api\/admin\/users(?:\/|$)/,           permissions: ['users'] },
   // Inviting and listing your own sub-users needs only my_team; approving,
@@ -50,6 +50,10 @@ const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/affiliates(?:\/|$)/,      permissions: ['affiliates'] },
   { pattern: /^\/api\/admin\/commissions(?:\/|$)/,     permissions: ['commissions'] },
   { pattern: /^\/api\/admin\/campaigns(?:\/|$)/,       permissions: ['campaigns'] },
+  { pattern: /^\/api\/admin\/automations(?:\/|$)/,     permissions: ['automations'] },
+  // The sending limit and the DNS report. Campaigns needs to see it too: the
+  // cap it is subject to is set here.
+  { pattern: /^\/api\/admin\/deliverability(?:\/|$)/,  permissions: ['automations', 'campaigns'] },
   { pattern: /^\/api\/admin\/subscribers(?:\/|$)/,     permissions: ['subscribers'] },
   { pattern: /^\/api\/admin\/articles(?:\/|$)/,        permissions: ['articles'] },
   { pattern: /^\/api\/admin\/notifications(?:\/|$)/,   permissions: ['notifications'] },

@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { fireTrigger } from '@/lib/automationEngine';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,5 +52,11 @@ export async function POST(req: Request) {
     marketing_opt_in: Boolean(metadata.marketing_opt_in),
   }).select('id').single();
   if (error) return Response.json({ error: 'server_error', message: 'Could not finish setting up this account.' }, { status: 500 });
+  // Brand new account, not a login being linked to an existing record, so a
+  // welcome sequence is the right thing to start. Never throws.
+  await fireTrigger('customer_created', {
+    email, name: fullName, source: 'customer', subjectType: 'customer', subjectId: String(created.id),
+  });
+
   return Response.json({ data: { customerId: created.id, linked: false } });
 }

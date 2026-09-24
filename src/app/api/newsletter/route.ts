@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { featureUnavailable } from '@/lib/env';
 import { created, badRequest, serverError, readJson } from '@/lib/api';
 import { cleanText, isEmail, normaliseEmail } from '@/lib/validate';
+import { fireTrigger } from '@/lib/automationEngine';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
           .from('newsletter_subscribers')
           .update({ is_subscribed: true, unsubscribed_at: null })
           .eq('id', existing.id);
+        await fireTrigger('newsletter_signup', { email, source: 'subscriber' });
       }
       return created({ subscribed: true });
     }
@@ -50,6 +52,7 @@ export async function POST(req: Request) {
     });
 
     if (error) return serverError(error.message);
+    await fireTrigger('newsletter_signup', { email, source: 'subscriber' });
     return created({ subscribed: true });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);

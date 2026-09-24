@@ -58,6 +58,11 @@ export type AuditAction =
   | 'campaign.send'
   | 'campaign.test'
   | 'campaign.delete'
+  | 'automation.activate'
+  | 'automation.pause'
+  | 'automation.enroll'
+  | 'automation.delete'
+  | 'email.policy_update'
   | 'content.update';
 
 interface AuditEntry {
