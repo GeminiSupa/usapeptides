@@ -264,6 +264,9 @@ function Deliverability({ authedFetch }: { authedFetch: Fetcher }) {
             </div>
             <p className="mt-1.5 text-[0.75rem] text-brand-textMuted">
               {data.remaining === null ? 'No limit is in force.' : `${data.remaining} left today.`}
+              {data.policy.warmup_enabled && !data.policy.warmup_started_on
+                ? ' The warm-up clock starts on the first email sent, so the limit will rise from then.'
+                : ''}
             </p>
           </div>
         )}

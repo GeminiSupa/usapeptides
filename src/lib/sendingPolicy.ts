@@ -69,8 +69,21 @@ export async function getPolicyState(db: Db = getSupabaseAdmin()): Promise<Polic
 export async function reserveSends(db: Db, want: number): Promise<{ granted: number; reason: string | null }> {
   if (want <= 0) return { granted: 0, reason: null };
 
-  const state = await getPolicyState(db);
+  let state = await getPolicyState(db);
   if (!state.ready) return { granted: want, reason: null };
+
+  // Start the clock on the first email ever sent.
+  //
+  // An unset start date reads as day one, which is correct on the first day
+  // and wrong every day after it: without this the limit would sit at 25 a day
+  // for ever and nobody would know why. Stamping it here rather than when the
+  // row is created means the ramp measures real sending, not how long ago
+  // somebody opened the screen.
+  if (state.policy.warmup_enabled && !state.policy.warmup_started_on) {
+    const today = new Date().toISOString().slice(0, 10);
+    await db.from('email_sending_policy').update({ warmup_started_on: today }).eq('id', true).is('warmup_started_on', null);
+    state = await getPolicyState(db);
+  }
 
   const { data, error } = await db.rpc('email_reserve_sends', { p_cap: state.today.cap, p_want: want });
   if (error) {

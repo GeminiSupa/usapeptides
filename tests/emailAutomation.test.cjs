@@ -37,6 +37,16 @@ test('a finished warm-up hands back the full ceiling', () => {
   assert.equal(today.cap, 2000);
 });
 
+test('with no start date the ramp cannot advance, which is why sending stamps one', () => {
+  // warmupDay(null) is day one on every date, so an unset start date pins the
+  // limit at the first rung for ever. reserveSends stamps today's date on the
+  // first send to start the clock; this test pins the behaviour that makes
+  // that stamping necessary, so removing it cannot pass unnoticed.
+  const policy = { warmup_enabled: true, warmup_started_on: null, daily_cap_override: null, max_daily_cap: 2000 };
+  assert.equal(health.dailyCap(policy, new Date('2026-09-01T00:00:00Z')).cap, 25);
+  assert.equal(health.dailyCap(policy, new Date('2027-09-01T00:00:00Z')).cap, 25);
+});
+
 test('a manual override wins, but cannot exceed the ceiling', () => {
   const policy = { warmup_enabled: true, warmup_started_on: '2026-09-01', daily_cap_override: 5000, max_daily_cap: 2000 };
   assert.equal(health.dailyCap(policy, new Date('2026-09-02T00:00:00Z')).cap, 2000);
