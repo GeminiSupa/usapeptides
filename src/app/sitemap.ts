@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     publicRest<{ slug: string; published_at: string; updated_at?: string }[]>('articles?select=slug,published_at,updated_at', [ARTICLES_TAG]),
   ]);
 
-  const pages = ['', '/shop', '/coa-database', '/bulk-discounts', '/calculator', '/blog', '/about-us', '/faq', '/install', '/contact-us', '/affiliates',
+  const pages = ['', '/shop', '/coa-database', '/bulk-discounts', '/calculator', '/blog', '/about-us', '/our-story', '/our-team', '/why-us', '/how-it-works', '/knowledge-center', '/quality-standards', '/faq', '/install', '/contact-us', '/affiliates',
     '/privacy-policy', '/shipping-policy', '/return-refund-policy'];
 
   const hidden = new Set(

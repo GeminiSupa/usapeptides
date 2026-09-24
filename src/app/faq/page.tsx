@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useSiteContent } from '@/components/SiteContentProvider';
 import { parseFaqs } from '@/lib/siteContent';
 import { ChevronDown, HelpCircle, Search } from 'lucide-react';
@@ -95,6 +96,27 @@ export default function FAQPage() {
             )}
           </div>
         ))}
+      </div>
+
+      {filteredFaqs.length === 0 && (
+        <p className="border border-brand-border bg-brand-card p-5 text-xs text-brand-textMuted">
+          No question matches that search yet. Try a different word, or ask us directly.
+        </p>
+      )}
+
+      {/* The writer's research and handling questions live with the articles
+          that explain them, so this page stays about ordering and policy. */}
+      <div className="space-y-4 border-t border-brand-border pt-8">
+        <h2 className="section-title">Looking for the science?</h2>
+        <p className="max-w-2xl text-xs leading-relaxed text-brand-body sm:text-sm">
+          Questions about research peptides, Certificates of Analysis, HPLC, lot numbers, storage
+          and laboratory terminology are answered in the Knowledge Center.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/knowledge-center" className="btn-ghost">Knowledge Center</Link>
+          <Link href="/coa-database" className="btn-ghost">COA database</Link>
+          <Link href="/contact-us" className="btn-ghost">Contact support</Link>
+        </div>
       </div>
 
     </div>

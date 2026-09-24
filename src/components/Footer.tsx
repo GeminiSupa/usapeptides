@@ -129,6 +129,8 @@ export default function Footer() {
               { href: '/blog', label: 'Research & test results' },
               { href: '/about-us', label: 'About our standards' },
               { href: '/our-story', label: 'Our story' },
+              { href: '/our-team', label: 'Our team and leadership' },
+              { href: '/knowledge-center', label: 'Knowledge Center' },
               { href: '/why-us', label: 'Why us' },
               { href: '/how-it-works', label: 'How it works' },
               { href: '/quality-standards', label: 'Quality standards' },

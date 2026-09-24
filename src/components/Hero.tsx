@@ -50,7 +50,13 @@ export default function Hero() {
             </h1>
           </div>
 
-          <ul className="flex flex-col items-center justify-center divide-y divide-brand-border border-y border-brand-border sm:flex-row sm:divide-x sm:divide-y-0 lg:mt-9">
+          {t('hero.lede') && (
+            <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-brand-body lg:mx-0">
+              {t('hero.lede')}
+            </p>
+          )}
+
+          <ul className="mt-8 flex flex-col items-center justify-center divide-y divide-brand-border border-y border-brand-border sm:flex-row sm:divide-x sm:divide-y-0 lg:mt-9">
             {contentLines(t('hero.points')).map((item) => (
               <li
                 key={item}
@@ -72,7 +78,13 @@ export default function Hero() {
             )}
           </div>
 
-          <p className="mx-auto mt-12 max-w-3xl text-xs leading-relaxed text-brand-textMuted">
+          {t('hero.closing') && (
+            <p className="mx-auto mt-10 max-w-2xl font-display text-sm font-extrabold uppercase leading-snug tracking-[0.02em] text-brand-heading lg:mx-0">
+              {t('hero.closing')}
+            </p>
+          )}
+
+          <p className="mx-auto mt-8 max-w-3xl text-xs leading-relaxed text-brand-textMuted">
             {t('hero.disclaimer')}
           </p>
         </div>

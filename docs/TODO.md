@@ -48,6 +48,43 @@ New dashboard section under Marketing: **Email automation**. Two halves.
       line hooks it up when that branch merges.
 - [x] Written up in docs/EMAIL-AUTOMATION.md
 
+## Writer's core pages, in full — 2026-09-25
+
+The owner's writer supplied the full copy for the core pages ("1-8 punch list"
+docx). The site was only carrying a trimmed version of it — How it works had 4
+steps where the doc has 6, About Us was a third of its length, and the
+Knowledge Center did not exist at all.
+
+- [x] How it works: all six steps, in the writer's words.
+- [x] About Us: the full principle, the five things it means in practice, and
+      the three questions the company was built around.
+- [x] Our story and Why us: full copy, four reasons rather than three.
+- [x] New page **Our team and leadership** (`/our-team`). The writer's copy has
+      a placeholder for bios, credentials and headshots — the page says they are
+      being finalized rather than inventing anybody. **Owner: send the bios.**
+- [x] New page **Knowledge Center** (`/knowledge-center`): seven long-form
+      articles, a 15-term glossary, and the research-and-handling FAQs. Each
+      article is a native "read more" (`<details>`), so the text is in the HTML
+      for Google whether it is open or closed — that is the styling the owner
+      asked for, not a wall of text.
+- [x] FAQ page now carries the writer's General FAQs plus the ordering,
+      shipping, storage and payment questions. Research questions moved to the
+      Knowledge Center, with a link across.
+- [x] Homepage hero carries the writer's paragraph and the "Don't believe the
+      hype" closing line. Both are editable in Dashboard > Content.
+- [x] New pages are in the header, footer and sitemap, and each has its own
+      editable SEO title and description.
+- [x] Verified: tsc clean, production build clean with the dev server stopped,
+      all seven pages render at 360px and desktop, read-more opens.
+- [!] Two claims from the old FAQ were dropped rather than rewritten, because
+      nothing we hold verifies them: "purity ratings consistently exceeding
+      99%" and vials "sealed under inert argon/nitrogen atmosphere". Owner: if
+      those are accurate, say so and they go back in.
+- [!] The reported mobile width problem on the home page **could not be
+      reproduced** at 320, 360, 375 or 390px — no horizontal overflow, every
+      section full width. Owner: a screenshot and the phone/browser would pin it
+      down.
+
 ## CRM retention foundation — 2026-09-22
 
 - [~] Customer profiles now include visible paid-order spend, last paid date, frequently purchased products and their estimated reorder dates, saved shipping addresses, plus staff-only acquisition source, notes, purchasing interval and follow-up deferral.
