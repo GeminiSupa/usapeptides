@@ -56,6 +56,28 @@ export default function KnowledgeCenterPage() {
         <p className="max-w-3xl text-sm leading-relaxed text-brand-body">
           Each topic opens in place. Start anywhere — they are written to be read on their own.
         </p>
+        {/* The writer's own contents list. Jumps to the article below, except
+            the terminology entry, which is the glossary further down. */}
+        <ul className="max-w-4xl space-y-2 border-l border-brand-border pl-5">
+          {KNOWLEDGE_ARTICLES.map((article) => (
+            <li key={article.id}>
+              <a
+                href={`#${article.id}`}
+                className="text-sm leading-relaxed text-brand-body hover:text-brand-accentGlow"
+              >
+                {article.title}
+              </a>
+            </li>
+          ))}
+          <li>
+            <a
+              href="#common-analytical-terms"
+              className="text-sm leading-relaxed text-brand-body hover:text-brand-accentGlow"
+            >
+              Common analytical terms and laboratory definitions
+            </a>
+          </li>
+        </ul>
         <div className="max-w-4xl space-y-4">
           {KNOWLEDGE_ARTICLES.map((article) => (
             <div key={article.id} id={article.id} className="scroll-mt-24">
@@ -73,7 +95,7 @@ export default function KnowledgeCenterPage() {
         </div>
       </section>
 
-      <section className="space-y-6">
+      <section id="common-analytical-terms" className="scroll-mt-24 space-y-6">
         <h2 className="section-title">Common analytical terms</h2>
         <dl className="grid gap-px border border-brand-border bg-brand-border sm:grid-cols-2 xl:grid-cols-3">
           {GLOSSARY.map((entry) => (
