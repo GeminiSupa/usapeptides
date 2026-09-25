@@ -147,7 +147,9 @@ export function Step({
 /** The line the owner keeps coming back to: "Trust. Verified." */
 export function StatementCard({ quote, tagline }: { quote: string; tagline?: string }) {
   return (
-    <div className="border border-brand-border bg-brand-card p-6">
+    // self-start, or the grid stretches one line of text into a card as tall
+    // as the column beside it.
+    <div className="self-start border border-brand-border bg-brand-card p-6">
       <p className="font-display text-xl font-extrabold uppercase leading-tight text-brand-heading">
         {quote}
       </p>
