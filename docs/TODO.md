@@ -779,11 +779,30 @@ anything hardcoded or weak.
 - [!] Meta / WhatsApp / Messenger campaigns
 
 ## Open decisions he never answered
-- [ ] Delete the `peptidecosta/` copy inside this repo. It is gitignored and a
-      full copy already exists at `H:/Joe Webster/peptidecosta`. It contains 37
-      live production credentials, so it should not sit here indefinitely.
+- [x] The `peptidecosta/` copy inside this folder was deleted by the owner on
+      2026-09-25. The project itself is unaffected - nothing in this codebase
+      imported from it, read a file in it or depended on it in any way; the only
+      traces were a `.gitignore` line and a `tsconfig.json` exclude, both kept
+      as guards. The separate copy at `H:/Joe Webster/peptidecosta` and the
+      project's own GitHub repo are where that work lives now.
 - [ ] Commit `8e3649d` has a stray `@` in its subject line. Fixing it rewrites
       history and needs a force-push.
+
+## Costa Rica connection - needs the owner's answer
+
+- [!] The uncommitted product-sync work in the tree (`src/lib/productSync.ts`,
+      `src/app/api/cron/products/`, migration `0022_product_partner_sync.sql`)
+      fetches the catalogue from `catalog.peptidescostarica.net` on a cron. It
+      is a live data connection to the other business, of the kind rule 2
+      forbids, even though it uses a public partner API rather than anything
+      from the deleted folder. The owner has said the products are already in
+      USA Peptide Depot and did not want features removed, so the code has been
+      left exactly where it was. **It must not be committed or deployed until
+      the owner says in writing that this feed is wanted.** Handover notes for
+      whoever picks it up: the migration number clashes with the applied
+      `0022_product_detail_images.sql` and needs renumbering to 0025, and its
+      two environment variables are read straight from `process.env` instead of
+      going through `features` in `src/lib/env.ts`.
 
 ## Known gaps worth naming
 - Policy pages are drafts, **not legal advice** — regulated product class

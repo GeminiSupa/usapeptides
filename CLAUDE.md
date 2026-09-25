@@ -17,14 +17,19 @@ something.
 
 1. **Never commit secrets.** `.env.local` holds live Supabase and Chatwoot keys.
    Before every commit run `git diff --cached --name-only` and confirm no `.env`
-   file and nothing under `peptidecosta/` is staged.
+   file is staged.
 
-2. **`peptidecosta/` is a read-only reference copy of a different business.** It
-   contains 37 live production credentials. Never read its `.env*` files, never
-   import from it, never copy its keys, never connect this project to its data.
-   The owner's words: *there must be no data connection between peptidecosta and
-   USA Peptide Depot.* Read its source only to learn how a feature was built. Do not
-   delete the folder without asking.
+2. **Nothing from peptidecosta belongs in this project.** The owner deleted the
+   `peptidecosta/` copy that used to sit in this folder (2026-09-25). It held 37
+   live production credentials for a different business. Do not restore it, do
+   not copy it back in, do not import from it, do not point this project at its
+   database, its API or its storage. The owner's words: *there must be no data
+   connection between peptidecosta and USA Peptide Depot.*
+   The `peptidecosta/` lines in `.gitignore` and in the `exclude` list of
+   `tsconfig.json` stay as guards, so a stray copy can never be committed or
+   compiled. The other project still exists on its own, outside this folder and
+   in its own GitHub repo; read it there if you need to see how a feature was
+   built, and bring across the idea, never the code or the keys.
 
 3. **This is NOT a static export.** Never add `output: 'export'` to
    `next.config.mjs`. It disables every API route: the dashboard, checkout,
@@ -47,9 +52,8 @@ something.
    See Migrations below.
 
 8. **Destructive or outward-facing actions need the owner's explicit yes:**
-   force-push, history rewrites, dropping tables, deleting real rows, deleting
-   `peptidecosta/`, publishing content on the live site. "Push it" means push,
-   not rewrite.
+   force-push, history rewrites, dropping tables, deleting real rows,
+   publishing content on the live site. "Push it" means push, not rewrite.
 
 9. **The brand is "USA Peptide Depot".** Never use the name "Battle Born" or copy text
    or images from its site. It is only the UI reference (see below).
@@ -59,8 +63,9 @@ something.
 ## Reference projects
 
 - **UI:** we are recreating the look of **https://battlebornresearch.com**.
-- **Features:** copied from the **`peptidecosta/`** project folder. Same features,
-  in our design, on our own Supabase, with no data connection (rule 2).
+- **Features:** modelled on the separate **peptidecosta** project, which no
+  longer lives in this folder (rule 2). Same features, in our design, on our own
+  Supabase, with no data connection of any kind.
 
 ---
 
