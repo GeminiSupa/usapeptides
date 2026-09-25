@@ -17,7 +17,11 @@ const STEPS: { title: string; summary: string }[] = [
   {
     title: 'Ordering',
     summary:
-      'Complete checkout using the payment methods offered on the site. Orders are subject to availability, verification, and our Terms and Conditions.',
+      // The writer's line ends "and our Terms and Conditions". That page is
+      // section 13 of his document and has not been written, so the copy
+      // points at the policies that do exist. Restore his wording, and the
+      // link, once the Terms page is live.
+      'Complete checkout using the payment methods offered on the site. Orders are subject to availability, verification, and the shipping and return policies published on this site.',
   },
   {
     title: 'Shipping',

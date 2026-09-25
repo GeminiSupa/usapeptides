@@ -27,7 +27,9 @@ export const faqs: FAQItem[] = [
     category: 'General',
     question: `Can I order research peptides online from ${NAME}?`,
     answer:
-      'Eligible research products can be ordered through the website subject to product availability, shipping eligibility, legal restrictions, and our Terms and Conditions. Customers are responsible for ensuring that their purchase and intended research use comply with applicable laws and institutional requirements.',
+      // "and our Terms and Conditions" is in the writer's answer, but that
+      // page has not been written yet. Put it back when it exists.
+      'Eligible research products can be ordered through the website subject to product availability, shipping eligibility, and legal restrictions. Customers are responsible for ensuring that their purchase and intended research use comply with applicable laws and institutional requirements.',
   },
   {
     category: 'General',
