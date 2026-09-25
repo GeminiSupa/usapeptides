@@ -779,16 +779,15 @@ anything hardcoded or weak.
 - [!] Meta / WhatsApp / Messenger campaigns
 
 ## Open decisions he never answered
-- [ ] Delete the `peptidecosta/` copy inside this repo. The owner started the
-      delete on 2026-09-25 and cancelled part way; the folder is intact -
-      0 tracked files missing, `.git`, `src`, `public` and `node_modules` all
-      present. **Nothing in this codebase depends on it** (checked the same day:
-      no import, no file read, no script, no asset path; the only traces are a
-      `.gitignore` line and a `tsconfig.json` exclude, both worth keeping as
-      guards either way). So it can go whenever he wants. Two things to know
-      first: it holds 37 live production credentials, and its own checkout has
-      3 commits, 1 stash and 4 branches that are on no remote - fine if the full
-      copy at `H:/Joe Webster/peptidecosta` has them, lost forever if not.
+- [x] The `peptidecosta/` copy inside this repo was deleted on 2026-09-25 with
+      the owner's go-ahead, after a first attempt he cancelled part way (that
+      one removed nothing). Safe to do because nothing in this codebase depended
+      on it - no import, no file read, no script, no asset path - and the
+      project typechecks clean without it. Before deleting, its 3 unpushed
+      commits were confirmed present in the full copy at
+      `H:/Joe Webster/peptidecosta`, and its one stash was exported to
+      `C:/Users/Maaz/Downloads/peptidecosta-stash-backup.patch`. The
+      `.gitignore` line and `tsconfig.json` exclude stay as guards.
 - [ ] Commit `8e3649d` has a stray `@` in its subject line. Fixing it rewrites
       history and needs a force-push.
 
