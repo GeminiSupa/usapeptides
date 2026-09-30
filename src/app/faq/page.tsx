@@ -110,10 +110,10 @@ export default function FAQPage() {
         <h2 className="section-title">Looking for the science?</h2>
         <p className="max-w-2xl text-xs leading-relaxed text-brand-body sm:text-sm">
           Questions about research peptides, Certificates of Analysis, HPLC, lot numbers, storage
-          and laboratory terminology are answered in the Knowledge Center.
+          and laboratory terminology are answered in Research.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Link href="/knowledge-center" className="btn-ghost">Knowledge Center</Link>
+          <Link href="/research" className="btn-ghost">Research</Link>
           <Link href="/coa-database" className="btn-ghost">COA database</Link>
           <Link href="/contact-us" className="btn-ghost">Contact support</Link>
         </div>

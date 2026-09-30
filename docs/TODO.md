@@ -48,6 +48,15 @@ New dashboard section under Marketing: **Email automation**. Two halves.
       line hooks it up when that branch merges.
 - [x] Written up in docs/EMAIL-AUTOMATION.md
 
+## Research pages from the writer's Google Doc — 2026-09-30
+
+- [x] Knowledge Center articles are now separate pages under **Research**
+      (`/research/...`), not one accordion. Glossary and laboratory-handling
+      FAQs are their own pages. `/knowledge-center` redirects to `/research`.
+- [x] Glossary expanded to the writer's full term list. Quality standards and
+      editorial policy match the Google Doc. Terms and privacy drafts were
+      left unpublished because the doc says they need legal review first.
+
 ## Writer's core pages, in full — 2026-09-25
 
 The owner's writer supplied the full copy for the core pages ("1-8 punch list"

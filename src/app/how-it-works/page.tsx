@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
         links={[
           { href: '/shop', label: 'Browse the catalogue' },
           { href: '/coa-database', label: 'Search the COA database' },
-          { href: '/knowledge-center', label: 'Knowledge Center' },
+          { href: '/research', label: 'Research' },
           { href: '/faq', label: 'Read the FAQ' },
           { href: '/contact-us', label: 'Contact support' },
         ]}

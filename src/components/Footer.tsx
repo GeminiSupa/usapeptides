@@ -127,10 +127,10 @@ export default function Footer() {
               { href: '/calculator', label: 'Reconstitution calculator' },
               { href: '/order-received', label: 'Track an order' },
               { href: '/blog', label: 'Research & test results' },
+              { href: '/research', label: 'Research' },
               { href: '/about-us', label: 'About our standards' },
               { href: '/our-story', label: 'Our story' },
               { href: '/our-team', label: 'Our team and leadership' },
-              { href: '/knowledge-center', label: 'Knowledge Center' },
               { href: '/why-us', label: 'Why us' },
               { href: '/how-it-works', label: 'How it works' },
               { href: '/quality-standards', label: 'Quality standards' },
@@ -199,6 +199,7 @@ export default function Footer() {
                 { href: '/privacy-policy', label: 'Privacy policy' },
                 { href: '/shipping-policy', label: 'Shipping policy' },
                 { href: '/return-refund-policy', label: 'Returns & refunds' },
+                { href: '/editorial-policy', label: 'Editorial policy' },
                 { href: '/unsubscribe', label: 'Unsubscribe' },
               ].map((item) => (
                 <Link

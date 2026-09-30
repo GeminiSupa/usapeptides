@@ -43,7 +43,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/': 'Home page', '/shop': 'Shop', '/cart': 'Cart', '/checkout': 'Checkout', '/checkout/success': 'Order confirmed',
   '/order-received': 'Order confirmed', '/about-us': 'About us', '/contact-us': 'Contact us', '/faq': 'FAQ',
   '/blog': 'Blog', '/affiliates': 'Affiliates', '/bulk-discounts': 'Bulk discounts', '/calculator': 'Calculator',
-  '/coa-database': 'COA database', '/my-account': 'My account', '/wishlist': 'Wishlist', '/unsubscribe': 'Unsubscribe',
+  '/coa-database': 'COA database', '/research': 'Research', '/editorial-policy': 'Editorial policy', '/my-account': 'My account', '/wishlist': 'Wishlist', '/unsubscribe': 'Unsubscribe',
   '/privacy-policy': 'Privacy policy', '/return-refund-policy': 'Refund policy', '/shipping-policy': 'Shipping policy',
 };
 const PAGE_KINDS: Record<string, string> = { product: 'Product', category: 'Category', blog: 'Blog post' };

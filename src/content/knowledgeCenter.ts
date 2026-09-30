@@ -26,12 +26,19 @@ export interface KnowledgeArticle {
 }
 
 export const KNOWLEDGE_INTRO = [
-  `${NAME}'s Knowledge Center is designed to inform researchers on topics such as product identity and purity, storage, handling, and research-material terminology.`,
-  'Knowledge Center articles explain what a term means, what a test can and cannot establish, how to read supporting documentation, and where uncertainty remains.',
+  `${NAME}'s Research section is designed to inform researchers on topics such as product identity and purity, storage, handling, and research-material terminology.`,
+  'These articles explain what a term means, what a test can and cannot establish, how to read supporting documentation, and where uncertainty remains.',
 ];
+
+export const researchHref = (slug: string) => `/research/${slug}`;
 
 const COA_LINK = { href: '/coa-database', label: 'COA database' };
 const STANDARDS_LINK = { href: '/quality-standards', label: 'Quality standards' };
+const HPLC_LINK = { href: researchHref('what-hplc-can-tell-you'), label: 'What HPLC can and cannot tell you' };
+const COA_ARTICLE_LINK = { href: researchHref('how-to-read-a-coa'), label: 'How to read a Certificate of Analysis' };
+const PURITY_LINK = { href: researchHref('purity-identity-concentration-mass'), label: 'Understanding purity, identity, concentration, and mass' };
+const VERIFY_LINK = { href: researchHref('verify-documentation'), label: 'How to verify documentation before beginning research' };
+const INDEPENDENT_LINK = { href: researchHref('independent-testing'), label: 'How independent laboratory testing works' };
 
 export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
   {
@@ -70,7 +77,7 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
         text: 'Before beginning research, compare the lot information on the product with the report available in the COA database. If the product, lot, or analytical documentation does not match, contact support before relying on the report.',
       },
     ],
-    related: [STANDARDS_LINK, COA_LINK],
+    related: [STANDARDS_LINK, COA_LINK, INDEPENDENT_LINK],
   },
   {
     id: 'what-hplc-can-tell-you',
@@ -116,7 +123,7 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
         text: 'The practical rule is simple: read the full report, understand what the method measured, and avoid treating one number as proof of characteristics the test was never designed to establish.',
       },
     ],
-    related: [COA_LINK, STANDARDS_LINK],
+    related: [COA_LINK, STANDARDS_LINK, PURITY_LINK],
   },
   {
     id: 'purity-identity-concentration-mass',
@@ -159,7 +166,7 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
         text: 'Keeping those concepts separate makes analytical documentation easier to interpret and reduces the risk of drawing conclusions that the underlying test does not support.',
       },
     ],
-    related: [STANDARDS_LINK, COA_LINK],
+    related: [HPLC_LINK, COA_ARTICLE_LINK, STANDARDS_LINK],
   },
   {
     id: 'why-lot-numbers-matter',
@@ -196,7 +203,7 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
         text: 'Traceability reduces ambiguity. Instead of asking whether a product name was ever tested, researchers can ask the more useful question: was this specific lot tested, and can I review the applicable documentation?',
       },
     ],
-    related: [COA_LINK, STANDARDS_LINK],
+    related: [COA_LINK, STANDARDS_LINK, VERIFY_LINK],
   },
   {
     id: 'independent-testing',
@@ -238,7 +245,7 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
         text: `${NAME}'s approach is to make applicable analytical documentation accessible so researchers can evaluate the evidence directly.`,
       },
     ],
-    related: [COA_LINK, STANDARDS_LINK],
+    related: [COA_LINK, COA_ARTICLE_LINK, STANDARDS_LINK],
   },
   {
     id: 'storage-and-handling',
@@ -246,6 +253,10 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
     summary:
       'Temperature, moisture, light exposure, contamination, repeated handling, and other conditions may influence sample integrity.',
     body: [
+      {
+        type: 'p',
+        text: 'Research materials can be affected by their environment. Temperature, moisture, light exposure, contamination, repeated handling, and other conditions may influence sample integrity.',
+      },
       {
         type: 'p',
         text: 'Because storage requirements vary by compound and product format, the first source of guidance should always be the specifications shown on the product label, product page, or applicable technical documentation.',
@@ -279,6 +290,7 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
     related: [
       { href: '/shipping-policy', label: 'Shipping policy' },
       { href: '/return-refund-policy', label: 'Return policy' },
+      STANDARDS_LINK,
     ],
   },
   {
@@ -329,8 +341,12 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
         type: 'p',
         text: 'Verification is not complicated, but it requires discipline. The goal is to create a clear chain between the research material, its identifying information, and the evidence associated with that specific lot.',
       },
+      {
+        type: 'p',
+        text: `That process is central to ${NAME}'s operating principle: Trust. Verified.`,
+      },
     ],
-    related: [COA_LINK, { href: '/faq', label: 'FAQ' }, { href: '/contact-us', label: 'Support' }],
+    related: [COA_LINK, STANDARDS_LINK, { href: '/faq', label: 'FAQ' }, { href: '/contact-us', label: 'Support' }],
   },
 ];
 
@@ -340,21 +356,53 @@ export interface GlossaryTerm {
 }
 
 export const GLOSSARY: GlossaryTerm[] = [
-  { term: 'Certificate of Analysis (COA)', definition: 'A document reporting analytical information associated with a tested sample or lot.' },
-  { term: 'HPLC', definition: 'High-performance liquid chromatography, an analytical technique used to separate and measure components in a sample.' },
-  { term: 'Chromatogram', definition: 'The visual output produced by a chromatographic analysis, typically showing detected components as peaks over time.' },
-  { term: 'Purity', definition: 'A measurement describing the relative proportion of the primary detected component under the analytical method used.' },
-  { term: 'Identity', definition: 'Analytical evidence addressing whether a material is consistent with the compound it is represented to be.' },
-  { term: 'Mass spectrometry (MS)', definition: 'An analytical technique that measures mass-to-charge characteristics and can be used to support molecular identification.' },
-  { term: 'Lot number', definition: 'An identifier used to associate a product with a particular production, packaging, or inventory batch.' },
-  { term: 'Batch', definition: 'A defined quantity of material produced, received, or processed under related conditions.' },
-  { term: 'Sample', definition: 'The specific portion of material submitted for testing.' },
-  { term: 'Reference material', definition: 'Material used for analytical, comparison, calibration, or research purposes.' },
-  { term: 'Molecular weight', definition: 'The calculated or measured mass associated with a molecule, typically expressed in daltons or related units.' },
+  { term: 'Amino acid', definition: 'An organic compound that serves as a building block of peptides and proteins.' },
+  { term: 'Analytical data', definition: 'Measurements or outputs produced by a laboratory method, such as chromatograms, spectra, peak data, or reported numerical results.' },
+  { term: 'Analytical method', definition: 'A defined laboratory technique or procedure used to measure, separate, identify, or characterize a sample.' },
+  { term: 'Analytical report', definition: 'A laboratory document presenting the sample identification, method, date, results, and other information associated with an analysis.' },
+  { term: 'Assay', definition: 'A laboratory test or analytical procedure used to measure or evaluate a specified property of a sample. The meaning depends on the particular method used.' },
+  { term: 'Batch', definition: 'A defined quantity of material produced, received, packaged, or processed under related conditions.' },
+  { term: 'Calibration', definition: 'The process of comparing an instrument or measurement system with a known reference so its response can be evaluated or adjusted.' },
+  { term: 'Certificate of Analysis (COA)', definition: 'A document reporting analytical information associated with a tested sample or lot. A COA should be interpreted within the limits of the methods actually performed.' },
+  { term: 'Chain of custody', definition: 'A documented history showing how a sample or material was received, handled, transferred, stored, or tested.' },
+  { term: 'Chromatogram', definition: 'The visual output of a chromatographic analysis, usually displaying detected signal as peaks over time or another separation dimension.' },
+  { term: 'Chromatography', definition: 'A family of analytical techniques used to separate components of a mixture so they can be detected, compared, or measured.' },
+  { term: 'Compound', definition: 'A substance with a defined chemical composition or structure.' },
   { term: 'Concentration', definition: 'The amount of a substance present within a defined volume or mixture.' },
-  { term: 'Lyophilized', definition: 'Freeze-dried; a format created by removing water from material under controlled low-temperature and reduced-pressure conditions.' },
-  { term: 'Traceability', definition: 'The ability to connect a research material to relevant identifiers, records, documentation, and handling history.' },
+  { term: 'Contaminant', definition: 'An unintended substance or material present in a sample. Whether a method can detect a particular contaminant depends on the method and test design.' },
+  { term: 'Documentation', definition: 'Records associated with a research material, such as labels, lot identifiers, analytical reports, specifications, and handling information.' },
+  { term: 'HPLC', definition: 'High-performance liquid chromatography, a chromatographic technique used to separate and measure components in a sample. In peptide analysis, it is commonly used to report chromatographic purity under defined test conditions.' },
+  { term: 'Identity', definition: 'Analytical evidence addressing whether a material is consistent with the compound it is represented to be.' },
   { term: 'Independent testing', definition: 'Analysis performed by a laboratory separate from the seller of the material.' },
+  { term: 'Laboratory reference material', definition: 'Material used for analytical, comparison, calibration, method-development, or research purposes.' },
+  { term: 'Lot', definition: 'A defined production, packaging, receiving, or inventory grouping associated with a particular set of records.' },
+  { term: 'Lot number', definition: 'An identifier used to connect a product with a specific lot or batch and its associated records.' },
+  { term: 'Lot-specific documentation', definition: 'Documentation tied to an identifiable lot rather than to a product name in general.' },
+  { term: 'Lyophilization', definition: 'A freeze-drying process that removes water under controlled low-temperature and reduced-pressure conditions.' },
+  { term: 'Lyophilized', definition: 'Freeze-dried; a material format produced through lyophilization.' },
+  { term: 'Mass', definition: 'The amount of material present, commonly expressed in units such as milligrams. Confirming quantity requires an appropriate quantitative method.' },
+  { term: 'Mass spectrometry (MS)', definition: 'An analytical technique that measures mass-to-charge characteristics and can help support molecular identification or characterization.' },
+  { term: 'Method', definition: 'The defined analytical procedure used by a laboratory, including relevant instrument conditions, preparation steps, and measurement approach.' },
+  { term: 'Method validation', definition: 'A documented evaluation of whether an analytical method is suitable for its intended measurement purpose. The scope of validation varies by method and laboratory context.' },
+  { term: 'Molecular weight', definition: 'The calculated or measured mass associated with a molecule, commonly expressed in daltons or related units.' },
+  { term: 'Peak', definition: 'A signal feature on a chromatogram or spectrum associated with detected material under the conditions of the method.' },
+  { term: 'Peptide', definition: 'A chain of amino acids linked by peptide bonds. Peptides can vary in sequence, length, structure, and analytical characteristics.' },
+  { term: 'Peptide sequence', definition: 'The ordered arrangement of amino acids in a peptide.' },
+  { term: 'Product identifier', definition: 'Information used to distinguish a specific research material, such as product name, catalog number, lot number, sample identifier, or other assigned code.' },
+  { term: 'Purity', definition: 'A measurement describing the relative proportion of the primary detected component under the analytical method used. Purity does not automatically establish identity, quantity, sterility, or suitability for a particular experiment.' },
+  { term: 'Qualitative analysis', definition: 'Analysis intended primarily to determine what is present or whether a characteristic is detected, rather than how much is present.' },
+  { term: 'Quantitative analysis', definition: 'Analysis intended to determine the amount or concentration of a substance using an appropriate measurement method.' },
+  { term: 'Reference standard', definition: 'A material with defined characteristics used as a comparison or calibration reference in an analytical procedure.' },
+  { term: 'Research peptide', definition: 'Peptide material supplied for laboratory, analytical, educational, or research investigation rather than for therapeutic or consumer use.' },
+  { term: 'Research use only (RUO)', definition: 'A designation indicating that a material is supplied for legitimate laboratory, analytical, educational, or research applications and is not intended for human or veterinary administration.' },
+  { term: 'Retention time', definition: 'The time a component takes to pass through a chromatographic system and produce a detected signal under specified method conditions.' },
+  { term: 'Sample', definition: 'The specific portion of material submitted for testing or used in an analysis.' },
+  { term: 'Sample identifier', definition: 'A code or description used to identify the particular sample submitted to a laboratory.' },
+  { term: 'Specification', definition: 'A documented characteristic, requirement, range, or criterion associated with a material or test. A specification should not be treated as a measured result unless supported by actual testing.' },
+  { term: 'Stability', definition: 'The extent to which a material retains defined characteristics over time under specified conditions. Stability is separate from a single purity result.' },
+  { term: 'Sterility', definition: 'The absence of viable microorganisms as established by an appropriate sterility test. HPLC purity alone does not establish sterility.' },
+  { term: 'Third-party laboratory', definition: 'A laboratory organizationally separate from the seller that performs analytical testing.' },
+  { term: 'Traceability', definition: 'The ability to connect a research material to relevant identifiers, records, analytical documentation, and handling history.' },
 ];
 
 export const GLOSSARY_NOTE =
@@ -409,4 +457,45 @@ export const KNOWLEDGE_FAQS: KnowledgeFaq[] = [
     question: `Does ${NAME} provide medical reconstitution instructions?`,
     answer: `No. Our products are sold for laboratory research only. Information supplied by ${NAME} is limited to legitimate product, analytical, laboratory, and research documentation and should not be interpreted as instructions for human administration.`,
   },
+  {
+    question: `Are ${NAME} products intended for human or veterinary use?`,
+    answer: `No. Products sold by ${NAME} are intended for research use only and are not supplied for human or veterinary consumption or administration.`,
+  },
+  {
+    question: 'Are your products medicines, prescription drugs, or compounded medications?',
+    answer: `No. ${NAME} does not operate as a pharmacy and does not sell its research materials as prescription drugs, compounded medications, or products intended to diagnose, treat, cure, mitigate, or prevent disease.`,
+  },
+  {
+    question: 'Are research peptides the same as pharmaceutical products?',
+    answer:
+      'No. Research materials and pharmaceutical products are different categories with different intended uses, manufacturing frameworks, labeling, regulatory pathways, and distribution requirements.',
+  },
+  {
+    question: `Does ${NAME} test its research materials?`,
+    answer: `${NAME} relies on independent third-party laboratories for analytical testing where testing is performed. The resulting documentation should be reviewed in the context of the specific sample, lot, method, laboratory, and test date.`,
+  },
+  {
+    question: 'What is third-party peptide testing?',
+    answer:
+      'Third-party testing means analytical work performed by a laboratory separate from the seller of the material. Independent testing creates separation between the seller’s marketing claims and the laboratory’s reported measurements.',
+  },
+  {
+    question: 'Does a high HPLC purity percentage prove identity, quantity, sterility, or suitability for a particular experiment?',
+    answer:
+      'No. HPLC purity is one analytical measurement. It does not automatically establish molecular identity, exact quantity, sterility, stability, absence of every possible contaminant, or suitability for a particular research protocol.',
+  },
+  {
+    question: 'Can a COA from one lot be applied to another lot?',
+    answer:
+      'No. Analytical results describe the sample that was actually tested. A report from one lot should not automatically be treated as evidence for a different lot.',
+  },
+  {
+    question: 'What should I do if a product arrives damaged, mislabeled, or visibly compromised?',
+    answer:
+      'Do not rely on compromised research material for an experiment. Retain the packaging and identifying information, photograph the issue, and contact support promptly so the order can be reviewed.',
+  },
 ];
+
+export function getKnowledgeArticle(slug: string) {
+  return KNOWLEDGE_ARTICLES.find((article) => article.id === slug);
+}

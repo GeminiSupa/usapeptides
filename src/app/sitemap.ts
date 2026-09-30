@@ -3,6 +3,7 @@ import { siteUrl } from '@/lib/seo';
 import { ARTICLES_TAG, publicRest } from '@/lib/siteContentServer';
 import { products as fallbackProducts } from '@/data/products';
 import { categories as fallbackCategories } from '@/data/categories';
+import { KNOWLEDGE_ARTICLES } from '@/content/knowledgeCenter';
 import { articles as fallbackArticles } from '@/data/articles';
 
 export const revalidate = 3600;
@@ -18,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     publicRest<{ slug: string; published_at: string; updated_at?: string }[]>('articles?select=slug,published_at,updated_at', [ARTICLES_TAG]),
   ]);
 
-  const pages = ['', '/shop', '/coa-database', '/bulk-discounts', '/calculator', '/blog', '/about-us', '/our-story', '/our-team', '/why-us', '/how-it-works', '/knowledge-center', '/quality-standards', '/faq', '/install', '/contact-us', '/affiliates',
+  const pages = ['', '/shop', '/coa-database', '/bulk-discounts', '/calculator', '/blog', '/about-us', '/our-story', '/our-team', '/why-us', '/how-it-works', '/research', '/research/glossary', '/research/laboratory-handling', '/quality-standards', '/editorial-policy', '/faq', '/install', '/contact-us', '/affiliates',
     '/privacy-policy', '/shipping-policy', '/return-refund-policy'];
 
   const hidden = new Set(
@@ -28,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     // Omit unknown dates rather than implying every regeneration changes content.
     ...pages.map((p) => ({ url: `${base}${p}` })),
+    ...KNOWLEDGE_ARTICLES.map((article) => ({ url: `${base}/research/${article.id}` })),
     ...(products ?? fallbackProducts.map((p) => ({ slug: p.slug, updated_at: '' }))).map((p) => ({
       url: `${base}/product/${p.slug}`, lastModified: validDate(p.updated_at),
     })),

@@ -7,7 +7,7 @@ import { BUSINESS } from '@/lib/env';
  *
  * The "General" answers are the writer's, kept close to his wording — they
  * deliberately describe what documentation shows rather than promising a
- * number. Research and handling questions live on the Knowledge Center page.
+ * number. Research and handling questions live under Research.
  */
 
 const NAME = BUSINESS.name;
@@ -89,7 +89,7 @@ export const faqs: FAQItem[] = [
     category: 'Documentation & Testing',
     question: 'What can an HPLC purity result actually tell me?',
     answer:
-      'HPLC shows how much of the detected signal is associated with the primary peak under the test conditions. It does not by itself establish identity, mass, concentration, sterility, stability, or suitability for a particular protocol — those are separate analytical questions. The Knowledge Center explains this in full.',
+      'HPLC shows how much of the detected signal is associated with the primary peak under the test conditions. It does not by itself establish identity, mass, concentration, sterility, stability, or suitability for a particular protocol — those are separate analytical questions. Research explains this in full.',
   },
   {
     category: 'Documentation & Testing',
@@ -113,7 +113,7 @@ export const faqs: FAQItem[] = [
     category: 'Storage & Handling',
     question: 'How should lyophilized materials be stored?',
     answer:
-      'Storage requirements vary by compound and format, so the product label, product page and technical documentation come first. Materials should be protected from inappropriate heat, moisture, light and contamination. The Knowledge Center covers general laboratory handling principles.',
+      'Storage requirements vary by compound and format, so the product label, product page and technical documentation come first. Materials should be protected from inappropriate heat, moisture, light and contamination. Research covers general laboratory handling principles.',
   },
   {
     category: 'Storage & Handling',

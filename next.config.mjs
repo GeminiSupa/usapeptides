@@ -19,6 +19,9 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
+  async redirects() {
+    return [{ source: '/knowledge-center', destination: '/research', permanent: true }];
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
