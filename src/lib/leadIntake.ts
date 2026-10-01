@@ -224,21 +224,65 @@ export function hostOf(value: string | null): string {
 }
 
 /**
- * Is this request coming from a domain registered for the key?
+ * Which domains a key accepts, read from the one text box the dashboard edits.
  *
- * The domains column is a comma-separated list because the dashboard edits it
- * as one text field. A bare domain covers its subdomains, so `example.com`
- * also allows `go.example.com` but never `notexample.com`.
+ * The owner buys these domains steadily, a hundred and counting, so the
+ * default is deliberately open: leave the box empty and any site that has the
+ * key can post, and a new domain works the moment its snippet goes up, with no
+ * dashboard step at all. Attribution does not depend on this list - the domain
+ * is read from the request itself - so an unknown site still reports itself
+ * correctly in Leads.
+ *
+ * Two ways to narrow it, both typed into the same box:
+ *   `peptidesoklahomacity.com`   only these domains may post (an allow-list)
+ *   `!spammy.example.com`        this domain may never post (a block)
+ *
+ * A block always wins. A bare domain covers its subdomains, so `example.com`
+ * also matches `go.example.com` but never `notexample.com`.
  */
+export interface DomainRules {
+  allow: string[];
+  block: string[];
+}
+
+const normaliseDomain = (value: string): string =>
+  value.trim().toLowerCase()
+    .replace(/^!/, '')
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '');
+
+export function domainRules(domains: string): DomainRules {
+  const allow: string[] = [];
+  const block: string[] = [];
+
+  for (const entry of (domains || '').split(/[,\s]+/)) {
+    const trimmed = entry.trim();
+    if (!trimmed) continue;
+    const domain = normaliseDomain(trimmed);
+    if (!domain) continue;
+    (trimmed.startsWith('!') ? block : allow).push(domain);
+  }
+
+  return { allow, block };
+}
+
+const matches = (host: string, domain: string): boolean =>
+  host === domain || host.endsWith(`.${domain}`);
+
+/** May a request from this origin post against this key? */
 export function originAllowed(domains: string, origin: string | null): boolean {
   const host = hostOf(origin);
   if (!host) return false;
 
-  return domains
-    .split(/[,\s]+/)
-    .map((d) => d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, ''))
-    .filter(Boolean)
-    .some((allowed) => host === allowed || host.endsWith(`.${allowed}`));
+  const { allow, block } = domainRules(domains);
+  if (block.some((domain) => matches(host, domain))) return false;
+
+  // No allow-list means every domain holding the key is accepted. That is the
+  // point: buying a domain should not mean editing a list.
+  if (!allow.length) return true;
+
+  return allow.some((domain) => matches(host, domain));
 }
 
 /* ---------------------------------------------------------------- dedupe -- */

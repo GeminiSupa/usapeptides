@@ -86,13 +86,13 @@ export interface ResourceConfig {
 }
 
 /**
- * Random tail for a generated lead-site key. `crypto.randomInt`, never
- * `Math.random`: a guessable key lets somebody file leads as another city.
+ * Random tail for a generated API token. `crypto.randomInt`, never
+ * `Math.random`: a predictable token is no token at all.
  */
-function randomKeySuffix(): string {
+function randomKeySuffix(length = 10): string {
   const alphabet = 'abcdefghjkmnpqrstuvwxyz23456789';
   let out = '';
-  for (let i = 0; i < 10; i += 1) out += alphabet[randomInt(alphabet.length)];
+  for (let i = 0; i < length; i += 1) out += alphabet[randomInt(alphabet.length)];
   return out;
 }
 
@@ -388,9 +388,9 @@ export const RESOURCES: Record<string, ResourceConfig> = {
 
   lead_sites: {
     table: 'lead_sites',
-    title: 'Lead sites',
+    title: 'Lead API tokens',
     blurb:
-      'Which domains may post leads here. One record can cover a whole network: put every domain in the Domains box, one per line, and they all share its key. Each lead still records the exact domain it came from.',
+      'API tokens your other sites use to post leads here. One token covers every site, and a new domain works as soon as its form goes up - there is nothing to add here. Each lead records the domain it came from by itself. Revoke a token by switching it off.',
     select: 'id, site_key, label, domains, tracking_phone, is_active, notes, created_at',
     orderBy: 'created_at',
     searchable: ['label', 'site_key', 'domains', 'tracking_phone'],
@@ -398,22 +398,23 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     deletable: true,
     createFields: [
       { name: 'label', label: 'Name', type: 'text', required: true,
-        help: 'What this group of sites is called, e.g. City sites. Only used in the dashboard.' },
-      { name: 'domains', label: 'Domains', type: 'textarea', required: true,
-        help: 'One domain per line (commas work too), e.g. peptidesoklahomacity.com. Paste all of them; subdomains are covered. Any domain not listed here is refused.' },
+        help: 'What this token is for, e.g. City sites. Only used here.' },
+      { name: 'domains', label: 'Limit to domains (optional)', type: 'textarea',
+        help: 'Leave blank and any site holding the token can post - nothing to do when you buy another domain. To tie the token to certain sites, list them one per line. To stop one site, put an exclamation mark in front of it, e.g. !badsite.com.' },
       { name: 'tracking_phone', label: 'Fallback phone number', type: 'text',
         help: 'Used only when a site does not send its own. Each site posts the number printed on it.' },
-      { name: 'site_key', label: 'Site key', type: 'text',
-        help: 'Leave blank and one is generated. This goes in the form on that site.' },
-      { name: 'is_active', label: 'Accepting leads', type: 'boolean' },
+      { name: 'site_key', label: 'Token', type: 'text',
+        help: 'Leave blank and a token is generated for you. The sites send it as "Authorization: Bearer <token>".' },
+      { name: 'is_active', label: 'Active', type: 'boolean',
+        help: 'Switch off to revoke the token everywhere, at once.' },
       { name: 'notes', label: 'Notes', type: 'textarea' },
     ],
-    columns: ['label', 'domains', 'site_key', 'tracking_phone', 'is_active'],
+    columns: ['label', 'site_key', 'domains', 'tracking_phone', 'is_active'],
     derive: (row) => {
-      // The key is public, so it only has to be unguessable enough that
-      // somebody cannot post as another city by typing its name.
-      if (!row.site_key && row.label) {
-        row.site_key = `${slugify(String(row.label)).slice(0, 24) || 'site'}-${randomKeySuffix()}`;
+      // Long and random: a token in a page is readable, so the only thing it
+      // must not be is guessable.
+      if (!row.site_key) {
+        row.site_key = `usapd_${randomKeySuffix(40)}`;
       }
       if (row.is_active === undefined) row.is_active = true;
       return row;

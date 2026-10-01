@@ -4,8 +4,8 @@ Submits a contact-form lead from a lead-gen site into the USA Peptide Depot CRM.
 Plain JSON over HTTPS. Posted directly from the visitor's browser; no backend
 required on the client site.
 
-**Status:** live. Ask us for a site key for each domain before you test; a
-request without a registered key is refused.
+**Status:** live. Ask us for an API token before you test; a request without a
+valid token is refused.
 
 ---
 
@@ -19,8 +19,8 @@ POST https://www.usapeptidedepot.com/api/leads/intake
 |---|---|
 | Method | `POST` (plus `OPTIONS` for CORS preflight, handled) |
 | Content-Type | `application/json` |
-| Auth | `X-Site-Key: <site key>` header, required |
-| CORS | Allowed for the domains registered against the site key |
+| Auth | `Authorization: Bearer <token>`, required |
+| CORS | Open; any domain holding a valid token may post |
 | Rate limit | 5 requests / IP / 10 min · 20 requests / sending domain / 10 min |
 
 Use the `www.` host exactly as written. The bare `usapeptidedepot.com` answers
@@ -31,19 +31,30 @@ so a form posting to it will fail.
 
 ## Authentication
 
+```
+Authorization: Bearer usapd_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
 | Header | Required | Value |
 |---|---|---|
-| `X-Site-Key` | yes | The key issued for your network of sites |
-| `X-Site-Secret` | no | Server-to-server only. Skips the domain check |
+| `Authorization` | yes | `Bearer <token>` |
+| `X-Site-Key` | alternative | The same token, for hosts that will not let you set `Authorization` |
 
-One key covers every domain registered against it, so the same snippet goes on
-every site unchanged. The key is public and may sit in page source: it is valid
-only from the registered domains and grants nothing except lead submission.
-Send us the list of domains and they are registered in one go.
+One token covers every site. There is no per-domain registration: a new site
+works the moment its form goes up. A revoked token stops every site using it at
+once.
 
-A request from a domain that is not on the list is refused, and a lead still
-records the exact domain it came from, so one key does not blur your
-reporting.
+**Where to put the token.** If the site has a backend, keep the token there and
+post server-side: then it is a real secret. On a static site it has to go in the
+page, where anyone viewing source can read it, so treat it as public. That is
+accepted, and the endpoint is built for it: the token identifies which network
+of sites a lead came from and can be revoked instantly, while the honeypot, the
+fill-time check and the rate limits are what actually bound abuse. Nothing about
+the CRM is readable through this endpoint, in either case.
+
+**Optional restriction.** A token can be tied to a list of domains, or have one
+domain blocked, from the dashboard. Ask if you want a token locked to a single
+site, for example a staging site.
 
 ---
 
@@ -57,7 +68,7 @@ reporting.
 | `interest` | enum | yes | n/a | See [Enums](#enums) |
 | `goal` | enum | yes | n/a | See [Enums](#enums) |
 | `message` | string | no | 5000 | Truncated, not rejected, if longer |
-| `lead_source` | string | no | 120 | The submitting domain. Normally omit it: the server records the domain the request actually came from. Only used for a server-to-server post, which has no Origin |
+| `lead_source` | string | no | 120 | The submitting domain. Normally omit it: the server records the domain the request actually came from. Send it on a server-to-server post, which has no Origin |
 | `tracking_phone` | string | no | 50 | The phone number displayed on that site |
 | `page_url` | string | no | 500 | `location.href` |
 | `referrer` | string | no | 500 | `document.referrer` |
@@ -125,7 +136,7 @@ Labels are also accepted in place of values.
 ```bash
 curl -X POST https://www.usapeptidedepot.com/api/leads/intake \
   -H 'Content-Type: application/json' \
-  -H 'X-Site-Key: oklahoma-city-k4m2rq8x7d' \
+  -H 'Authorization: Bearer usapd_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' \
   -d '{
     "full_name": "Jane Doe",
     "phone": "(405) 555-0134",
@@ -177,11 +188,11 @@ input. Only present for validation errors.
 ### 401: unauthorised
 
 ```json
-{ "error": "unauthorized", "message": "This site key is not registered for this domain." }
+{ "error": "unauthorized", "message": "Missing, unknown or revoked API token." }
 ```
 
-Causes: unknown key, deactivated key, or a domain not registered against the
-key. Not retryable.
+Causes: no token, an unknown token, a revoked token, or a token that has been
+deliberately restricted away from this domain. Not retryable.
 
 ### 429: rate limited
 
@@ -220,6 +231,9 @@ Server-side configuration incomplete. Not retryable; report it.
   within 30 days updates that lead and appends the new submission to its
   timeline rather than creating a second record. The response is `201` either
   way; `id` is the existing lead's id.
+- **First touch wins.** A returning person keeps the domain and tracking number
+  recorded the first time. A later submission from a different site is noted on
+  their timeline instead of replacing the original source.
 - **Source tracking.** Every lead records the domain it was submitted from,
   taken from the request's `Origin`, so each of a hundred sites is reported
   separately without a per-site key or a per-site edit. A `lead_source` in the
@@ -297,7 +311,7 @@ contractual; markup and styling are free.
 <script>
 (function () {
   var ENDPOINT = 'https://www.usapeptidedepot.com/api/leads/intake';
-  var SITE_KEY = 'SITE_KEY_HERE';                   // per site
+  var TOKEN    = 'usapd_TOKEN_HERE';                // the same on every site
   var CALL_US  = 'please call us on 405-555-0100';  // per site
 
   var form = document.getElementById('lead-form');
@@ -323,7 +337,7 @@ contractual; markup and styling are free.
 
     fetch(ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Site-Key': SITE_KEY },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
       body: JSON.stringify(payload)
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (body) {
@@ -351,15 +365,17 @@ contractual; markup and styling are free.
 
 ## Integration checklist
 
-1. Send us the full list of domains and get one key back. No key is tied to a
-   single site, so one snippet serves all of them.
+1. Ask us for an API token. One token serves every site; no domain list, no
+   per-site registration.
 2. Post to the `www.` host exactly as documented.
-3. Request a separate test key for staging; test submissions against a
-   production key are written to the live CRM.
-4. Set `tracking_phone` to the number displayed on that site. Leave
+3. Keep the token server-side if the site has a backend; otherwise it goes in
+   the page and is treated as public.
+4. Ask for a separate token for staging. Submissions made with the live token
+   are written to the live CRM.
+5. Set `tracking_phone` to the number displayed on that site. Leave
    `lead_source` out, or set it to the site's domain.
-5. Verify a `201`, a `400` with field errors, and the fallback path.
-6. Render the tracking number as text, not only inside an image.
+6. Verify a `201`, a `400` with field errors, and the fallback path.
+7. Render the tracking number as text, not only inside an image.
 
 Do not collect payment details, government identifiers or medical history
 through this form. Nothing beyond the documented fields is stored.

@@ -56,7 +56,7 @@ export const MODULES: ModuleDef[] = [
   { id: 'leads',         label: 'Leads',           group: 'Sales' },
   // The lead-gen domains and their keys. Separate from 'leads' so a sales
   // agent can work leads without being able to add or disable a site.
-  { id: 'lead_sites',    label: 'Lead sites',      group: 'Sales' },
+  { id: 'lead_sites',    label: 'Lead API tokens', group: 'Sales' },
   { id: 'prospects',     label: 'Prospector',      group: 'Sales' },
   { id: 'affiliates',    label: 'Affiliates',      group: 'Sales' },
   { id: 'commissions',   label: 'Commissions',     group: 'Sales' },

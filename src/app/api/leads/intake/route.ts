@@ -45,7 +45,7 @@ function cors(origin: string | null, allowed: boolean): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': allowed && origin ? origin : '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Site-Key, X-Site-Secret',
+    'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Site-Key, X-Site-Secret',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
@@ -74,8 +74,8 @@ export async function POST(req: Request) {
     return reply({ error: 'bad_request', message: 'Body must be JSON.' }, 400, origin, false);
   }
 
-  const siteKey = (req.headers.get('x-site-key') || String(body.site_key ?? '')).trim().slice(0, 100);
-  const { site, migrationMissing, error } = await findLeadSite(siteKey);
+  const token = bearerToken(req, body);
+  const { site, migrationMissing, error } = await findLeadSite(token);
 
   if (migrationMissing) {
     // Named so whoever is wiring up the first site knows exactly what is left
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
       {
         error: 'feature_unavailable',
         message:
-          'Lead intake is not set up yet. Run supabase/migrations/0023_lead_intake.sql in the Supabase SQL editor, then add this site under Lead sites in the dashboard.',
+          'Lead intake is not set up yet. Run supabase/migrations/0023_lead_intake.sql in the Supabase SQL editor, then create an API token under Lead sites in the dashboard.',
       },
       503,
       origin,
@@ -94,12 +94,18 @@ export async function POST(req: Request) {
   if (error) return reply({ error: 'server_error', message: error }, 500, origin, false);
 
   if (!site || !site.is_active) {
-    return reply({ error: 'unauthorized', message: 'Unknown or inactive site key.' }, 401, origin, false);
+    return reply(
+      { error: 'unauthorized', message: 'Missing, unknown or revoked API token.' },
+      401, origin, false
+    );
   }
 
+  // A token is normally good from anywhere, so a new site needs no setup. It
+  // only fails here when the owner has deliberately limited the token to
+  // certain domains, or blocked the one posting.
   if (!authorised(req, site, origin)) {
     return reply(
-      { error: 'unauthorized', message: 'This site key is not registered for this domain.' },
+      { error: 'unauthorized', message: 'This token is not allowed to post from this domain.' },
       401,
       origin,
       false
@@ -161,7 +167,22 @@ export async function POST(req: Request) {
 
 /* -------------------------------------------------------------------------- */
 
-/** A registered domain in the browser, or the shared secret server-to-server. */
+/**
+ * The API token, read the standard way first.
+ *
+ *   Authorization: Bearer <token>
+ *
+ * `X-Site-Key` and a `site_key` in the body are also accepted, because some
+ * form builders and page hosts will not let you set an Authorization header.
+ */
+function bearerToken(req: Request, body: Record<string, unknown>): string {
+  const header = req.headers.get('authorization') ?? '';
+  const bearer = /^Bearer\s+(.+)$/i.exec(header)?.[1]?.trim();
+  const supplied = bearer || req.headers.get('x-site-key')?.trim() || String(body.site_key ?? '').trim();
+  return supplied.slice(0, 120);
+}
+
+/** A permitted domain in the browser, or the shared secret server-to-server. */
 function authorised(req: Request, site: LeadSite, origin: string | null): boolean {
   const supplied = req.headers.get('x-site-secret') ?? '';
   if (site.post_secret && supplied && secretMatches(supplied, site.post_secret)) return true;
@@ -182,6 +203,15 @@ function secretMatches(supplied: string, expected: string): boolean {
 }
 
 type Stored = { id: string; created: boolean } | { failed: string };
+
+/** What the dedupe lookup returns: the id, plus the first-touch columns. */
+const RECENT_COLUMNS = 'id, lead_source, tracking_phone';
+
+interface RecentLead {
+  id: string | null;
+  lead_source?: string | null;
+  tracking_phone?: string | null;
+}
 
 /**
  * Write the lead, updating instead of duplicating when the same person came
@@ -205,12 +235,16 @@ async function store(lead: LeadIntakeInput): Promise<Stored> {
       full_name: lead.full_name || undefined,
       last_contacted_at: now,
     };
+    // lead_source and tracking_phone are first touch and are deliberately not
+    // overwritten: the site that originally produced this person is the one
+    // that earned them, and it is what the owner is measuring. A later visit
+    // from a different site goes on the timeline instead.
     const extra = {
-      lead_source: lead.lead_source,
       interest: lead.interest,
       goal: lead.goal,
-      tracking_phone: lead.tracking_phone || null,
       meta: lead.meta,
+      ...(existing.lead_source ? {} : { lead_source: lead.lead_source }),
+      ...(existing.tracking_phone ? {} : { tracking_phone: lead.tracking_phone || null }),
     };
 
     let result = await db.from('leads').update({ ...patch, ...extra }).eq('id', existing.id);
@@ -221,7 +255,10 @@ async function store(lead: LeadIntakeInput): Promise<Stored> {
 
     // The salesperson's own notes and status are left alone; the new enquiry
     // is appended to the timeline instead.
-    await logActivity(existing.id, `Submitted the form on ${lead.lead_source} again.\n${notes}`);
+    const intro = !existing.lead_source || existing.lead_source === lead.lead_source
+      ? `Submitted the form on ${lead.lead_source} again.`
+      : `Submitted the form again, this time on ${lead.lead_source}. First came from ${existing.lead_source}.`;
+    await logActivity(existing.id, `${intro}\n${notes}`);
     return { id: existing.id, created: false };
   }
 
@@ -257,33 +294,33 @@ async function store(lead: LeadIntakeInput): Promise<Stored> {
  * second. Two queries rather than one `or()`: a phone number containing
  * brackets would break PostgREST's filter syntax.
  */
-async function findRecent(lead: LeadIntakeInput): Promise<{ id: string | null } | { failed: string }> {
+async function findRecent(lead: LeadIntakeInput): Promise<RecentLead | { failed: string }> {
   const db = getSupabaseAdmin();
   const since = dedupeSince();
 
-  const byEmail = await db
-    .from('leads')
-    .select('id')
-    .ilike('email', lead.email)
-    .gte('created_at', since)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Asks for the first-touch columns, and falls back to the id alone on a
+  // database without 0023 - where there is nothing to preserve anyway.
+  const lookup = (column: 'email' | 'phone', select: string) => {
+    const query = db.from('leads').select(select);
+    return (column === 'email' ? query.ilike('email', lead.email) : query.eq('phone', lead.phone))
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+  };
+
+  let byEmail = await lookup('email', RECENT_COLUMNS);
+  if (byEmail.error && missingIntakeColumns(byEmail.error)) byEmail = await lookup('email', 'id');
 
   if (byEmail.error) return { failed: byEmail.error.message };
-  if (byEmail.data?.id) return { id: byEmail.data.id };
+  const emailHit = byEmail.data as unknown as RecentLead | null;
+  if (emailHit?.id) return emailHit;
 
-  const byPhone = await db
-    .from('leads')
-    .select('id')
-    .eq('phone', lead.phone)
-    .gte('created_at', since)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  let byPhone = await lookup('phone', RECENT_COLUMNS);
+  if (byPhone.error && missingIntakeColumns(byPhone.error)) byPhone = await lookup('phone', 'id');
 
   if (byPhone.error) return { failed: byPhone.error.message };
-  return { id: byPhone.data?.id ?? null };
+  return (byPhone.data as unknown as RecentLead | null) ?? { id: null };
 }
 
 /** Best effort: a failed timeline entry must not fail a captured lead. */

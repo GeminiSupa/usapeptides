@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { loadTs } = require('./loadTs.cjs');
 
 const {
-  parseIntake, buildNotes, matchChoice, originAllowed, hostOf,
+  parseIntake, buildNotes, matchChoice, originAllowed, domainRules, hostOf,
   INTEREST_OPTIONS, GOAL_OPTIONS,
 } = loadTs('src/lib/leadIntake.ts');
 const { siteHost } = loadTs('src/lib/partnerLead.ts');
@@ -121,10 +121,28 @@ describe('what the salesperson reads', () => {
   });
 });
 
-describe('the domain allow-list', () => {
+describe('a key with no domain list', () => {
+  it('accepts any site, so a new domain needs no setup', () => {
+    assert.equal(originAllowed('', 'https://a-domain-bought-this-morning.com'), true);
+    assert.equal(originAllowed(' \n ', 'https://peptidestulsa.com'), true);
+  });
+
+  it('still refuses a request with no origin at all', () => {
+    assert.equal(originAllowed('', null), false);
+    assert.equal(originAllowed('', 'not a url'), false);
+  });
+
+  it('refuses a site that has been blocked by name', () => {
+    assert.equal(originAllowed('!spammy.example.com', 'https://spammy.example.com'), false);
+    assert.equal(originAllowed('!spammy.example.com', 'https://go.spammy.example.com'), false);
+    assert.equal(originAllowed('!spammy.example.com', 'https://peptidestulsa.com'), true);
+  });
+});
+
+describe('a key limited to a list', () => {
   const domains = 'peptidesoklahomacity.com, peptidestulsa.com';
 
-  it('allows the registered domain and its subdomains', () => {
+  it('allows the listed domain and its subdomains', () => {
     assert.equal(originAllowed(domains, 'https://peptidesoklahomacity.com'), true);
     assert.equal(originAllowed(domains, 'https://www.peptidesoklahomacity.com'), true);
     assert.equal(originAllowed(domains, 'https://go.peptidesoklahomacity.com'), true);
@@ -136,9 +154,20 @@ describe('the domain allow-list', () => {
     assert.equal(originAllowed(domains, 'https://peptidesoklahomacity.com.evil.net'), false);
   });
 
-  it('refuses a missing origin and an empty list', () => {
+  it('refuses a domain that is not on the list', () => {
+    assert.equal(originAllowed(domains, 'https://peptidesomaha.com'), false);
     assert.equal(originAllowed(domains, null), false);
-    assert.equal(originAllowed('', 'https://peptidesoklahomacity.com'), false);
+  });
+
+  it('lets a block override its own list', () => {
+    assert.equal(originAllowed(`${domains}, !peptidestulsa.com`, 'https://peptidestulsa.com'), false);
+    assert.equal(originAllowed(`${domains}, !peptidestulsa.com`, 'https://peptidesoklahomacity.com'), true);
+  });
+
+  it('reads a list written one per line, with or without https and www', () => {
+    const rules = domainRules('https://www.peptidesoklahomacity.com/contact\n!Bad.Example.com\n peptidestulsa.com ');
+    assert.deepEqual(rules.allow, ['peptidesoklahomacity.com', 'peptidestulsa.com']);
+    assert.deepEqual(rules.block, ['bad.example.com']);
   });
 
   it('reads the host out of a full URL', () => {

@@ -59,9 +59,28 @@ this is the merged result.
       with one key, each lead recorded its own domain and its own tracking
       number, a deliberately wrong hidden value was ignored, an unlisted domain
       was refused, and the per-IP limit held. Test rows deleted.
-- [ ] Still to do: the owner sends the list of domains and their tracking
-      numbers; then one key is created and handed over with
-      docs/LEAD-INTAKE-API.md (or the PDF).
+- [x] Auth is a bearer API token, at the owner's instruction:
+      `Authorization: Bearer <token>`, with `X-Site-Key` kept as a fallback for
+      hosts that cannot set that header. One token covers every site, created
+      under Lead API tokens, revoked by switching it off. No domain
+      registration: an unlisted domain posts fine, so buying a domain costs
+      nothing in the dashboard. A token can still be tied to a list of domains,
+      or have one blocked with `!domain`, when that is wanted.
+      Told the owner plainly that a token in a static page is as readable as
+      the key was, and that it is only a real secret when a site posts
+      server-side; the honeypot, the fill-time check and the rate limits are
+      what bound abuse either way.
+- [x] First-touch attribution: a returning person keeps the domain and tracking
+      number from their first submission. A later submission from a different
+      site is noted on the timeline instead of overwriting the source. Found
+      while testing, because overwriting would have misreported which site
+      earned the lead.
+- [x] Verified 2026-10-01: 29 unit tests, and 16 end-to-end checks covering
+      bearer auth, the fallback header, a missing and a wrong token, a
+      brand-new unregistered domain, first touch, an optional domain
+      restriction, a blocked domain and revocation. Test rows deleted.
+- [ ] Still to do: create the real token and hand it over with
+      docs/LEAD-INTAKE-API.md (or the PDF). Nothing else is needed per site.
 - [ ] Chatwoot: leads go to the CRM, not into a chat conversation.
       Contact-only sync (so a later chat shows the form answers) is designed,
       not built. Waiting on the owner.
