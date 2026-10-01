@@ -6,7 +6,7 @@ import { Bell, CheckCheck, CircleAlert, Inbox, PackageCheck, RefreshCw, Shopping
 type Fetcher = (path: string, init?: RequestInit) => Promise<Response>;
 type Notification = { id: string; kind: string; title: string; body: string | null; link: string | null; is_read: boolean; created_at: string };
 
-const ICONS: Record<string, typeof Bell> = { order: ShoppingBag, inquiry: Inbox, review: Star, stock: CircleAlert, fulfillment: PackageCheck, system: Bell };
+const ICONS: Record<string, typeof Bell> = { order: ShoppingBag, inquiry: Inbox, lead: Inbox, review: Star, stock: CircleAlert, fulfillment: PackageCheck, system: Bell };
 
 /**
  * The notification list. Shown inside the bell's drop-down (`compact`), which

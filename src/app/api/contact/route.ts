@@ -1,7 +1,9 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { featureUnavailable } from '@/lib/env';
+import { BUSINESS, featureUnavailable } from '@/lib/env';
 import { created, badRequest, serverError, readJson } from '@/lib/api';
 import { cleanMultiline, cleanText, isEmail, isPersonName, isPhone, normaliseEmail } from '@/lib/validate';
+import { siteHost } from '@/lib/leadIntake';
+import { recordInboundLead } from '@/lib/inboundLead';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +38,23 @@ export async function POST(req: Request) {
     });
 
     if (error) return serverError(error.message);
+
+    // The enquiry inbox stays. The same submission also becomes a CRM lead,
+    // so a form on this site is followed up in the same list as the other sites.
+    const site = siteHost(BUSINESS.domain) ?? 'website';
+    try {
+      await recordInboundLead({
+        name,
+        email,
+        phone: phone || null,
+        institution: cleanText(body.institution, 200) || null,
+        message: [cleanText(body.subject, 300), message].filter(Boolean).join('\n\n') || null,
+        site,
+      });
+    } catch (leadError) {
+      console.warn('[contact] saved the enquiry but not the lead:', leadError instanceof Error ? leadError.message : leadError);
+    }
+
     return created({ received: true });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : undefined);

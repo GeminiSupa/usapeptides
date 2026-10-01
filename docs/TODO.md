@@ -4,6 +4,20 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## Lead intake from other peptide sites — 2026-10-01
+
+- [x] `POST /api/leads/intake` writes a form from another domain into Leads.
+      The caller sends `LEAD_INTAKE_SECRET`. Source on the lead is that domain.
+      A repeat person keeps their status and salesperson notes; the new message
+      is logged as activity. A new lead raises a dashboard alert and starts the
+      "new lead" email sequence when they left an email.
+- [x] This site's contact form still saves an enquiry, and now also creates
+      the same kind of lead.
+- [!] Owner: set `LEAD_INTAKE_SECRET` in Vercel (type Secret, at least 16
+      characters) and redeploy before handing the address to the other sites.
+      The secret stays on their server, not in the browser. See
+      docs/LEAD-INTAKE.md.
+
 ## Brand green favicon and link preview — 2026-10-01
 
 - [x] The browser icon and app icons used a near-black green (`#081C14`), which
@@ -57,9 +71,11 @@ New dashboard section under Marketing: **Email automation**. Two halves.
       Config, redeploy). Until then email sends from a shared Resend address
       and will keep landing in spam. The Deliverability screen lists exactly
       what is missing.
-- [ ] The `lead_created` trigger currently fires from the Chatwoot webhook
-      only. The lead-intake endpoint lives on the `hero-video` branch; one
-      line hooks it up when that branch merges.
+- [x] The `lead_created` trigger fires when a form creates a lead: live chat,
+      this site's contact form, and `POST /api/leads/intake` from the other
+      peptide sites. Written up in docs/LEAD-INTAKE.md. The address stays
+      closed until `LEAD_INTAKE_SECRET` is set (16+ characters) and the site
+      is redeployed. That branch never actually contained the endpoint.
 - [x] Written up in docs/EMAIL-AUTOMATION.md
 
 ## Research pages from the writer's Google Doc — 2026-09-30

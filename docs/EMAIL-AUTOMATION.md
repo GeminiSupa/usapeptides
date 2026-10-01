@@ -69,8 +69,8 @@ A sequence is an ordered list of four kinds of step:
 
 - **No trigger** — you add people by hand, by pasting addresses or picking a
   whole list. Always available.
-- **New lead** — fires from the chat-to-lead webhook. The lead-intake endpoint
-  on the `hero-video` branch will fire it too once that branch merges.
+- **New lead** — fires when a form creates a lead: live chat, the contact
+  form on this site, or another site posting to `/api/leads/intake`.
 - **Newsletter signup**
 - **New customer account**
 - **Order placed** — optionally only above a minimum total.

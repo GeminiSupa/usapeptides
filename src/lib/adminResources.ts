@@ -338,9 +338,9 @@ export const RESOURCES: Record<string, ResourceConfig> = {
   leads: {
     table: 'leads',
     title: 'Leads',
-    blurb: 'People who showed interest but have not ordered. Add them here or capture from forms.',
+    blurb: 'People who showed interest but have not ordered. Forms on this site and on the other peptide sites land here. Source is the domain the form was on.',
     select:
-      'id, email, phone, full_name, institution, source, status, assigned_to, score, last_contacted_at, created_at',
+      'id, email, phone, full_name, institution, source, status, assigned_to, score, notes, last_contacted_at, created_at',
     orderBy: 'created_at',
     searchable: ['email', 'full_name', 'institution', 'source'],
     editable: ['status', 'assigned_to', 'score', 'notes', 'last_contacted_at', 'phone', 'full_name'],
@@ -351,7 +351,7 @@ export const RESOURCES: Record<string, ResourceConfig> = {
       { name: 'email', label: 'Email', type: 'email' },
       { name: 'phone', label: 'Phone', type: 'text' },
       { name: 'institution', label: 'Institution', type: 'text' },
-      { name: 'source', label: 'Source', type: 'text', help: 'where they came from' },
+      { name: 'source', label: 'Source', type: 'text', help: 'the domain the form was sent from' },
       { name: 'status', label: 'Status', type: 'select', options: STATUS.lead },
       { name: 'assigned_to', label: 'Assigned to', type: 'text' },
       { name: 'score', label: 'Score', type: 'number' },

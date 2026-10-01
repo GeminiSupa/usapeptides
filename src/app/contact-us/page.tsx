@@ -19,7 +19,7 @@ export default function ContactUsPage() {
     message: ''
   });
 
-  // Saved as an enquiry in the dashboard (Enquiries). It used to only show the
+  // Saved as an enquiry and as a CRM lead. It used to only show the
   // thank-you message and send nothing.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
