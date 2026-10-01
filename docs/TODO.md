@@ -40,8 +40,16 @@ this is the merged result.
       at all.
 - [x] Docs: one file, `docs/LEAD-INTAKE-API.md`, plus a PDF of it for sending
       to whoever builds the sites.
-- [ ] Still to do: add the first city site under Lead sites, then post a real
-      lead end to end through the deployed site.
+- [x] Tested against the live site on 2026-10-01, end to end: a submission of
+      the documented payload reached the CRM with both dropdown answers, the
+      campaign details and the plain-English notes; the bell rang; a repeat
+      submission updated the same lead instead of duplicating it; 400 named the
+      fields; an unknown key, a key used from another domain and a switched-off
+      site all gave 401; the honeypot submission looked accepted and stored
+      nothing; the rate limit gave 429. Every test row was deleted afterwards.
+      27 live checks, plus 21 unit tests.
+- [ ] Still to do: create the real key for the first city site and give it,
+      with docs/LEAD-INTAKE-API.md (or the PDF), to whoever builds the site.
 - [ ] Chatwoot: leads go to the CRM, not into a chat conversation.
       Contact-only sync (so a later chat shows the form answers) is designed,
       not built. Waiting on the owner.

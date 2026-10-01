@@ -4,16 +4,15 @@ Submits a contact-form lead from a lead-gen site into the USA Peptide Depot CRM.
 Plain JSON over HTTPS. Posted directly from the visitor's browser; no backend
 required on the client site.
 
-**Status:** database ready; the endpoint is pending deployment, so requests will
-fail until it goes live. Build against this document, and request your site key
-and the go-live date before testing.
+**Status:** live. Ask us for a site key for each domain before you test; a
+request without a registered key is refused.
 
 ---
 
 ## Endpoint
 
 ```
-POST https://usapeptides-six.vercel.app/api/leads/intake
+POST https://www.usapeptidedepot.com/api/leads/intake
 ```
 
 | | |
@@ -23,6 +22,10 @@ POST https://usapeptides-six.vercel.app/api/leads/intake
 | Auth | `X-Site-Key: <site key>` header, required |
 | CORS | Allowed for the domains registered against the site key |
 | Rate limit | 5 requests / IP / 10 min · 20 requests / site key / 10 min |
+
+Use the `www.` host exactly as written. The bare `usapeptidedepot.com` answers
+with a 308 redirect, and browsers do not follow redirects on a CORS preflight,
+so a form posting to it will fail.
 
 ---
 
@@ -115,7 +118,7 @@ Labels are also accepted in place of values.
 ## Example request
 
 ```bash
-curl -X POST https://usapeptides-six.vercel.app/api/leads/intake \
+curl -X POST https://www.usapeptidedepot.com/api/leads/intake \
   -H 'Content-Type: application/json' \
   -H 'X-Site-Key: oklahoma-city-k4m2rq8x7d' \
   -d '{
@@ -280,7 +283,7 @@ contractual; markup and styling are free.
 
 <script>
 (function () {
-  var ENDPOINT = 'https://usapeptides-six.vercel.app/api/leads/intake';
+  var ENDPOINT = 'https://www.usapeptidedepot.com/api/leads/intake';
   var SITE_KEY = 'SITE_KEY_HERE';                   // per site
   var CALL_US  = 'please call us on 405-555-0100';  // per site
 
@@ -336,8 +339,7 @@ contractual; markup and styling are free.
 ## Integration checklist
 
 1. Request a site key and tracking phone number for each domain.
-2. Confirm the endpoint host before launch (`usapeptides-six.vercel.app` or
-   `usapeptidedepot.com`).
+2. Post to the `www.` host exactly as documented.
 3. Request a separate test key for staging; test submissions against a
    production key are written to the live CRM.
 4. Set `lead_source` to the submitting domain and `tracking_phone` to the number
