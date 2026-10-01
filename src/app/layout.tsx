@@ -27,7 +27,10 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: c['seo.keywords'].split(',').map((k) => k.trim()).filter(Boolean),
     applicationName: c['business.name'],
     appleWebApp: { capable: true, title: c['business.name'], statusBarStyle: 'default' },
-    icons: { apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180' }] },
+    icons: {
+      icon: [{ url: '/favicon.png?v=2', type: 'image/png', sizes: '32x32' }],
+      apple: [{ url: '/icons/apple-touch-icon.png?v=2', sizes: '180x180' }],
+    },
     alternates: { canonical: '/' },
     openGraph: {
       type: 'website',

@@ -11,6 +11,6 @@ for (const [name, size] of [['app-192', 192], ['app-512', 512], ['apple-touch-ic
 }
 // The entire original mark fits inside the maskable icon's central safe zone.
 const mark = await sharp(source).resize(360, 360).toBuffer();
-await sharp({ create: { width: 512, height: 512, channels: 4, background: '#1F4233' } })
+await sharp({ create: { width: 512, height: 512, channels: 4, background: '#307E5C' } })
   .composite([{ input: mark, gravity: 'centre' }]).png()
   .toFile(fileURLToPath(new URL('../public/icons/app-maskable-512.png', import.meta.url)));
