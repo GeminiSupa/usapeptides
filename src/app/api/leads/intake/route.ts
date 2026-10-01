@@ -9,6 +9,7 @@ import {
   missingIntakeColumns,
   originAllowed,
   parseIntake,
+  hostOf,
   buildNotes,
   type LeadIntakeInput,
   type LeadSite,
@@ -105,8 +106,13 @@ export async function POST(req: Request) {
     );
   }
 
+  // The domain the form was actually on. One key covers every site in the
+  // network, so this - not the key - is what identifies a lead's origin and
+  // what the per-domain rate limit counts.
+  const sendingDomain = hostOf(origin) || hostOf(req.headers.get('referer'));
+
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (await intakeRateLimited(ip, site.site_key)) {
+  if (await intakeRateLimited(ip, sendingDomain || site.site_key)) {
     return reply(
       { error: 'rate_limited', message: 'Too many submissions. Please wait a few minutes and try again.' },
       429,
@@ -114,7 +120,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const parsed = parseIntake(body, site.label || site.site_key);
+  const parsed = parseIntake(body, site.label || site.site_key, sendingDomain);
 
   // A bot gets the same reply a person gets, so it learns nothing from ours.
   if (parsed.silentlyDrop) return reply({ data: { received: true } }, 201, origin);

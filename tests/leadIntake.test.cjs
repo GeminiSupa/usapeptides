@@ -158,3 +158,22 @@ describe('site host, used by this site own contact form', () => {
     assert.equal(siteHost('localhost'), null);
   });
 });
+
+describe('which site a lead came from', () => {
+  it('uses the domain the form was actually on, not the hidden field', () => {
+    const { lead } = parseIntake(
+      { ...submission(), lead_source: 'wrong-site.com' }, 'City sites', 'peptidestulsa.com'
+    );
+    assert.equal(lead.lead_source, 'peptidestulsa.com');
+  });
+
+  it('falls back to the hidden field for a post with no Origin', () => {
+    const { lead } = parseIntake({ ...submission() }, 'City sites', '');
+    assert.equal(lead.lead_source, 'peptidesoklahomacity.com');
+  });
+
+  it('falls back to the record label when neither is given', () => {
+    const { lead } = parseIntake({ ...submission(), lead_source: '' }, 'City sites', '');
+    assert.equal(lead.lead_source, 'City sites');
+  });
+});

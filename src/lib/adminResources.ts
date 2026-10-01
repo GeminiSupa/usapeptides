@@ -366,10 +366,13 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     // screen keeps working on an older database.
     pendingSelect: 'lead_source, interest, goal, tracking_phone',
     orderBy: 'created_at',
-    searchable: ['email', 'full_name', 'institution', 'source'],
+    // lead_source is the domain the form was on. Searchable so one site's
+    // leads can be pulled out of a hundred sites' worth by typing its name.
+    searchable: ['email', 'full_name', 'institution', 'source', 'lead_source'],
     editable: ['status', 'assigned_to', 'score', 'notes', 'last_contacted_at', 'phone', 'full_name'],
     deletable: true,
     statusColumn: 'status',
+    columns: ['full_name', 'email', 'phone', 'lead_source', 'interest', 'status', 'created_at'],
     createFields: [
       { name: 'full_name', label: 'Name', type: 'text' },
       { name: 'email', label: 'Email', type: 'email' },
@@ -387,17 +390,19 @@ export const RESOURCES: Record<string, ResourceConfig> = {
     table: 'lead_sites',
     title: 'Lead sites',
     blurb:
-      'The local lead-gen domains that may post to the contact-form endpoint. One row per site: its key, the domains allowed to use it, and the number printed on it.',
+      'Which domains may post leads here. One record can cover a whole network: put every domain in the Domains box, one per line, and they all share its key. Each lead still records the exact domain it came from.',
     select: 'id, site_key, label, domains, tracking_phone, is_active, notes, created_at',
     orderBy: 'created_at',
     searchable: ['label', 'site_key', 'domains', 'tracking_phone'],
     editable: ['label', 'domains', 'tracking_phone', 'is_active', 'notes', 'post_secret'],
     deletable: true,
     createFields: [
-      { name: 'label', label: 'Site name', type: 'text', required: true, help: 'e.g. Oklahoma City' },
-      { name: 'domains', label: 'Domains', type: 'text', required: true,
-        help: 'The domain the form is on, e.g. peptidesoklahomacity.com. Separate several with commas. Subdomains are covered.' },
-      { name: 'tracking_phone', label: 'Phone on that site', type: 'text' },
+      { name: 'label', label: 'Name', type: 'text', required: true,
+        help: 'What this group of sites is called, e.g. City sites. Only used in the dashboard.' },
+      { name: 'domains', label: 'Domains', type: 'textarea', required: true,
+        help: 'One domain per line (commas work too), e.g. peptidesoklahomacity.com. Paste all of them; subdomains are covered. Any domain not listed here is refused.' },
+      { name: 'tracking_phone', label: 'Fallback phone number', type: 'text',
+        help: 'Used only when a site does not send its own. Each site posts the number printed on it.' },
       { name: 'site_key', label: 'Site key', type: 'text',
         help: 'Leave blank and one is generated. This goes in the form on that site.' },
       { name: 'is_active', label: 'Accepting leads', type: 'boolean' },

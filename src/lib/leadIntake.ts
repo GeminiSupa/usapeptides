@@ -92,8 +92,21 @@ export interface ParsedIntake {
   silentlyDrop?: boolean;
 }
 
-/** Validate a posted body. Field keys match the payload names the sites send. */
-export function parseIntake(body: Record<string, unknown>, fallbackSource: string): ParsedIntake {
+/**
+ * Validate a posted body. Field keys match the payload names the sites send.
+ *
+ * `trustedSource` is the domain the browser actually posted from, read from the
+ * Origin header. It wins over the hidden `lead_source` field: with a hundred
+ * sites sharing one key and one snippet, nobody is going to keep a hidden
+ * field correct on every one of them, and a self-reported value can be edited
+ * by whoever is posting. `fallbackSource` is the site record's label, used
+ * only for a server-to-server post, which carries no Origin.
+ */
+export function parseIntake(
+  body: Record<string, unknown>,
+  fallbackSource: string,
+  trustedSource = ''
+): ParsedIntake {
   // Honeypot: a real person never sees this input, so anything in it is a bot.
   if (cleanText(body.company, 200)) return { silentlyDrop: true };
 
@@ -140,9 +153,10 @@ export function parseIntake(body: Record<string, unknown>, fallbackSource: strin
       goal: goal.slug,
       goalRaw: goal.raw,
       message,
-      // A site that forgets the hidden field still gets attributed, by the key
-      // it posted with.
-      lead_source: cleanText(body.lead_source, 120) || fallbackSource,
+      // The domain it really came from, then what the form claimed, then the
+      // site record's label. A site that forgets the hidden field is still
+      // attributed correctly.
+      lead_source: trustedSource || cleanText(body.lead_source, 120) || fallbackSource,
       tracking_phone: cleanText(body.tracking_phone, 50),
       meta,
     },

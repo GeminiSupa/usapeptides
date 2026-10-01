@@ -48,8 +48,20 @@ this is the merged result.
       site all gave 401; the honeypot submission looked accepted and stored
       nothing; the rate limit gave 429. Every test row was deleted afterwards.
       27 live checks, plus 21 unit tests.
-- [ ] Still to do: create the real key for the first city site and give it,
-      with docs/LEAD-INTAKE-API.md (or the PDF), to whoever builds the site.
+- [x] Built for a network of about 100 domains, not one site at a time: one
+      record in Lead sites holds every domain (one per line) and they share its
+      key, so the same snippet goes on every site unchanged. The domain a lead
+      came from is taken from the request's Origin, not from the hidden field,
+      so attribution cannot be forgotten on site 57 or faked by whoever posts.
+      The rate limit counts per sending domain rather than per key, so one busy
+      site cannot spend the whole network's budget. Leads shows and searches
+      the sending domain. Verified with a 100-domain record: three sites posted
+      with one key, each lead recorded its own domain and its own tracking
+      number, a deliberately wrong hidden value was ignored, an unlisted domain
+      was refused, and the per-IP limit held. Test rows deleted.
+- [ ] Still to do: the owner sends the list of domains and their tracking
+      numbers; then one key is created and handed over with
+      docs/LEAD-INTAKE-API.md (or the PDF).
 - [ ] Chatwoot: leads go to the CRM, not into a chat conversation.
       Contact-only sync (so a later chat shows the form answers) is designed,
       not built. Waiting on the owner.

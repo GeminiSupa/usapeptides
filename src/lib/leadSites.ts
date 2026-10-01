@@ -50,14 +50,16 @@ function memoryLimited(key: string, limit: number, windowMs: number): boolean {
 }
 
 /**
- * Five submissions per IP and twenty per site every ten minutes. Uses the
- * atomic database function added in 0021 — the same one the customer login
- * uses — so the limit holds across Vercel instances.
+ * Five submissions per IP and twenty per sending domain every ten minutes.
+ * Uses the atomic database function added in 0021, the same one the customer
+ * login uses, so the limit holds across Vercel instances.
  */
-export async function intakeRateLimited(ip: string, siteKey: string): Promise<boolean> {
+export async function intakeRateLimited(ip: string, domain: string): Promise<boolean> {
   const checks = [
     { scope: 'lead_intake:ip', value: ip || 'unknown', limit: 5 },
-    { scope: 'lead_intake:site', value: siteKey || 'unknown', limit: 20 },
+    // Per domain, not per key: one key covers the whole network of sites, so a
+    // per-key limit would be a shared budget that the busiest site spends.
+    { scope: 'lead_intake:domain', value: domain || 'unknown', limit: 20 },
   ];
 
   for (const check of checks) {

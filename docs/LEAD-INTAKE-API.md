@@ -21,7 +21,7 @@ POST https://www.usapeptidedepot.com/api/leads/intake
 | Content-Type | `application/json` |
 | Auth | `X-Site-Key: <site key>` header, required |
 | CORS | Allowed for the domains registered against the site key |
-| Rate limit | 5 requests / IP / 10 min · 20 requests / site key / 10 min |
+| Rate limit | 5 requests / IP / 10 min · 20 requests / sending domain / 10 min |
 
 Use the `www.` host exactly as written. The bare `usapeptidedepot.com` answers
 with a 308 redirect, and browsers do not follow redirects on a CORS preflight,
@@ -33,12 +33,17 @@ so a form posting to it will fail.
 
 | Header | Required | Value |
 |---|---|---|
-| `X-Site-Key` | yes | The key issued for that domain |
+| `X-Site-Key` | yes | The key issued for your network of sites |
 | `X-Site-Secret` | no | Server-to-server only. Skips the domain check |
 
-The site key is public and may sit in page source. It is valid only from the
-domains registered against it, and grants nothing except lead submission. One
-key per domain.
+One key covers every domain registered against it, so the same snippet goes on
+every site unchanged. The key is public and may sit in page source: it is valid
+only from the registered domains and grants nothing except lead submission.
+Send us the list of domains and they are registered in one go.
+
+A request from a domain that is not on the list is refused, and a lead still
+records the exact domain it came from, so one key does not blur your
+reporting.
 
 ---
 
@@ -52,7 +57,7 @@ key per domain.
 | `interest` | enum | yes | n/a | See [Enums](#enums) |
 | `goal` | enum | yes | n/a | See [Enums](#enums) |
 | `message` | string | no | 5000 | Truncated, not rejected, if longer |
-| `lead_source` | string | yes | 120 | The submitting domain, e.g. `peptidesoklahomacity.com` |
+| `lead_source` | string | no | 120 | The submitting domain. Normally omit it: the server records the domain the request actually came from. Only used for a server-to-server post, which has no Origin |
 | `tracking_phone` | string | no | 50 | The phone number displayed on that site |
 | `page_url` | string | no | 500 | `location.href` |
 | `referrer` | string | no | 500 | `document.referrer` |
@@ -215,9 +220,13 @@ Server-side configuration incomplete. Not retryable; report it.
   within 30 days updates that lead and appends the new submission to its
   timeline rather than creating a second record. The response is `201` either
   way; `id` is the existing lead's id.
+- **Source tracking.** Every lead records the domain it was submitted from,
+  taken from the request's `Origin`, so each of a hundred sites is reported
+  separately without a per-site key or a per-site edit. A `lead_source` in the
+  body is only used when there is no `Origin` (a server-to-server post).
 - **Storage.** The lead is written to the CRM with both enum answers, the
-  message, `lead_source`, `tracking_phone`, page URL, referrer, UTM values and
-  user agent.
+  message, the sending domain, `tracking_phone`, page URL, referrer, UTM values
+  and user agent.
 - **Notification.** Sent on receipt.
 - **Idempotency.** No idempotency key. A duplicate submission within the dedupe
   window is absorbed as above.
@@ -226,7 +235,9 @@ Server-side configuration incomplete. Not retryable; report it.
 
 ## Reference implementation
 
-Replace the three marked values per site. Only the `name` attributes are
+The same code goes on every site. Per site, only the tracking phone number and
+the call-us fallback text change; the key and the endpoint stay identical, and
+`lead_source` can be left out entirely. Only the `name` attributes are
 contractual; markup and styling are free.
 
 ```html
@@ -271,7 +282,9 @@ contractual; markup and styling are free.
   <label>Questions or comments
     <textarea name="message" rows="4"></textarea></label>
 
+  <!-- Optional. The server records the real domain either way. -->
   <input type="hidden" name="lead_source" value="peptidesoklahomacity.com">
+  <!-- The number printed on this site, so you can see which number pulls. -->
   <input type="hidden" name="tracking_phone" value="405-555-0100">
 
   <input name="company" tabindex="-1" autocomplete="off" aria-hidden="true"
@@ -338,12 +351,13 @@ contractual; markup and styling are free.
 
 ## Integration checklist
 
-1. Request a site key and tracking phone number for each domain.
+1. Send us the full list of domains and get one key back. No key is tied to a
+   single site, so one snippet serves all of them.
 2. Post to the `www.` host exactly as documented.
 3. Request a separate test key for staging; test submissions against a
    production key are written to the live CRM.
-4. Set `lead_source` to the submitting domain and `tracking_phone` to the number
-   displayed on it.
+4. Set `tracking_phone` to the number displayed on that site. Leave
+   `lead_source` out, or set it to the site's domain.
 5. Verify a `201`, a `400` with field errors, and the fallback path.
 6. Render the tracking number as text, not only inside an image.
 
