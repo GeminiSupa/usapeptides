@@ -251,7 +251,7 @@ export const CONTENT_SECTIONS: ContentSection[] = [
       { key: 'seo.titleSuffix', label: 'Added after every other page title', type: 'text', help: 'For example " | Your Brand".' },
       { key: 'seo.description', label: 'Home page description', type: 'textarea', max: 160 },
       { key: 'seo.keywords', label: 'Keywords', type: 'text', help: 'Comma separated.' },
-      { key: 'seo.ogImage', label: 'Share image', type: 'image', help: 'Shown when a link is shared on social media. 1200×630 works best.' },
+      { key: 'seo.ogImage', label: 'Share image', type: 'image', help: 'Shown when a link is shared. Leave blank to use the green brand image. 1200×630 works best.' },
       { key: 'seo.twitterHandle', label: 'X (Twitter) handle', type: 'text', help: 'For example @yourbrand.' },
       { key: 'seo.shop.title', label: 'Shop — title', type: 'text', max: 60 },
       { key: 'seo.shop.description', label: 'Shop — description', type: 'textarea', max: 160 },

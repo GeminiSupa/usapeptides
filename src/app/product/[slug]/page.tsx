@@ -5,7 +5,7 @@ import { mapDbProduct, type DbProduct } from '@/lib/catalogue';
 import type { Product } from '@/types';
 import { products } from '@/data/products';
 import { publicRest } from '@/lib/siteContentServer';
-import { jsonLd, siteUrl } from '@/lib/seo';
+import { defaultShareImage, jsonLd, siteUrl } from '@/lib/seo';
 import { BUSINESS } from '@/lib/env';
 import ProductDetailClient from './ProductDetailClient';
 
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: p.name,
     description,
     alternates: { canonical: `/product/${p.slug}` },
-    openGraph: { title: p.name, description, url: `/product/${p.slug}`, images: p.image ? [{ url: absolute(p.image)! }] : undefined },
+    openGraph: { title: p.name, description, url: `/product/${p.slug}`, images: [{ url: (p.image && absolute(p.image)) || defaultShareImage }] },
   };
 }
 

@@ -4,6 +4,18 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## Brand green favicon and link preview — 2026-10-01
+
+- [x] The browser icon and app icons used a near-black green (`#081C14`), which
+      reads as black in a tab and in a WhatsApp link preview. They now use
+      forest `#1F4233` with the cream mark. A share image at `/og.png` is the
+      fallback when Dashboard > SEO has no custom picture, so a shared link
+      shows the green brand image.
+- [x] The header and footer logo stays cream. It sits on the forest header and
+      the navy footer; a green logo there would disappear.
+- [!] Not on the live site until this is deployed. WhatsApp keeps the old
+      preview until the link is shared again after that.
+
 ## Email automation and deliverability - 2026-09-24
 
 New dashboard section under Marketing: **Email automation**. Two halves.

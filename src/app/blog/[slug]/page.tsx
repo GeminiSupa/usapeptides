@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { articles as fallbackArticles } from '@/data/articles';
 import { ARTICLES_TAG, getSiteContent, publicRest } from '@/lib/siteContentServer';
-import { faqSchema, jsonLd, siteUrl } from '@/lib/seo';
+import { defaultShareImage, faqSchema, jsonLd, siteUrl } from '@/lib/seo';
 import ArticleDetailClient, { type ArticleExtras } from './ArticleDetailClient';
 
 export function generateStaticParams() {
@@ -46,9 +46,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: db?.published_at ?? undefined,
       modifiedTime: db?.updated_at ?? undefined,
       authors: db?.author ? [db.author] : undefined,
-      images: image ? [{ url: image, alt: db?.image_alt ?? title }] : undefined,
+      images: [{ url: image || defaultShareImage, alt: db?.image_alt ?? title }],
     },
-    twitter: { card: image ? 'summary_large_image' : 'summary', title, description, images: image ? [image] : undefined },
+    twitter: { card: 'summary_large_image', title, description, images: [image || defaultShareImage] },
   };
 }
 

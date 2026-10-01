@@ -11,6 +11,9 @@ import { getSiteContent } from './siteContentServer';
 
 export const siteUrl = () => BUSINESS.domain.replace(/\/+$/, '');
 
+/** Used when Dashboard > SEO has no custom share image. Forest field, cream mark. */
+export const defaultShareImage = '/og.png';
+
 const keywords = (value: string) => value.split(',').map((k) => k.trim()).filter(Boolean);
 
 /** Metadata for one of the fixed pages, e.g. pageMetadata('shop', '/shop'). */
@@ -26,12 +29,17 @@ export async function pageMetadata(page: string, path: string, extra: Partial<Me
       : { default: c['seo.siteTitle'], template: `%s${c['seo.titleSuffix']}` },
     description,
     alternates: { canonical: path },
-    openGraph: { title: title ? `${title}${c['seo.titleSuffix']}` : c['seo.siteTitle'], description, url: path },
-    twitter: {
-      card: c['seo.ogImage'] ? 'summary_large_image' : 'summary',
+    openGraph: {
       title: title ? `${title}${c['seo.titleSuffix']}` : c['seo.siteTitle'],
       description,
-      images: c['seo.ogImage'] ? [c['seo.ogImage']] : undefined,
+      url: path,
+      images: [{ url: c['seo.ogImage'] || defaultShareImage }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title ? `${title}${c['seo.titleSuffix']}` : c['seo.siteTitle'],
+      description,
+      images: [c['seo.ogImage'] || defaultShareImage],
     },
     ...extra,
   };

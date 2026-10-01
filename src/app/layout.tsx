@@ -4,7 +4,7 @@ import './globals.css';
 import StorefrontShell from '@/components/StorefrontShell';
 import { SiteContentProvider } from '@/components/SiteContentProvider';
 import { getSiteContent } from '@/lib/siteContentServer';
-import { jsonLd, organizationSchema, siteUrl } from '@/lib/seo';
+import { defaultShareImage, jsonLd, organizationSchema, siteUrl } from '@/lib/seo';
 
 /**
  * Root layout. Runs on the server so the title, description, share image and
@@ -15,7 +15,7 @@ import { jsonLd, organizationSchema, siteUrl } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
   const c = await getSiteContent();
-  const image = c['seo.ogImage'] || undefined;
+  const image = c['seo.ogImage'] || defaultShareImage;
   const verification: Metadata['verification'] = {};
   if (c['seo.googleVerification']) verification.google = c['seo.googleVerification'];
   if (c['seo.bingVerification']) verification.other = { 'msvalidate.01': c['seo.bingVerification'] };
