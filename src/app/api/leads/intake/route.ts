@@ -205,12 +205,15 @@ function secretMatches(supplied: string, expected: string): boolean {
 type Stored = { id: string; created: boolean } | { failed: string };
 
 /** What the dedupe lookup returns: the id, plus the first-touch columns. */
-const RECENT_COLUMNS = 'id, lead_source, tracking_phone';
+const RECENT_COLUMNS = 'id, lead_source, tracking_phone, interest, goal, meta';
 
 interface RecentLead {
   id: string | null;
   lead_source?: string | null;
   tracking_phone?: string | null;
+  interest?: string | null;
+  goal?: string | null;
+  meta?: Record<string, unknown> | null;
 }
 
 /**
@@ -235,16 +238,17 @@ async function store(lead: LeadIntakeInput): Promise<Stored> {
       full_name: lead.full_name || undefined,
       last_contacted_at: now,
     };
-    // lead_source and tracking_phone are first touch and are deliberately not
-    // overwritten: the site that originally produced this person is the one
-    // that earned them, and it is what the owner is measuring. A later visit
-    // from a different site goes on the timeline instead.
+    // The lead row is first touch throughout: the site that produced this
+    // person, the number they called, what they first asked for, and the
+    // campaign that found them. Only blanks are filled in. Every later
+    // submission, with its own answers, goes on the timeline - which is also
+    // where `notes` stays put, so the row and the notes cannot disagree.
     const extra = {
-      interest: lead.interest,
-      goal: lead.goal,
-      meta: lead.meta,
       ...(existing.lead_source ? {} : { lead_source: lead.lead_source }),
       ...(existing.tracking_phone ? {} : { tracking_phone: lead.tracking_phone || null }),
+      ...(existing.interest ? {} : { interest: lead.interest }),
+      ...(existing.goal ? {} : { goal: lead.goal }),
+      ...(existing.meta ? {} : { meta: lead.meta }),
     };
 
     let result = await db.from('leads').update({ ...patch, ...extra }).eq('id', existing.id);

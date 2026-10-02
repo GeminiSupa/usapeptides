@@ -231,9 +231,10 @@ Server-side configuration incomplete. Not retryable; report it.
   within 30 days updates that lead and appends the new submission to its
   timeline rather than creating a second record. The response is `201` either
   way; `id` is the existing lead's id.
-- **First touch wins.** A returning person keeps the domain and tracking number
-  recorded the first time. A later submission from a different site is noted on
-  their timeline instead of replacing the original source.
+- **First touch wins.** A returning person's record keeps what was captured the
+  first time: the domain, the tracking number, both dropdown answers and the
+  campaign. Later submissions, with their own answers, are added to that
+  person's timeline rather than replacing what is on the record.
 - **Source tracking.** Every lead records the domain it was submitted from,
   taken from the request's `Origin`, so each of a hundred sites is reported
   separately without a per-site key or a per-site edit. A `lead_source` in the

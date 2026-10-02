@@ -79,8 +79,25 @@ this is the merged result.
       bearer auth, the fallback header, a missing and a wrong token, a
       brand-new unregistered domain, first touch, an optional domain
       restriction, a blocked domain and revocation. Test rows deleted.
-- [ ] Still to do: create the real token and hand it over with
-      docs/LEAD-INTAKE-API.md (or the PDF). Nothing else is needed per site.
+- [x] Token created ("City sites", active, no domain list) and given to the
+      owner, who passed it and the PDF to the other developer. Proved with a
+      real submission to the live endpoint; that test lead was deleted.
+- [x] First real integration confirmed on 2026-10-02: peptideswashingtondc.com
+      (WordPress/Elementor) submitted twice 44 seconds apart at 06:10 UTC. Both
+      submissions arrived, deduped into one lead, both on its timeline, bell
+      notification fired, source domain recorded. Checked in the database and
+      through the live /api/admin/leads the dashboard itself calls.
+- [x] That lead exposed a disagreement: the row showed the second submission's
+      answers while `notes` showed the first. The whole row is now first touch -
+      domain, tracking number, both answers and the campaign - and later
+      submissions live on the timeline, so the row and the notes cannot
+      contradict each other. 11 end-to-end checks on exactly that.
+- [!] Tell the other developer: `tracking_phone` is still the placeholder
+      405-555-0100 from the documentation's example. Each site must send the
+      number actually printed on it, or the "which number pulls" reporting is
+      wrong everywhere.
+- [!] Owner: delete `LEAD_INTAKE_SECRET` from Vercel. The code no longer reads
+      it, and the value has been circulated in plain text.
 - [ ] Chatwoot: leads go to the CRM, not into a chat conversation.
       Contact-only sync (so a later chat shows the form answers) is designed,
       not built. Waiting on the owner.
