@@ -1,56 +1,74 @@
 # USA Peptide Depot — logo files
 
-Supplied by the owner on 2026-10-02. These are the brand source files, kept here
-as the master copies. Anything the site actually serves lives in `public/` and
-should be exported from these.
+Brand source files, supplied by the owner on 2026-10-02. These are the masters.
+Anything the site serves lives in `public/` and should be exported from here.
 
-All the artwork is one lockup: the **UPD** monogram, **USA Peptide Depot** set
-beside it, and the tagline **LIMITLESS POTENTIAL** underneath. The tagline is
-new — the logo currently on the site does not have it.
+Everything is one lockup: the **UPD** monogram, **USA Peptide Depot** beside it,
+and the tagline **LIMITLESS POTENTIAL** underneath. The tagline is new — the
+logo on the site today does not have it.
 
-## svg/ — true vector, use these
+The files were renamed from what the designer sent (`1,1.png`, `Logo  navy
+2.svg` and so on). Every colour below was read back out of the file itself, not
+taken from the old name.
 
-Five colourways of the same drawing, `viewBox="0 0 1745 593"`, 35 paths, one
-fill colour each. Scales to any size.
+## Naming
 
-| File | Fill | Matches |
+`upd-<kind>-<colour>.<ext>`, lower case, hyphens only — safe in a URL, safe in
+a shell, sorts sensibly. `-on-<colour>` means that colour is the **background**.
+
+## svg/ — true vector, prefer these
+
+One drawing, five colourways. `viewBox="0 0 1745 593"`, 35 paths, single fill.
+Scales to any size.
+
+| File | Fill | Brand colour |
 |---|---|---|
-| `Logo green 2.svg` | `#1f4233` | brand Forest |
-| `Logo  navy 2.svg` (two spaces) | `#233049` | brand Navy |
-| `Logo Cream 2.svg` | `#fdfbf0` | brand Cream |
-| `Logo Black 2.svg` | `#0f0f0f` | — |
-| `Logo White 2.svg` | `#fff` | — |
+| `upd-logo-forest.svg` | `#1f4233` | Forest |
+| `upd-logo-navy.svg` | `#233049` | Navy |
+| `upd-logo-cream.svg` | `#fdfbf0` | Cream |
+| `upd-logo-black.svg` | `#0f0f0f` | — |
+| `upd-logo-white.svg` | `#fff` | — |
 
-Green, navy and cream are exactly the brandkit colours, so a colourway can be
-dropped in without recolouring.
+Forest, navy and cream are exactly the brandkit values, so a colourway drops in
+without recolouring.
 
-## Png/ — raster
+## png/ — raster
 
-Transparent wordmarks, 622 × 205 (same shape as the current `public/logo.png`):
+**Wordmarks, 622 × 205, transparent** — same shape as the current
+`public/logo.png`, so they are drop-in replacements:
 
-- `Logo UPD green 2.png`, `Logo UPD navy 2.png`, `Logo UPD black 2.png`,
-  `Logo cream 2.png`, `Logo white 2.png`
+`upd-logo-forest.png` · `upd-logo-navy.png` · `upd-logo-cream.png` ·
+`upd-logo-black.png` · `upd-logo-white.png`
 
-Square 1080 × 1080, opaque — social avatars and share images:
+Ink colours match the SVGs, with one exception: the PNG black is pure `#000000`
+where the SVG black is `#0f0f0f`.
 
-- `1,1.png` — forest logo on cream
-- `2,1.png` — cream logo on forest
-- `3,1.png` — cream logo on navy
+**Square 1080 × 1080, opaque** — social avatars and share images:
 
-Square 1080 × 1080 tiling patterns — repeated UPD monogram, low contrast,
-meant as a background texture, not as a logo:
+| File | Background | Logo |
+|---|---|---|
+| `upd-social-on-cream.png` | Cream `#fdfbf0` | Forest |
+| `upd-social-on-forest.png` | Forest `#1f4233` | Cream |
+| `upd-social-on-navy.png` | Navy `#233049` | Cream |
 
-- `01.png` — pale green on cream
-- `02.png` — on forest
+**Square 1080 × 1080 tiling patterns** — the UPD monogram repeated at low
+contrast. These are a background texture, not a logo; do not use one where a
+logo belongs:
 
-## Ai/
+| File | Background | Monogram |
+|---|---|---|
+| `upd-pattern-on-cream.png` | Cream `#fdfbf0` | `#e5e7db` pale sage |
+| `upd-pattern-on-forest.png` | Forest `#1f4233` | `#385648` lighter forest |
 
-`Logo Black 2.ai` — the Illustrator original, 241 KB. Editing source only;
-nothing in the app reads it.
+## ai/
 
-## Note on the logo the site serves today
+`upd-logo.ai` — the Illustrator original, 241 KB. Editing source only; nothing
+in the app reads it.
+
+## The logo the site serves today
 
 `public/logo.svg` is not vector art. It is a base64 JPEG wrapped in an `<svg>`
-and recoloured to cream with an `feColorMatrix` filter. Nothing in `src/`
-references it; the app uses `public/logo.png` everywhere. The files in `svg/`
-here are real vector and can replace both.
+and tinted cream with an `feColorMatrix` filter, so it softens when scaled up.
+Nothing in `src/` references it — the app points at `public/logo.png`
+everywhere. The files in `svg/` are real paths in the brand colours and can
+replace both.
