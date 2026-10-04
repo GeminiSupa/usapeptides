@@ -4,6 +4,13 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## Social profiles — 2026-10-04
+
+- [x] Instagram and Facebook are the default contact links, so the footer shows
+      them and the Organization schema lists them in `sameAs`. The Facebook
+      address is the page the share link opens, without the tracking query.
+      Dashboard > Contact & social can still change either one.
+
 ## Lead intake from other domains - 2026-10-01
 
 Leads from the local lead-gen sites (peptidesoklahomacity.com and the rest) post

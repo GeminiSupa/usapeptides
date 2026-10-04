@@ -33,6 +33,9 @@ export const BUSINESS = {
    */
   paymentsEmail: clean(process.env.PAYMENTS_EMAIL) || supportEmail,
   supportPhone: '831-471-5559',
+  /** Public profiles. The footer and Organization sameAs read these. */
+  instagram: 'https://www.instagram.com/usapeptidedepot',
+  facebook: 'https://www.facebook.com/people/USA-Peptide-Depot/61594974061910/',
   country: 'US',
   currency: 'USD',
   /** The business day for dashboards ("today", "this week"). */
