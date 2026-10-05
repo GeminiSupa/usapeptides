@@ -88,8 +88,8 @@ export default function Footer() {
             <Image
               src="/logo.png"
               alt={name}
-              width={622}
-              height={205}
+              width={1745}
+              height={593}
               className="h-14 w-auto"
             />
           </Link>

@@ -40,7 +40,7 @@ export default function ComplianceModal() {
       >
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="theme-forest flex w-full justify-center border border-brand-border bg-brand-dark px-5 py-4">
-            <Image src="/logo.png" alt={t('business.name')} width={622} height={205} className="h-auto w-44 max-w-full" />
+            <Image src="/logo.png" alt={t('business.name')} width={1745} height={593} className="h-auto w-44 max-w-full" />
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-red-700 tracking-wider block">

@@ -67,10 +67,10 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             <Image
               src="/logo.png"
               alt="USA Peptide Depot"
-              width={622}
-              height={205}
+              width={1745}
+              height={593}
               priority
-              className="h-auto w-[8.75rem] min-[380px]:w-[10rem] sm:w-[14rem]"
+              className="h-auto w-[7.5rem] min-[380px]:w-[8.5rem] sm:w-[10rem]"
             />
           </Link>
 

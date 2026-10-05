@@ -4,6 +4,15 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## Official logo with tagline — 2026-10-05
+
+- [x] Owner-supplied logo files added under `USAPD_Logo/` (SVG, PNG, AI).
+- [x] `public/logo.png` and `public/logo.svg` replaced with the cream lockup:
+      UPD monogram, USA Peptide Depot, and **LIMITLESS POTENTIAL** tagline.
+- [x] Header sized down slightly so the taller logo fits on mobile and desktop
+      without crowding search or cart controls.
+- [~] Not on the live site until deployed.
+
 ## Social profiles — 2026-10-04
 
 - [x] Instagram and Facebook are the default contact links, so the footer shows
