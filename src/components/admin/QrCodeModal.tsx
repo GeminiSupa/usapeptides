@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Copy, Download, Printer, X } from 'lucide-react';
 import { downloadBlob } from '@/lib/sheetFiles';
+import { useModalDismiss } from './useModalDismiss';
 
 /**
  * A QR code for any link: a product page, a salesperson's referral link, a
@@ -36,6 +37,7 @@ export async function qrSvg(url: string): Promise<string> {
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
 export default function QrCodeModal({ target, onClose }: { target: QrTarget; onClose: () => void }) {
+  const dismiss = useModalDismiss(onClose);
   const [src, setSrc] = useState('');
   const [copied, setCopied] = useState(false);
 
@@ -72,7 +74,7 @@ export default function QrCodeModal({ target, onClose }: { target: QrTarget; onC
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={`QR code for ${target.title}`}>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4" {...dismiss} role="dialog" aria-modal="true" aria-label={`QR code for ${target.title}`}>
       <div className="w-full max-w-sm border border-brand-border bg-brand-card">
         <div className="flex items-start justify-between gap-3 border-b border-brand-border px-4 py-3">
           <div className="min-w-0">

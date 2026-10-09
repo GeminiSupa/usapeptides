@@ -3,10 +3,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Loader2, UserRound, X } from 'lucide-react';
 import CustomerDetailModal from './CustomerDetailModal';
+import { useModalDismiss } from './useModalDismiss';
 
 type Fetcher = (path: string, init?: RequestInit) => Promise<Response>;
 
 export default function AgentCustomersModal({ agentId, authedFetch, onClose }: { agentId: string; authedFetch: Fetcher; onClose: () => void }) {
+  const dismiss = useModalDismiss(onClose);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ export default function AgentCustomersModal({ agentId, authedFetch, onClose }: {
   useEffect(() => { void load(); }, [load]);
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true" aria-label="Sales agent customers">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4" {...dismiss} role="dialog" aria-modal="true" aria-label="Sales agent customers">
       <div className="max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto border border-brand-border bg-brand-card">
         <header className="sticky top-0 flex items-center justify-between border-b border-brand-border bg-brand-card px-5 py-4"><div><p className="eyebrow">Sales agent profile</p><h2 className="mt-1 font-display text-lg font-black text-brand-heading">{data?.agent?.full_name || data?.agent?.email || 'Customers'}</h2></div><button onClick={onClose} className="p-2 text-brand-textMuted hover:text-brand-heading" aria-label="Close"><X className="h-5 w-5"/></button></header>
         <div className="p-5">

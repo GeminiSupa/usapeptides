@@ -31,7 +31,7 @@ import {
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
   Pencil, Monitor, ScrollText, MapPin, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3, Menu, X, Globe, Eye,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, ArrowLeft,
 } from 'lucide-react';
 
 /**
@@ -201,6 +201,18 @@ export default function AdminPage() {
   }, [navOpen]);
   useEffect(() => { if (isDesktop) setNavOpen(false); }, [isDesktop]);
 
+  // Each section is a history entry. Without this the browser's Back button
+  // left the dashboard altogether, which is no way out of a section.
+  useEffect(() => {
+    const onPop = (event: PopStateEvent) => {
+      const asked = (event.state as { section?: string } | null)?.section
+        ?? new URLSearchParams(window.location.search).get('section');
+      if (asked) { setSection(asked); setPage(0); setQuery(''); }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   useEffect(() => {
     if (!supabase) {
       setChecking(false);
@@ -242,7 +254,11 @@ export default function AdminPage() {
         const p = await res.json().catch(() => null);
         if (!res.ok) { setDenied(p?.message ?? 'Access denied.'); return; }
         setMe(p.data);
-        setSection(p.data.defaultModule);
+        // A section in the address bar wins, so a reload, a bookmark or the
+        // browser's Back button lands where the person expects.
+        const asked = new URLSearchParams(window.location.search).get('section');
+        const allowed = asked && p.data.allowed.includes(asked) && !NOT_A_SECTION.has(asked);
+        setSection(allowed ? asked : p.data.defaultModule);
       })
       .catch(() => setDenied('Could not reach the dashboard.'))
       .finally(() => setChecking(false));
@@ -560,7 +576,10 @@ export default function AdminPage() {
     );
   };
 
-  const goTo = (next: string) => { setSection(next); setQuery(''); setError(''); setNavOpen(false); setPage(0); };
+  const goTo = (next: string) => {
+    setSection(next); setQuery(''); setError(''); setNavOpen(false); setPage(0);
+    if (next !== section) window.history.pushState({ section: next }, '', `/admin?section=${encodeURIComponent(next)}`);
+  };
 
   /** A new search belongs on page one; `page` drives its own reload. */
   const runSearch = () => { if (page === 0) void load(); else setPage(0); };
@@ -619,6 +638,13 @@ export default function AdminPage() {
             </span>
           </button>
         </div>
+
+        <a
+          href="/"
+          className="flex min-h-11 w-full items-center gap-2.5 border-b border-brand-border px-4 py-2.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-brand-textMuted transition-colors hover:text-brand-accentGlow lg:min-h-0"
+        >
+          <ArrowLeft className="h-3.5 w-3.5 flex-shrink-0" /><span>View the site</span>
+        </a>
 
         <nav className="pb-6 lg:pb-0">
           {sections.map((s) => {
@@ -731,7 +757,7 @@ export default function AdminPage() {
           <DashboardHome
             authedFetch={authedFetch}
             allowed={me.allowed}
-            onNavigate={(next) => { if (me.allowed.includes(next) && !NOT_A_SECTION.has(next)) { setSection(next); setQuery(''); setError(''); } }}
+            onNavigate={(next) => { if (me.allowed.includes(next) && !NOT_A_SECTION.has(next)) goTo(next); }}
             agentLink={me.role === 'sales_agent' ? (
               <div className="border border-brand-border bg-brand-card p-4">
                 <div className="eyebrow">Your referral link</div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Loader2, Save, X } from 'lucide-react';
+import { useModalDismiss } from './useModalDismiss';
 
 const money = (value: unknown) => `$${Number(value ?? 0).toFixed(2)}`;
 const statuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'];
@@ -25,6 +26,7 @@ export default function OrderDetailModal({ row, detail, error, ownership, onClos
   const address = order.shipping_address && typeof order.shipping_address === 'object' ? order.shipping_address : null;
   const [draft, setDraft] = useState({ status: '', tracking_number: '', payment_reference: '', notes: '', owner_id: '' });
   const [confirming, setConfirming] = useState(false);
+  const dismiss = useModalDismiss(() => (confirming ? setConfirming(false) : onClose()));
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState('');
 
@@ -61,7 +63,7 @@ export default function OrderDetailModal({ row, detail, error, ownership, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-label="Order details">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4" {...dismiss} role="dialog" aria-modal="true" aria-label="Order details">
       <div className="max-h-[calc(100dvh-2rem)] w-full max-w-5xl overflow-y-auto border border-brand-border bg-brand-card [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
         <header className="sticky top-0 z-10 flex flex-wrap items-start justify-between gap-3 border-b border-brand-border bg-brand-card px-5 py-4">
           <div><div className="eyebrow">Order</div><h2 className="mt-1 font-display text-lg font-black text-brand-heading">{order.order_number}</h2><p className="mt-1 text-xs text-brand-textMuted">Placed {order.created_at ? new Date(order.created_at).toLocaleString() : '—'}</p></div>

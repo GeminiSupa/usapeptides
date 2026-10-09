@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Loader2, Save, X } from 'lucide-react';
 import CustomerRetention from './CustomerRetention';
+import { useModalDismiss } from './useModalDismiss';
 
 type Fetcher = (path: string, init?: RequestInit) => Promise<Response>;
 const money = (value: unknown) => `$${Number(value ?? 0).toFixed(2)}`;
@@ -15,6 +16,7 @@ export default function CustomerDetailModal({ customerId, authedFetch, isAgent, 
   const [error, setError] = useState('');
   const [owner, setOwner] = useState('');
   const [confirming, setConfirming] = useState(false);
+  const dismiss = useModalDismiss(() => (confirming ? setConfirming(false) : onClose()));
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -54,7 +56,7 @@ export default function CustomerDetailModal({ customerId, authedFetch, isAgent, 
   }, [data]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true" aria-label="Customer profile">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4" {...dismiss} role="dialog" aria-modal="true" aria-label="Customer profile">
       <div className="max-h-[calc(100dvh-2rem)] w-full max-w-5xl overflow-y-auto border border-brand-border bg-brand-card">
         <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-brand-border bg-brand-card px-5 py-4">
           <div><p className="eyebrow">Customer profile</p><h2 className="mt-1 font-display text-lg font-black text-brand-heading">{data?.customer?.full_name || data?.customer?.email || 'Customer'}</h2></div>

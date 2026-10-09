@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FLAT_SHIPPING, FREE_SHIPPING_THRESHOLD, roundMoney, tierDiscount } from '@/lib/checkout';
 import { Plus, Trash2, X } from 'lucide-react';
+import { useModalDismiss } from './useModalDismiss';
 
 interface ProductRow {
   id: string;
@@ -38,6 +39,7 @@ const blankAddress = {
 const money = (n: number) => `$${n.toFixed(2)}`;
 
 export default function ManualOrderModal({ authedFetch, onCancel, onSaved }: Props) {
+  const dismiss = useModalDismiss(onCancel);
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -122,7 +124,7 @@ export default function ManualOrderModal({ authedFetch, onCancel, onSaved }: Pro
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 p-4" {...dismiss}>
       <form onSubmit={submit} className="mx-auto max-h-[calc(100dvh-2rem)] max-w-4xl overflow-y-auto border border-brand-border bg-brand-card text-xs text-brand-body [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
         <div className="flex items-center justify-between border-b border-brand-border px-5 py-4">
           <div>

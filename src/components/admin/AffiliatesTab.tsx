@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Copy, RotateCw, Handshake, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Copy, RotateCw, Handshake, Check, X } from 'lucide-react';
+import { useModalDismiss } from './useModalDismiss';
 
 /**
  * Affiliates: outside partners with a referral code and no login.
@@ -292,6 +293,7 @@ function AffiliateForm({
   onCancel: () => void;
   onSubmit: (values: Record<string, unknown>) => void;
 }) {
+  const dismiss = useModalDismiss(onCancel);
   const editing = Boolean(affiliate);
   const [values, setValues] = useState<Record<string, string>>({
     full_name: affiliate?.full_name ?? '',
@@ -320,9 +322,10 @@ function AffiliateForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 py-10">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 py-10" {...dismiss}>
       <div className="mx-auto max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto border border-brand-border bg-brand-card [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
-        <div className="border-b border-brand-border px-5 py-4">
+        <div className="flex items-start justify-between gap-3 border-b border-brand-border px-5 py-4">
+          <div>
           <h2 className="font-display text-sm font-extrabold uppercase tracking-[0.1em] text-brand-heading">
             {editing ? 'Edit affiliate' : 'Add an affiliate'}
           </h2>
@@ -331,6 +334,10 @@ function AffiliateForm({
               A referral code is generated for them automatically.
             </p>
           )}
+          </div>
+          <button type="button" onClick={onCancel} aria-label="Close" className="text-brand-textMuted hover:text-brand-heading">
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="space-y-4 p-5">

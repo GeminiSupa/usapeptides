@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { Mail, Pencil, Phone, Trash2, X } from 'lucide-react';
 import type { FieldDef } from './RecordEditor';
+import { useModalDismiss } from './useModalDismiss';
 
 /**
  * The read-only profile behind a row in the generic table: every column the
@@ -54,6 +55,7 @@ const dialable = (value: unknown): string => {
 export default function RecordDetailModal({
   title, row, fields, canEdit, canDelete, onEdit, onDelete, onClose,
 }: Props) {
+  const dismiss = useModalDismiss(onClose);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
@@ -74,7 +76,7 @@ export default function RecordDetailModal({
   const email = String(row.email ?? '').trim();
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 py-8">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 py-8" {...dismiss}>
       <div className="mx-auto max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto border border-brand-border bg-brand-card [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
         <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-brand-border bg-brand-card px-5 py-4">
           <div className="min-w-0">

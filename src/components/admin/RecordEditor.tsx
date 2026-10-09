@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import UploadField, { type UploadKind } from './UploadField';
+import { useModalDismiss } from './useModalDismiss';
 
 /**
  * One form for adding and for editing a record, built from the field
@@ -60,6 +61,7 @@ export default function RecordEditor({
   title, fields, initial, editable, busy, error, fieldErrors, upload, onCancel, onSubmit,
 }: Props) {
   const editing = Boolean(initial);
+  const dismiss = useModalDismiss(onCancel);
 
   const [values, setValues] = useState<Record<string, unknown>>(() => {
     const out: Record<string, unknown> = {};
@@ -200,7 +202,7 @@ export default function RecordEditor({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 py-8">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 py-8" {...dismiss}>
       <div className="mx-auto max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto border border-brand-border bg-brand-card [scrollbar-color:theme(colors.brand.borderLight)_transparent] [scrollbar-width:thin]">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-brand-border bg-brand-card px-5 py-4">
           <div>
