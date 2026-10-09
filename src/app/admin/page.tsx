@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import RecordEditor, { type FieldDef } from '@/components/admin/RecordEditor';
+import RecordDetailModal from '@/components/admin/RecordDetailModal';
 import ProductsPanel from '@/components/admin/ProductsPanel';
 import StorefrontHub from '@/components/admin/StorefrontHub';
 import UsersPanel from '@/components/admin/UsersPanel';
@@ -29,7 +30,8 @@ import {
   LayoutDashboard, ShoppingBag, PackageCheck, Users, MessageSquare, ShoppingCart,
   Star, Boxes, Mail, Target, Building2, Tag, Handshake, Receipt, Megaphone,
   Bell, UserCog, History, LogOut, RefreshCw, Trash2, Search, Plus, Inbox,
-  Pencil, Monitor, ScrollText, MapPin, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3, Menu, X, Globe,
+  Pencil, Monitor, ScrollText, MapPin, GitBranch, Wallet, Link2, ChevronDown, FileText, BarChart3, Menu, X, Globe, Eye,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 /**
@@ -150,6 +152,10 @@ function useIsDesktop() {
   return desktop;
 }
 
+/** Rows per page. A long list used to render in one go, which left the
+ *  scrollbar a sliver and the actions column miles down the page. */
+const PAGE_SIZE = 25;
+
 const money = (n: unknown) => `$${Number(n ?? 0).toFixed(2)}`;
 const prettify = (k: string) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -167,6 +173,8 @@ export default function AdminPage() {
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
 
+  const [detailRow, setDetailRow] = useState<Record<string, any> | null>(null);
+  const [page, setPage] = useState(0);
   const [editorRow, setEditorRow] = useState<Record<string, any> | null | undefined>(undefined);
   const [saveBusy, setSaveBusy] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -274,7 +282,7 @@ export default function AdminPage() {
     setLoading(true); setError('');
     try {
       if (resource) {
-        const params = new URLSearchParams({ limit: '200' });
+        const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(page * PAGE_SIZE) });
         if (query.trim()) params.set('q', query.trim());
         const res = await authedFetch(`/api/admin/${resource}?${params}`);
         const p = await res.json();
@@ -285,9 +293,9 @@ export default function AdminPage() {
       const message = (err as Error).message;
       if (message !== 'denied') setError(message);
     } finally { setLoading(false); }
-  }, [token, active, resource, query, authedFetch]);
+  }, [token, active, resource, query, page, authedFetch]);
 
-  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [token, section, me]);
+  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [token, section, me, page]);
 
   const patch = async (id: string, changes: Record<string, unknown>) => {
     if (!resource) return false;
@@ -552,7 +560,10 @@ export default function AdminPage() {
     );
   };
 
-  const goTo = (next: string) => { setSection(next); setQuery(''); setError(''); setNavOpen(false); };
+  const goTo = (next: string) => { setSection(next); setQuery(''); setError(''); setNavOpen(false); setPage(0); };
+
+  /** A new search belongs on page one; `page` drives its own reload. */
+  const runSearch = () => { if (page === 0) void load(); else setPage(0); };
 
   /* -------------------------------------------------------------- view --- */
   return (
@@ -647,7 +658,7 @@ export default function AdminPage() {
                 {showSearch && (
                   <div className="relative min-w-0 flex-1 sm:flex-none">
                     <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-textMuted" />
-                    <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()}
+                    <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') runSearch(); }}
                       placeholder="Search..." enterKeyHint="search" type="search"
                       className="min-h-11 w-full border border-brand-border bg-brand-card py-2 pl-8 pr-3 text-base text-brand-heading placeholder-brand-textMuted focus:border-brand-accent focus:outline-none sm:w-auto sm:text-xs" />
                   </div>
@@ -753,7 +764,7 @@ export default function AdminPage() {
         ) : data && data.rows.length > 0 ? (
           <>
             <p className="mb-3 text-[0.8125rem] uppercase tracking-[0.12em] text-brand-textMuted">
-              {data.rows.length} of {data.total}
+              {data.total === 0 ? '0' : `${page * PAGE_SIZE + 1}-${page * PAGE_SIZE + data.rows.length}`} of {data.total}
             </p>
             {/* Phones: one card per record, label beside value, instead of a
                 table that needs sideways scrolling. */}
@@ -777,28 +788,31 @@ export default function AdminPage() {
                         </div>
                       )}
                     </dl>
-                    {(active.id === 'orders' || data.editable.length > 0 || data.deletable) && (
-                      <div className="flex items-center gap-2 border-t border-brand-border px-3 py-2">
-                        {active.id === 'orders' && (
-                          <button onClick={() => toggleOrderDetails(row)}
-                            className="inline-flex min-h-10 flex-1 items-center justify-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
-                            <ChevronDown className="h-3 w-3 -rotate-90" /> Details
-                          </button>
-                        )}
-                        {active.id !== 'orders' && data.editable.length > 0 && (
-                          <button onClick={() => openEditor(row)}
-                            className="inline-flex min-h-10 flex-1 items-center justify-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
-                            <Pencil className="h-3 w-3" /> Edit
-                          </button>
-                        )}
-                        {data.deletable && (
-                          <button onClick={() => remove(row.id)} aria-label="Delete"
-                            className="flex min-h-10 min-w-10 items-center justify-center border border-brand-borderLight text-brand-textMuted">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2 border-t border-brand-border px-3 py-2">
+                      {active.id === 'orders' ? (
+                        <button onClick={() => toggleOrderDetails(row)}
+                          className="inline-flex min-h-10 flex-1 items-center justify-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
+                          <ChevronDown className="h-3 w-3 -rotate-90" /> Details
+                        </button>
+                      ) : (
+                        <button onClick={() => setDetailRow(row)}
+                          className="inline-flex min-h-10 flex-1 items-center justify-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
+                          <Eye className="h-3 w-3" /> View
+                        </button>
+                      )}
+                      {active.id !== 'orders' && data.editable.length > 0 && (
+                        <button onClick={() => openEditor(row)}
+                          className="inline-flex min-h-10 flex-1 items-center justify-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body">
+                          <Pencil className="h-3 w-3" /> Edit
+                        </button>
+                      )}
+                      {data.deletable && (
+                        <button onClick={() => remove(row.id)} aria-label="Delete"
+                          className="flex min-h-10 min-w-10 items-center justify-center border border-brand-borderLight text-brand-textMuted">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </li>
                 );
               })}
@@ -812,23 +826,39 @@ export default function AdminPage() {
                   {data.ownership && (
                     <th className="whitespace-nowrap px-3 py-2.5 font-display text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">Agent</th>
                   )}
-                  <th className="px-3 py-2.5" />
+                  {/* Pinned to the right edge so the actions stay reachable
+                      without scrolling a wide table sideways. */}
+                  <th className="sticky right-0 border-l border-brand-border bg-brand-card px-3 py-2.5 text-right font-display text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">Actions</th>
                 </tr></thead>
                 <tbody>
                   {data.rows.map((row) => (
                     <React.Fragment key={row.id}>
-                      <tr className="border-b border-brand-border/60 last:border-b-0 hover:bg-brand-card">
+                      <tr
+                        onClick={() => (active.id === 'orders' ? toggleOrderDetails(row) : setDetailRow(row))}
+                        className="group cursor-pointer border-b border-brand-border/60 last:border-b-0 hover:bg-brand-card"
+                      >
                         {visibleColumns(data).map((k) => (
-                          <td key={k} className="whitespace-nowrap px-3 py-2.5 text-brand-body">{cell(row, k, active.id === 'orders' ? [] : data.editable)}</td>))}
+                          <td
+                            key={k}
+                            // A cell you can change in place must not also open the profile.
+                            onClick={(e) => { if (active.id !== 'orders' && data.editable.includes(k)) e.stopPropagation(); }}
+                            className="whitespace-nowrap px-3 py-2.5 text-brand-body"
+                          >{cell(row, k, active.id === 'orders' ? [] : data.editable)}</td>))}
                         {data.ownership && (
-                          <td className="whitespace-nowrap px-3 py-2.5 text-brand-body">{ownerCell(row, data.ownership)}</td>
+                          <td onClick={(e) => e.stopPropagation()} className="whitespace-nowrap px-3 py-2.5 text-brand-body">{ownerCell(row, data.ownership)}</td>
                         )}
-                        <td className="whitespace-nowrap px-3 py-2.5 text-right">
+                        <td onClick={(e) => e.stopPropagation()} className="sticky right-0 whitespace-nowrap border-l border-brand-border bg-brand-dark px-3 py-2.5 text-right group-hover:bg-brand-card">
                           <div className="flex items-center justify-end gap-1">
                             {active.id === 'orders' && (
                               <button onClick={() => toggleOrderDetails(row)} title="Order detail"
                                 className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
                                 <ChevronDown className="h-2.5 w-2.5 -rotate-90" /> Detail
+                              </button>
+                            )}
+                            {active.id !== 'orders' && (
+                              <button onClick={() => setDetailRow(row)} title="Open profile"
+                                className="inline-flex items-center gap-1 border border-brand-borderLight px-2 py-1 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow">
+                                <Eye className="h-2.5 w-2.5" /> View
                               </button>
                             )}
                             {active.id !== 'orders' && data.editable.length > 0 && (
@@ -850,7 +880,36 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-            {active.id !== 'orders' && <p className="mt-3 text-[0.75rem] leading-relaxed text-brand-textMuted">Use Edit to review and save changes.</p>}
+            {active.id !== 'orders' && (
+              <p className="mt-3 text-[0.75rem] leading-relaxed text-brand-textMuted">
+                Open a row to see the whole record. Status can be changed straight in the table.
+              </p>
+            )}
+
+            {/* Pages, so a few thousand records never become one endless scroll. */}
+            {data.total > PAGE_SIZE && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-brand-border pt-4">
+                <p className="font-display text-[0.6875rem] font-extrabold uppercase tracking-[0.12em] text-brand-textMuted">
+                  Page {page + 1} of {Math.max(1, Math.ceil(data.total / PAGE_SIZE))}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage((n) => Math.max(0, n - 1))}
+                    disabled={page === 0 || loading}
+                    className="inline-flex min-h-10 items-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow disabled:opacity-40 disabled:hover:border-brand-borderLight disabled:hover:text-brand-body"
+                  >
+                    <ChevronLeft className="h-3 w-3" /> Previous
+                  </button>
+                  <button
+                    onClick={() => setPage((n) => n + 1)}
+                    disabled={loading || (page + 1) * PAGE_SIZE >= data.total}
+                    className="inline-flex min-h-10 items-center gap-1 border border-brand-borderLight px-3 font-display text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-body transition-colors hover:border-brand-accent hover:text-brand-accentGlow disabled:opacity-40 disabled:hover:border-brand-borderLight disabled:hover:text-brand-body"
+                  >
+                    Next <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            )}
           </>
 
         ) : (
@@ -909,6 +968,19 @@ export default function AdminPage() {
           upload={upload}
           onCancel={() => setEditorRow(undefined)}
           onSubmit={save}
+        />
+      )}
+
+      {detailRow && data && (
+        <RecordDetailModal
+          title={data.title.replace(/s$/, '')}
+          row={detailRow}
+          fields={data.editFields?.length ? data.editFields : data.createFields}
+          canEdit={data.editable.length > 0}
+          canDelete={data.deletable}
+          onEdit={() => { const row = detailRow; setDetailRow(null); openEditor(row); }}
+          onDelete={() => { const id = detailRow.id; setDetailRow(null); void remove(id); }}
+          onClose={() => setDetailRow(null)}
         />
       )}
 

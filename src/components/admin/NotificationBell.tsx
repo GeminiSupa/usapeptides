@@ -55,7 +55,10 @@ export default function NotificationBell({ authedFetch, onNavigate }: { authedFe
       {open && (
         <>
           <button aria-label="Close notifications" className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} />
-          <div className="fixed inset-x-3 top-16 z-50 border border-brand-border bg-brand-card sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[26rem]">
+          {/* The bell sits at the left of the toolbar, so the panel hangs from its
+              left edge. Anchored right it ran off the screen and under the
+              sidebar. The width is clamped so it cannot overflow either side. */}
+          <div className="fixed inset-x-3 top-16 z-50 max-h-[80vh] overflow-hidden border border-brand-border bg-brand-card sm:absolute sm:inset-x-auto sm:left-0 sm:right-auto sm:top-full sm:mt-2 sm:w-[min(26rem,calc(100vw-3rem))]">
             <NotificationsPanel
               compact
               authedFetch={authedFetch}

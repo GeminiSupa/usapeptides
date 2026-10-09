@@ -945,21 +945,43 @@ anything hardcoded or weak.
 - [ ] Commit `8e3649d` has a stray `@` in its subject line. Fixing it rewrites
       history and needs a force-push.
 
-## Costa Rica connection - needs the owner's answer
+## Costa Rica connection - removed 2026-10-09
 
-- [!] The uncommitted product-sync work in the tree (`src/lib/productSync.ts`,
-      `src/app/api/cron/products/`, migration `0022_product_partner_sync.sql`)
-      fetches the catalogue from `catalog.peptidescostarica.net` on a cron. It
-      is a live data connection to the other business, of the kind rule 2
-      forbids, even though it uses a public partner API rather than anything
-      from the deleted folder. The owner has said the products are already in
-      USA Peptide Depot and did not want features removed, so the code has been
-      left exactly where it was. **It must not be committed or deployed until
-      the owner says in writing that this feed is wanted.** Handover notes for
-      whoever picks it up: the migration number clashes with the applied
-      `0022_product_detail_images.sql` and needs renumbering to 0025, and its
-      two environment variables are read straight from `process.env` instead of
-      going through `features` in `src/lib/env.ts`.
+- [x] The owner was asked and answered: *"totally remove the connection between
+      those two projects, the costa one and the usa one"*. Everything that
+      reached `catalog.peptidescostarica.net` is gone from the working tree:
+      `src/lib/productSync.ts`, `src/lib/productSyncCore.js`/`.d.ts`,
+      `src/app/api/cron/products/`, `tests/productSyncCore.test.cjs` and
+      migration `0022_product_partner_sync.sql`. The two product cron entries
+      were taken back out of `vercel.json` and the `test:product-sync` script
+      out of `package.json`.
+- [x] `PRODUCT_API_TOKEN` and `PRODUCT_API_SIGNING_SECRET` deleted from
+      `.env.local`. Nothing reads them any more.
+- [!] **For the owner:** if those two variables were ever added in Vercel,
+      delete them there too. Nothing in the code uses them, so the site is
+      unaffected either way.
+- [ ] The files are still in git history: they were committed by accident in
+      `f96d05b` and removed from `main` in `e256b42`. Taking them out of
+      history as well means rewriting it and force-pushing, which needs the
+      owner's explicit go-ahead and coordination with the other agents working
+      on this repo.
+
+## Dashboard tables - 2026-10-09
+
+- [x] The notification drop-down was anchored to the right of the bell, which
+      sits at the left of the toolbar, so it opened off the left of the screen
+      and under the sidebar. It now hangs from the bell's left edge, with its
+      width clamped to the viewport.
+- [x] A row in the generic table opens a profile (`RecordDetailModal`): every
+      column the API returned, including the ones the table has no room for,
+      with Call, WhatsApp and Email shortcuts and Edit/Delete. There was no way
+      to see a whole lead before - the edit form only carries writable columns.
+- [x] The actions column is pinned to the right edge of the table, so Edit and
+      Delete no longer hide behind a sideways scroll on a wide table.
+- [x] 25 records a page with Previous/Next, in place of loading 200 rows into
+      one page. Paging is server-side (`limit`/`offset`, already supported).
+- [ ] Not verified by eye: the dashboard needs an admin session and none was
+      minted. Typecheck is clean and `/admin` compiles and loads.
 
 ## Known gaps worth naming
 - Policy pages are drafts, **not legal advice** — regulated product class
