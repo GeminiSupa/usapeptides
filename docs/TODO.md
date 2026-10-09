@@ -980,8 +980,21 @@ anything hardcoded or weak.
       Delete no longer hide behind a sideways scroll on a wide table.
 - [x] 25 records a page with Previous/Next, in place of loading 200 rows into
       one page. Paging is server-side (`limit`/`offset`, already supported).
-- [ ] Not verified by eye: the dashboard needs an admin session and none was
-      minted. Typecheck is clean and `/admin` compiles and loads.
+- [x] Seen working in the real dashboard on 2026-10-09, with a session minted
+      locally through the service role: pinned actions, row click to profile,
+      the notifications drawer, Escape and backdrop closing.
+- [x] The notification panel is a right-hand drawer, not a drop-down. As a
+      drop-down it covered the table it was dropped on, whichever edge it was
+      anchored to.
+- [x] Every dialog closes on Escape and on a click outside it
+      (`useModalDismiss`), which none of them did. The affiliate form had no
+      close button at all and now has one.
+- [x] Dashboard sections are history entries (`/admin?section=…`). The
+      browser's Back button used to leave the dashboard; it moves between
+      sections now, a reload stays put, and a section can be linked to. Going
+      back to the first entry falls back to the person's default screen - the
+      first version left the heading on the old section.
+- [x] The sidebar has a link back to the storefront. It never had one.
 
 ## Known gaps worth naming
 - Policy pages are drafts, **not legal advice** — regulated product class
