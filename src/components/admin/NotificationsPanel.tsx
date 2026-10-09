@@ -73,7 +73,7 @@ export default function NotificationsPanel({ authedFetch, onNavigate, compact = 
   };
 
   if (compact) {
-    return <div className="flex max-h-[min(34rem,75vh)] flex-col">
+    return <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-2 border-b border-brand-border px-3 py-2.5">
         <div className="flex gap-1">
           {(['unread', 'all'] as const).map((value) => <button key={value} onClick={() => setFilter(value)} className={`chip ${filter === value ? 'bg-brand-accent text-brand-onAccent' : 'text-brand-textMuted hover:text-brand-heading'}`}>{value === 'unread' ? `Unread ${unread}` : `All ${items.length}`}</button>)}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import NotificationsPanel from './NotificationsPanel';
 
 type Fetcher = (path: string, init?: RequestInit) => Promise<Response>;
@@ -32,8 +32,13 @@ export default function NotificationBell({ authedFetch, onNavigate }: { authedFe
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', onKey);
+    };
   }, [open]);
 
   return (
@@ -54,18 +59,32 @@ export default function NotificationBell({ authedFetch, onNavigate }: { authedFe
       </button>
       {open && (
         <>
-          <button aria-label="Close notifications" className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} />
-          {/* The bell sits at the left of the toolbar, so the panel hangs from its
-              left edge. Anchored right it ran off the screen and under the
-              sidebar. The width is clamped so it cannot overflow either side. */}
-          <div className="fixed inset-x-3 top-16 z-50 max-h-[80vh] overflow-hidden border border-brand-border bg-brand-card sm:absolute sm:inset-x-auto sm:left-0 sm:right-auto sm:top-full sm:mt-2 sm:w-[min(26rem,calc(100vw-3rem))]">
-            <NotificationsPanel
-              compact
-              authedFetch={authedFetch}
-              onUnreadChange={setCount}
-              onNavigate={(section) => { setOpen(false); onNavigate(section); }}
-            />
-          </div>
+          {/* A drop-down this tall could only ever smear itself across the
+              table behind it. It is a drawer instead: dimmed backdrop, docked
+              to the right edge, full height, so nothing is half-covered. */}
+          <button
+            aria-label="Close notifications"
+            className="fixed inset-0 z-40 cursor-default bg-black/50"
+            onClick={() => setOpen(false)}
+          />
+          <aside className="fixed inset-y-0 right-0 z-50 flex w-full flex-col sm:max-w-[26rem] border-l border-brand-border bg-brand-card">
+            <div className="flex items-center justify-between gap-2 border-b border-brand-border px-4 py-3">
+              <h2 className="font-display text-sm font-extrabold uppercase tracking-[0.1em] text-brand-heading">
+                Notifications
+              </h2>
+              <button onClick={() => setOpen(false)} aria-label="Close" className="text-brand-textMuted hover:text-brand-heading">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1">
+              <NotificationsPanel
+                compact
+                authedFetch={authedFetch}
+                onUnreadChange={setCount}
+                onNavigate={(section) => { setOpen(false); onNavigate(section); }}
+              />
+            </div>
+          </aside>
         </>
       )}
     </div>
