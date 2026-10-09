@@ -27,8 +27,12 @@ interface Props {
   onClose: () => void;
 }
 
-/** Bookkeeping the profile has no reason to show. */
-const HIDDEN = new Set(['id', 'password', 'password_hash']);
+/** Bookkeeping the profile has no reason to show. The ownership columns are
+ *  internal ids; who owns a record is shown as the Agent column, by name. */
+const HIDDEN = new Set([
+  'id', 'password', 'password_hash',
+  'owner_id', 'referred_by', 'agent_source', 'agent_claimed_at',
+]);
 
 const prettify = (k: string) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -63,12 +67,16 @@ export default function RecordDetailModal({
   }, [onClose]);
 
   const labels = new Map((fields ?? []).map((f) => [f.name, f.label]));
-  // Declared fields first, in the order the resource declared them, then
-  // everything else the row carries, so a column added by a later migration
-  // still shows up without being listed anywhere.
+  // How to reach them first, then the declared fields in the order the
+  // resource declared them, then everything else the row carries, so a column
+  // added by a later migration still shows up without being listed anywhere.
+  // Without the first group a long notes field pushed the email address out
+  // of sight, which is the one thing somebody opens a lead to find.
+  const CONTACT_FIRST = ['full_name', 'name', 'email', 'phone', 'company', 'institution'];
   const ordered = [
-    ...(fields ?? []).map((f) => f.name).filter((k) => k in row),
-    ...Object.keys(row).filter((k) => !labels.has(k)),
+    ...CONTACT_FIRST.filter((k) => k in row),
+    ...(fields ?? []).map((f) => f.name).filter((k) => k in row && !CONTACT_FIRST.includes(k)),
+    ...Object.keys(row).filter((k) => !labels.has(k) && !CONTACT_FIRST.includes(k)),
   ].filter((k) => !HIDDEN.has(k));
 
   const heading = String(row.full_name || row.name || row.label || row.email || prettify(title));

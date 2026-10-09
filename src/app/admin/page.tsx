@@ -205,13 +205,18 @@ export default function AdminPage() {
   // left the dashboard altogether, which is no way out of a section.
   useEffect(() => {
     const onPop = (event: PopStateEvent) => {
+      // The entry the dashboard opened on carries no section, so going all
+      // the way back lands on the person's own starting screen rather than
+      // leaving the heading on whatever was open.
       const asked = (event.state as { section?: string } | null)?.section
-        ?? new URLSearchParams(window.location.search).get('section');
-      if (asked) { setSection(asked); setPage(0); setQuery(''); }
+        ?? new URLSearchParams(window.location.search).get('section')
+        ?? me?.defaultModule
+        ?? 'home';
+      setSection(asked); setPage(0); setQuery('');
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, []);
+  }, [me?.defaultModule]);
 
   useEffect(() => {
     if (!supabase) {
