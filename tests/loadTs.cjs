@@ -19,7 +19,10 @@ function loadTs(file) {
 
   const source = fs.readFileSync(full, 'utf8');
   const { outputText } = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2019 },
+    // esModuleInterop matches tsconfig.json. Without it a default import of a
+    // CommonJS package (`import twilio from 'twilio'`) compiles to `.default`
+    // and is undefined at run time, while `tsc --noEmit` stays happy.
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2019, esModuleInterop: true },
     fileName: full,
   });
 

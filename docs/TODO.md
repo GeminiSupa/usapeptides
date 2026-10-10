@@ -4,6 +4,62 @@ Updated as work lands. `[x]` done and verified, `[~]` done in code but not yet
 verified against the live database, `[ ]` not started, `[!]` blocked on
 something outside the code.
 
+## Twilio: texts, WhatsApp and calls from the dashboard - 2026-10-10
+
+New section **Dashboard > SMS & calls**, gated on the new `messaging`
+permission. Built fresh for this project; nothing was copied from the other
+business's codebase, which the sandbox refused to read anyway.
+
+- [x] One text, up to 200 texts at a time, WhatsApp, and Studio Flows (the
+      flows are configured as `Label:FWxxxx` pairs in one env var, so no flow
+      is hardcoded). Message and call history read live from Twilio rather
+      than mirrored into our database.
+- [x] Browser calls with the Voice SDK, loaded lazily from the npm package -
+      Twilio's CDN build 403s on every version. No wait for a `ready` event
+      (2.18.5 does not emit one; events confirmed by reading the installed
+      bundle), and `tokenWillExpire` refetches the token so dialling does not
+      die after an hour.
+- [x] Microphone permission is requested when the Call tab opens, not at the
+      first call, with real instructions when the browser is already set to
+      block.
+- [x] Call recording is a switch in the panel, off by default, stored in
+      `site_settings` as `twilio_call_recording`. **No migration needed.**
+      Changes are written to the audit log.
+- [x] The voice webhook `/api/admin/twilio/voice` has no login - Twilio calls
+      it server to server - so it verifies `X-Twilio-Signature`, rebuilding
+      the signed URL from the forwarded host and forcing https. Unsigned is
+      refused in production, allowed locally.
+- [x] Verified: `npx tsc --noEmit` clean, `npx next build` clean with the dev
+      server stopped, 36 new tests pass (`npm run test:twilio`) and the 55
+      existing ones still do. A real voice token minted from the live
+      credentials decodes with `iss` = `SK...`, `sub` = `AC...`,
+      `application_sid` = `AP...`, one hour.
+- [x] **Any of the account's numbers can be used.** The owner chose this over
+      a single dedicated number on 2026-10-10. The panel lists every number
+      on the account, filterable by area code, and the sender is picked per
+      send; "Make default" remembers one in `site_settings`
+      (`twilio_sending_number`). `TWILIO_PHONE_NUMBER` is now only an
+      optional preselect, so no number needs buying to start.
+      The choice is validated server-side against the live account on every
+      send and on the caller ID of every call - a request naming a number we
+      do not own is refused, never silently swapped.
+- [!] **Known and accepted:** sending from a number does not change where
+      incoming calls to it go. 220 of the account's 221 numbers answer into
+      the Costa Rica IVR, so a customer who calls one back lands there. The
+      picker labels each number with where its incoming calls go and warns
+      when it is not this dashboard. Pointing a number here means taking it
+      out of that IVR, which is Joe's call.
+- [!] **Not checked:** US A2P 10DLC registration. Texts from unregistered
+      ten-digit numbers are largely filtered by carriers. At least one number
+      on the account showed registration still pending.
+- [!] **Waiting on the owner:** the six `TWILIO_*` variables must be added to
+      Vercel's **Production** environment and the site redeployed before any
+      of this works live.
+- [ ] Not yet done: a real call, and the two production probes in
+      `docs/TWILIO-SETUP.md` (unsigned must answer 403, signed must answer
+      200 with a callerId). Both need the deploy above.
+- [x] Docs: `docs/TWILIO-SETUP.md`, plus the variables in `.env.example`.
+
 ## Official logo with tagline — 2026-10-05
 
 - [x] Owner-supplied logo files added under `USAPD_Logo/` (SVG, PNG, AI).

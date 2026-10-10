@@ -51,6 +51,10 @@ const RULES: Rule[] = [
   { pattern: /^\/api\/admin\/affiliates(?:\/|$)/,      permissions: ['affiliates'] },
   { pattern: /^\/api\/admin\/commissions(?:\/|$)/,     permissions: ['commissions'] },
   { pattern: /^\/api\/admin\/campaigns(?:\/|$)/,       permissions: ['campaigns'] },
+  // Texts, WhatsApp and calls placed from the dashboard. The voice webhook
+  // sits under this path too but is never reached through requireAdmin -
+  // Twilio calls it with no session and proves itself with a signature.
+  { pattern: /^\/api\/admin\/twilio(?:\/|$)/,          permissions: ['messaging'] },
   { pattern: /^\/api\/admin\/automations(?:\/|$)/,     permissions: ['automations'] },
   // The sending limit and the DNS report. Campaigns needs to see it too: the
   // cap it is subject to is set here.

@@ -8,11 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "test:automations": "node --test tests/emailAutomation.test.cjs",
+    "test:twilio": "node --test tests/twilio.test.cjs tests/twilioWebhookSignature.test.cjs tests/twilioCallRecording.test.cjs tests/twilioSendingNumber.test.cjs",
     "seed": "node scripts/seed-catalogue.mjs",
     "migrate": "node scripts/run-migration.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
+    "@twilio/voice-sdk": "^2.18.5",
     "clsx": "^2.1.1",
     "exceljs": "^4.4.0",
     "jspdf": "^4.2.1",
@@ -25,7 +27,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "server-only": "^0.0.1",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "twilio": "^5.13.1"
   },
   "devDependencies": {
     "@types/node": "^20.17.16",

@@ -23,6 +23,7 @@ import CampaignsPanel from '@/components/admin/CampaignsPanel';
 import AutomationsPanel from '@/components/admin/AutomationsPanel';
 import NotificationBell from '@/components/admin/NotificationBell';
 import DealsPanel from '@/components/admin/DealsPanel';
+import TwilioPanel from '@/components/admin/TwilioPanel';
 import DashboardHome from '@/components/admin/insights/DashboardHome';
 import type { UploadKind } from '@/components/admin/UploadField';
 import { MODULES, type ModuleDef } from '@/lib/permissions';
@@ -748,6 +749,8 @@ export default function AdminPage() {
           <CampaignsPanel authedFetch={authedFetch} upload={upload} />
         ) : active.id === 'automations' ? (
           <AutomationsPanel authedFetch={authedFetch} upload={upload} />
+        ) : active.id === 'messaging' ? (
+          <TwilioPanel authedFetch={authedFetch} />
         ) : active.id === 'prospects' ? (
           <ProspectorPanel authedFetch={authedFetch} me={me} />
         ) : active.id === 'customers' ? (

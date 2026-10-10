@@ -63,6 +63,11 @@ export type AuditAction =
   | 'automation.enroll'
   | 'automation.delete'
   | 'email.policy_update'
+  | 'twilio.sms'
+  | 'twilio.bulk_sms'
+  | 'twilio.whatsapp'
+  | 'twilio.flow'
+  | 'twilio.recording'
   | 'content.update';
 
 interface AuditEntry {
