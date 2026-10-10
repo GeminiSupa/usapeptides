@@ -52,12 +52,21 @@ business's codebase, which the sandbox refused to read anyway.
 - [!] **Not checked:** US A2P 10DLC registration. Texts from unregistered
       ten-digit numbers are largely filtered by carriers. At least one number
       on the account showed registration still pending.
-- [!] **Waiting on the owner:** the six `TWILIO_*` variables must be added to
-      Vercel's **Production** environment and the site redeployed before any
-      of this works live.
-- [ ] Not yet done: a real call, and the two production probes in
-      `docs/TWILIO-SETUP.md` (unsigned must answer 403, signed must answer
-      200 with a callerId). Both need the deploy above.
+- [x] **Live and verified on 2026-10-11** (commit `163ab99`). The owner added
+      the variables to Vercel and the deploy went out. Three probes against
+      https://www.usapeptidedepot.com/api/admin/twilio/voice:
+      unsigned POST answers **403**; a correctly signed POST naming a caller
+      ID we own answers **200** with
+      `<Dial callerId="+12012319979" ...>`; a signed POST naming a number we
+      do not own is refused rather than substituted.
+      The middle one also proves every credential is present in production:
+      the signature could only verify with the right auth token, and the
+      caller ID could only be validated by a successful Twilio API call, and
+      the route only reaches that point when `features.twilioVoice` is true,
+      which needs all five variables.
+- [ ] **Still untested: a real call**, and the panel's own screen - it sits
+      behind the admin login, so nobody has yet seen it render or clicked
+      anything in it. Everything proven so far is the server side.
 - [x] Docs: `docs/TWILIO-SETUP.md`, plus the variables in `.env.example`.
 
 ## Official logo with tagline — 2026-10-05
